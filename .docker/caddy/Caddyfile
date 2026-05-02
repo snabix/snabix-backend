@@ -1,0 +1,25 @@
+:80 {
+    root * /var/www/html/public
+
+    encode zstd gzip
+
+    php_fastcgi app:9000 {
+        root /var/www/html/public
+        trusted_proxies private_ranges
+    }
+
+    file_server
+    try_files {path} {path}/ /index.php?{query}
+
+    header {
+        -Server
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}

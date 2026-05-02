@@ -1,6 +1,8 @@
 <?php
 
-use App\Shared\Infrastructure\Models\EloquentUser;
+declare(strict_types=1);
+
+use App\Auth\Infrastructure\Models\EloquentUser;
 
 return [
 

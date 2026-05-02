@@ -1,0 +1,53 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Показать список доступных задач
+    cmds:
+      - task --list
+
+  # Docker
+  build:
+    desc: Собрать контейнеры с использованием кэша
+    cmd: docker compose build
+
+  rebuild:
+    desc: Пересобрать и поднять контейнеры
+    cmds:
+      - docker compose down
+      - docker compose build
+      - docker compose up -d
+
+  rebuild:no-cache:
+    desc: Пересобрать контейнеры без кэша и поднять их
+    cmds:
+      - docker compose down
+      - docker compose build --no-cache
+      - docker compose up -d
+
+  up:
+    desc: Поднять контейнеры в фоне
+    cmd: docker compose up -d
+
+  stop:
+    desc: Остановить контейнеры без удаления
+    cmd: docker compose stop
+
+  down:
+    desc: Остановить и удалить контейнеры и сеть
+    cmd: docker compose down
+
+  # PHP CS Fixer
+  cs:
+    desc: PHP CS Fixer — исправить код
+    cmds:
+      - ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --sequential --verbose
+
+  cs:dry:
+    desc: PHP CS Fixer — проверить без изменений
+    cmd: ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
+
+  shell:
+    desc: Зайти в контейнер
+    cmds:
+      - docker compose exec app sh

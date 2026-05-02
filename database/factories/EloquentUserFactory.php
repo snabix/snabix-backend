@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
-use App\Shared\Infrastructure\Models\EloquentUser;
+use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -12,9 +14,7 @@ use Illuminate\Support\Str;
  */
 class EloquentUserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
+    /** The current password being used by the factory. */
     protected static ?string $password;
 
     /**
@@ -38,7 +38,7 @@ class EloquentUserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
