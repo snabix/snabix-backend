@@ -1,16 +1,22 @@
 <?php
 
-namespace App\Shared\Infrastructure\Models;
+declare(strict_types=1);
+
+namespace App\Auth\Infrastructure\Models;
 
 use Database\Factories\EloquentUserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class EloquentUser extends Authenticatable
+class EloquentUser extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<EloquentUserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
+
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +38,11 @@ class EloquentUser extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
 
     /**
      * Get the attributes that should be cast.

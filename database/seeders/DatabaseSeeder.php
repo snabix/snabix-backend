@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use App\Shared\Infrastructure\Models\EloquentUser;
+use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
