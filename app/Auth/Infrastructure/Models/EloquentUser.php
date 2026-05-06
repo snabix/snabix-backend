@@ -5,18 +5,25 @@ declare(strict_types=1);
 namespace App\Auth\Infrastructure\Models;
 
 use Database\Factories\EloquentUserFactory;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class EloquentUser extends Authenticatable implements FilamentUser
+class EloquentUser extends Authenticatable
 {
     /** @use HasFactory<EloquentUserFactory> */
-    use HasFactory;
+    use HasApiTokens;
 
+    use HasFactory;
     use Notifiable;
+
+    public $incrementing = false;
+
+    protected $table = 'users';
+
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
@@ -24,9 +31,11 @@ class EloquentUser extends Authenticatable implements FilamentUser
      * @var list<string>
      */
     protected $fillable = [
+        'id',
         'name',
         'email',
         'password',
+        'email_verified_at',
     ];
 
     /**
@@ -39,9 +48,9 @@ class EloquentUser extends Authenticatable implements FilamentUser
         'remember_token',
     ];
 
-    public function canAccessPanel(Panel $panel): bool
+    protected static function newFactory(): Factory
     {
-        return true;
+        return EloquentUserFactory::new();
     }
 
     /**

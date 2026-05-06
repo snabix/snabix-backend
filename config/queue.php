@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('QUEUE_CONNECTION', 'database'),
+    'default' => env('QUEUE_CONNECTION', 'rabbitmq'),
 
     /*
     |--------------------------------------------------------------------------
@@ -75,6 +75,31 @@ return [
             'after_commit' => false,
         ],
 
+        'rabbitmq' => [
+            'driver' => 'rabbitmq',
+            'queue' => env('RABBITMQ_QUEUE', 'notifications'),
+            'connection' => env('RABBITMQ_CONNECTION', 'default'),
+            'hosts' => [
+                [
+                    'host' => env('RABBITMQ_HOST', 'rabbitmq'),
+                    'port' => (int) env('RABBITMQ_PORT', 5672),
+                    'user' => env('RABBITMQ_USER', 'guest'),
+                    'password' => env('RABBITMQ_PASSWORD', 'guest'),
+                    'vhost' => env('RABBITMQ_VHOST', '/'),
+                ],
+            ],
+            'worker' => env('RABBITMQ_WORKER', 'default'),
+            'options' => [
+                'queue' => [
+                    'declare' => true,
+                    'bind' => true,
+                    'durable' => true,
+                    'queue_max_priority' => 10,
+                ],
+            ],
+            'after_commit' => true,
+        ],
+
         'deferred' => [
             'driver' => 'deferred',
         ],
@@ -86,8 +111,8 @@ return [
         'failover' => [
             'driver' => 'failover',
             'connections' => [
+                'rabbitmq',
                 'database',
-                'deferred',
             ],
         ],
 

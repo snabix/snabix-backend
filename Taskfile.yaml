@@ -51,3 +51,41 @@ tasks:
     desc: Зайти в контейнер
     cmds:
       - docker compose exec app sh
+
+
+  queue:work:
+    desc: Запустить RabbitMQ worker для очередей проекта
+    cmds:
+      - docker compose exec -T app php artisan app:rabbitmq-declare-topology
+      - docker compose exec -T app php artisan queue:work rabbitmq --queue=media,images,notifications,default --tries=3 --backoff=10 --timeout=120
+
+  queue:setup:
+    desc: Объявить RabbitMQ exchange, очереди и bindings проекта
+    cmds:
+      - docker compose exec -T app php artisan app:rabbitmq-declare-topology
+
+  queue:failed:
+    desc: Показать failed jobs
+    cmds:
+      - docker compose exec -T app php artisan queue:failed
+
+  rabbitmq:status:
+    desc: Проверить состояние RabbitMQ
+    cmds:
+      - docker compose exec -T rabbitmq rabbitmq-diagnostics status
+
+  rabbitmq:queues:
+    desc: Показать очереди RabbitMQ
+    cmds:
+      - docker compose exec -T rabbitmq rabbitmqctl list_queues name messages messages_ready messages_unacknowledged consumers
+
+  redis:cli:
+    desc: Открыть Redis CLI
+    cmds:
+      - docker compose exec redis redis-cli
+
+
+  test:
+    desc: Запустить тесты Laravel
+    cmds:
+      - docker compose exec -T app php artisan test

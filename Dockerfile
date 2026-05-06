@@ -1,6 +1,7 @@
 FROM php:8.3-fpm-alpine
 
 RUN apk add --no-cache \
+        $PHPIZE_DEPS \
         bash \
         curl \
         git \
@@ -15,7 +16,9 @@ RUN apk add --no-cache \
         opcache \
         pdo_pgsql \
         pgsql \
-        zip
+        zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
