@@ -21,10 +21,10 @@ class UserInfolist
                     ->columns(2)
                     ->schema([
                         TextEntry::make('name')
-                            ->label('Имя'),
+                            ->translateLabel(),
 
                         TextEntry::make('email')
-                            ->label('Email')
+                            ->translateLabel()
                             ->copyable(),
 
                         IconEntry::make('email_verified_at')
@@ -46,11 +46,11 @@ class UserInfolist
                             ->copyable(),
 
                         TextEntry::make('created_at')
-                            ->label('Создан')
+                            ->translateLabel()
                             ->dateTime('d.m.Y H:i'),
 
                         TextEntry::make('updated_at')
-                            ->label('Обновлён')
+                            ->translateLabel()
                             ->dateTime('d.m.Y H:i'),
                     ]),
             ]);

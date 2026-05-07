@@ -27,7 +27,7 @@ readonly class Name implements Stringable
             throw new InvalidArgumentException('Имя не может быть длиннее 100 символов');
         }
 
-        if (!preg_match('/^[\p{L}\p{M}\s\'-]+$/u', $value)) {
+        if (! preg_match('/^[\p{L}\p{M}\s\'-]+$/u', $value)) {
             throw new InvalidArgumentException('Имя содержит недопустимые символы');
         }
 

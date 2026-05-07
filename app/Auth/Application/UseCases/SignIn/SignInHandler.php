@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Auth\Application\UseCases\SignIn;
 
 use App\Auth\Domain\Contracts\UserRepositoryInterface;
+use App\Auth\Domain\Events\AuthenticationFailed;
+use App\Auth\Domain\Events\UserSignedIn;
 use App\Shared\Domain\Contracts\HasherInterface;
 use App\Shared\Domain\Contracts\TokenCreatorInterface;
 use App\Shared\Domain\ValueObjects\Email;
@@ -28,7 +30,12 @@ readonly class SignInHandler
             new Email($data->email),
         );
 
-        if (!$user) {
+        if (! $user) {
+            event(new AuthenticationFailed(
+                email: $data->email,
+                reason: 'user_not_found',
+            ));
+
             throw ValidationException::withMessages([
                 'email' => ['Неверный логин или пароль.'],
             ]);
@@ -39,7 +46,13 @@ readonly class SignInHandler
             hashed: $user->password->value(),
         );
 
-        if (!$isValidPassword) {
+        if (! $isValidPassword) {
+            event(new AuthenticationFailed(
+                email: $data->email,
+                reason: 'invalid_password',
+                userId: $user->id->value(),
+            ));
+
             throw ValidationException::withMessages([
                 'email' => ['Неверный логин или пароль.'],
             ]);
@@ -49,6 +62,8 @@ readonly class SignInHandler
             userId: $user->id->value(),
             tokenName: 'auth_token',
         );
+
+        event(new UserSignedIn($user));
 
         return SignInOutput::from([
             'token' => $token,

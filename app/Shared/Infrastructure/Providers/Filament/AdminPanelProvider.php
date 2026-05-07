@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Providers\Filament;
 
+use App\Shared\Filament\Widgets\SystemHealthChecksWidget;
+use App\Shared\Filament\Widgets\SystemHealthOverviewWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -34,10 +36,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverResources(in: app_path('Auth/Filament/Resources'), for: 'App\Auth\Filament\Resources')
+            ->discoverResources(in: app_path('Shared/Filament/Resources'), for: 'App\Shared\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverPages(in: app_path('Auth/Filament/Pages'), for: 'App\Auth\Filament\Pages')
             ->pages([
                 Dashboard::class,
+            ])
+            ->widgets([
+                SystemHealthOverviewWidget::class,
+                SystemHealthChecksWidget::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->discoverWidgets(in: app_path('Auth/Filament/Widgets'), for: 'App\Auth\Filament\Widgets')

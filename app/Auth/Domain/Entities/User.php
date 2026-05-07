@@ -29,4 +29,23 @@ class User
     {
         return $this->emailVerifiedAt !== null;
     }
+
+    public function updateProfile(Name $name, Email $email): bool
+    {
+        $emailChanged = $this->email->value() !== $email->value();
+
+        $this->name = $name;
+        $this->email = $email;
+
+        if ($emailChanged) {
+            $this->emailVerifiedAt = null;
+        }
+
+        return $emailChanged;
+    }
+
+    public function changePassword(Password $password): void
+    {
+        $this->password = $password;
+    }
 }

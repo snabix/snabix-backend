@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Auth\Http\Profile;
 
-use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Foundation\Http\FormRequest;
 use OpenApi\Attributes as OA;
 
@@ -28,8 +27,6 @@ class ProfileRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user instanceof EloquentUser
-            ? (string) $user->getAuthIdentifier()
-            : '';
+        return is_object($user) ? (string) $user->getAuthIdentifier() : '';
     }
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
+use App\Shared\Infrastructure\Middleware\LogRequestActivity;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->appendToGroup('api', LogRequestActivity::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (NotFoundException $exception, Request $request): JsonResponse | string {

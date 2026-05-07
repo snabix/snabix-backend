@@ -16,5 +16,7 @@ interface UserRepositoryInterface
 
     public function existByEmail(Email $email): bool;
 
+    public function existByEmailExceptUser(Email $email, UUID $userId): bool;
+
     public function save(User $model): void;
 }

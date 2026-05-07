@@ -7,6 +7,8 @@ namespace App\Auth\Http\EmailVerification;
 use App\Auth\Application\UseCases\EmailVerification\VerifyEmailHandler;
 use App\Auth\Application\UseCases\EmailVerification\VerifyEmailInput;
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
+use App\Shared\Infrastructure\Services\FrontendUrlBuilder;
+use Illuminate\Http\RedirectResponse;
 use OpenApi\Attributes as OA;
 
 class VerifyEmailController
@@ -41,9 +43,8 @@ class VerifyEmailController
         ],
         responses: [
             new OA\Response(
-                response: 200,
-                description: 'Email successfully verified',
-                content: new OA\JsonContent(ref: '#/components/schemas/AuthVerifyEmailResponse'),
+                response: 302,
+                description: 'Redirect to frontend after email verification',
             ),
             new OA\Response(response: 403, description: 'Invalid or expired signed URL'),
         ],
@@ -54,13 +55,20 @@ class VerifyEmailController
     public function __invoke(
         VerifyEmailRequest $request,
         VerifyEmailHandler $handler,
-    ): VerifyEmailResponse {
-        $result = $handler->execute(
+        FrontendUrlBuilder $frontendUrlBuilder,
+    ): RedirectResponse {
+        $handler->execute(
             VerifyEmailInput::from([
                 'userId' => $request->query('user'),
             ]),
         );
 
-        return VerifyEmailResponse::make($result);
+        return redirect()->away($frontendUrlBuilder->build(
+            (string) config('frontend.email_verification_redirect_url'),
+            [
+                'verified' => 1,
+                'user' => (string) $request->query('user'),
+            ],
+        ));
     }
 }

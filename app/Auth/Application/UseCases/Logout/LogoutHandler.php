@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Application\UseCases\Logout;
 
+use App\Auth\Domain\Events\UserLoggedOut;
 use App\Auth\Infrastructure\Models\EloquentUser;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -18,6 +19,11 @@ readonly class LogoutHandler
                 ->where('tokenable_type', EloquentUser::class)
                 ->delete();
         }
+
+        event(new UserLoggedOut(
+            userId: $data->userId,
+            tokenId: $data->tokenId !== null ? (string) $data->tokenId : null,
+        ));
 
         return LogoutOutput::from([
             'loggedOut' => true,

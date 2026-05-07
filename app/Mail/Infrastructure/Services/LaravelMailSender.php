@@ -15,10 +15,10 @@ class LaravelMailSender implements MailSender
      * @param array<string, mixed> $data
      */
     public function send(
-        Email  $to,
+        Email $to,
         string $subject,
         string $view,
-        array  $data = [],
+        array $data = [],
     ): void {
         Mail::to($to->value())
             ->send(

@@ -16,9 +16,9 @@ class SanctumTokenCreatorService implements TokenCreatorInterface
     ): string {
         $user = EloquentUser::query()->find($userId);
 
-        if (!$user) {
+        if (! $user) {
             throw new RuntimeException(
-                "Пользователь не найден!",
+                'Пользователь не найден!',
             );
         }
 

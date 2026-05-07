@@ -38,6 +38,14 @@ class EloquentUserRepository implements UserRepositoryInterface
             ->exists();
     }
 
+    public function existByEmailExceptUser(Email $email, UUID $userId): bool
+    {
+        return EloquentUser::query()
+            ->where('email', $email->value())
+            ->whereKeyNot($userId->value())
+            ->exists();
+    }
+
     public function save(User $model): void
     {
         EloquentUser::query()->updateOrCreate(

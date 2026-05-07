@@ -28,7 +28,7 @@ class UsersTable
                     ->description(fn(EloquentUser $record): string => $record->email),
 
                 TextColumn::make('email_verified_at')
-                    ->label('Email')
+                    ->translateLabel()
                     ->badge()
                     ->formatStateUsing(fn($state): string => $state ? 'Подтвержден' : 'Ожидает подтверждения')
                     ->color(fn($state): string => $state ? 'success' : 'warning')
@@ -41,13 +41,13 @@ class UsersTable
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
-                    ->label('Создан')
+                    ->translateLabel()
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(),
 
                 TextColumn::make('updated_at')
-                    ->label('Обновлён')
+                    ->translateLabel()
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

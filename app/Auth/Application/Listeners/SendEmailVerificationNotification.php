@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Auth\Application\Listeners;
 
 use App\Auth\Application\Jobs\SendEmailVerificationJob;
+use App\Auth\Domain\Events\UserEmailVerificationRequested;
 use App\Auth\Domain\Events\UserRegistered;
 use Illuminate\Support\Facades\URL;
 
 readonly class SendEmailVerificationNotification
 {
     public function handle(
-        UserRegistered $event,
+        UserRegistered | UserEmailVerificationRequested $event,
     ): void {
         $user = $event->user;
 

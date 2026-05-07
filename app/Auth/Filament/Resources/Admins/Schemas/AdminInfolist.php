@@ -21,19 +21,19 @@ class AdminInfolist
                     ->columns(2)
                     ->schema([
                         TextEntry::make('name')
-                            ->label('Имя'),
+                            ->translateLabel(),
 
                         TextEntry::make('email')
-                            ->label('Email')
+                            ->translateLabel()
                             ->copyable(),
 
                         IconEntry::make('email_verified_at')
-                            ->label('Почта подтверждена')
+                            ->translateLabel()
                             ->boolean()
                             ->state(fn(EloquentAdmin $record): bool => $record->email_verified_at !== null),
 
                         TextEntry::make('email_verified_at')
-                            ->label('Подтверждено в')
+                            ->translateLabel()
                             ->placeholder('Ещё не подтверждено')
                             ->dateTime('d.m.Y H:i'),
                     ]),
@@ -42,15 +42,15 @@ class AdminInfolist
                     ->columns(2)
                     ->schema([
                         TextEntry::make('id')
-                            ->label('ID')
+                            ->translateLabel()
                             ->copyable(),
 
                         TextEntry::make('created_at')
-                            ->label('Создан')
+                            ->translateLabel()
                             ->dateTime('d.m.Y H:i'),
 
                         TextEntry::make('updated_at')
-                            ->label('Обновлён')
+                            ->translateLabel()
                             ->dateTime('d.m.Y H:i'),
                     ]),
             ]);

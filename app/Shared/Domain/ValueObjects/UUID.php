@@ -15,7 +15,7 @@ readonly class UUID implements Stringable
     public function __construct(
         string $value,
     ) {
-        if (!RamseyUuid::isValid($value)) {
+        if (! RamseyUuid::isValid($value)) {
             throw new InvalidArgumentException('Некорректный формат UUID');
         }
 

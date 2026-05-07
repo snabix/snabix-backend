@@ -21,8 +21,8 @@ readonly class SignUpHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private HasherInterface         $hasherService,
-        private TokenCreatorInterface   $tokenCreator,
+        private HasherInterface $hasherService,
+        private TokenCreatorInterface $tokenCreator,
     ) {}
 
     /**

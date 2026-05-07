@@ -35,19 +35,19 @@ class AdminsTable
                     ->sortable(),
 
                 TextColumn::make('id')
-                    ->label('ID')
+                    ->translateLabel()
                     ->copyable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
-                    ->label('Создан')
+                    ->translateLabel()
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(),
 
                 TextColumn::make('updated_at')
-                    ->label('Обновлён')
+                    ->translateLabel()
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

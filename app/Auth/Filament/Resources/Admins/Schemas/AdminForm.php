@@ -22,19 +22,19 @@ class AdminForm
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->label('Имя')
-                            ->placeholder('Например, Imran')
                             ->prefixIcon(Heroicon::OutlinedUser)
                             ->autofocus()
-                            ->required()
-                            ->maxLength(255),
+                            ->translateLabel()
+                            ->string()
+                            ->maxLength(255)
+                            ->required(),
 
                         TextInput::make('email')
-                            ->label('Email')
-                            ->placeholder('admin@example.com')
                             ->email()
                             ->prefixIcon(Heroicon::OutlinedEnvelope)
                             ->required()
+                            ->translateLabel()
+                            ->string()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
                     ]),
@@ -44,20 +44,23 @@ class AdminForm
                     ->columns(2)
                     ->schema([
                         TextInput::make('password')
-                            ->label('Пароль')
                             ->password()
                             ->revealable()
                             ->autocomplete('new-password')
                             ->required(fn(string $operation): bool => $operation === 'create')
                             ->minLength(8)
+                            ->translateLabel()
+                            ->string()
                             ->maxLength(255)
                             ->saved(fn(?string $state): bool => filled($state))
                             ->confirmed(),
 
                         TextInput::make('password_confirmation')
-                            ->label('Подтверждение пароля')
                             ->password()
                             ->revealable()
+                            ->translateLabel()
+                            ->string()
+                            ->maxLength(255)
                             ->autocomplete('new-password')
                             ->required(fn(string $operation): bool => $operation === 'create')
                             ->same('password')
