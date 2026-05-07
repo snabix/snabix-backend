@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\CLI;
 
-use App\Auth\Infrastructure\Models\EloquentUser;
+use App\Auth\Infrastructure\Models\EloquentAdmin;
 use Filament\Commands\MakeUserCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 
@@ -30,10 +30,10 @@ class AuthCLIMakeAdminUser extends MakeUserCommand
     }
 
     /**
-     * @return class-string<EloquentUser>
+     * @return class-string<EloquentAdmin>
      */
     protected function getUserModel(): string
     {
-        return EloquentUser::class;
+        return EloquentAdmin::class;
     }
 }

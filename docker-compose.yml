@@ -35,9 +35,17 @@ services:
       QUEUE_CONNECTION: ${QUEUE_CONNECTION}
       CACHE_STORE: ${CACHE_STORE}
       REDIS_CLIENT: ${REDIS_CLIENT}
-      REDIS_HOST: ${REDIS_HOST}
+      REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_PORT: ${REDIS_PORT}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_CONNECTION: ${RABBITMQ_CONNECTION:-default}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-notifications}
+      RABBITMQ_WORKER: ${RABBITMQ_WORKER:-default}
       MAIL_MAILER: ${MAIL_MAILER}
       MAIL_SCHEME: ${MAIL_SCHEME}
       MAIL_HOST: ${MAIL_HOST}
@@ -50,9 +58,79 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: php-fpm
+    restart: unless-stopped
+
+  queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
+      APP_URL: ${APP_URL}
+      APP_KEY: ${APP_KEY}
+      APP_LOCALE: ${APP_LOCALE}
+      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE}
+      APP_FAKER_LOCALE: ${APP_FAKER_LOCALE}
+      LOG_CHANNEL: ${LOG_CHANNEL}
+      LOG_STACK: ${LOG_STACK}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DB_CONNECTION: ${DB_CONNECTION}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: ${SESSION_DRIVER}
+      SESSION_LIFETIME: ${SESSION_LIFETIME}
+      SESSION_ENCRYPT: ${SESSION_ENCRYPT}
+      SESSION_PATH: ${SESSION_PATH}
+      SESSION_DOMAIN: ${SESSION_DOMAIN}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION}
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION}
+      CACHE_STORE: ${CACHE_STORE}
+      REDIS_CLIENT: ${REDIS_CLIENT}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: ${REDIS_PORT}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_CONNECTION: ${RABBITMQ_CONNECTION:-default}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-notifications}
+      RABBITMQ_WORKER: ${RABBITMQ_WORKER:-default}
+      MAIL_MAILER: ${MAIL_MAILER}
+      MAIL_SCHEME: ${MAIL_SCHEME}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      TZ: Europe/Moscow
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: php artisan queue:work rabbitmq --queue=notifications --tries=3 --timeout=60 --sleep=1
     restart: unless-stopped
 
   caddy:
@@ -86,7 +164,41 @@ services:
       retries: 20
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+      TZ: Europe/Moscow
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  redis_data:
+  rabbitmq_data:
   caddy_data:
   caddy_config:

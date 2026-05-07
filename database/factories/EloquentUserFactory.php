@@ -17,6 +17,8 @@ class EloquentUserFactory extends Factory
     /** The current password being used by the factory. */
     protected static ?string $password;
 
+    protected $model = EloquentUser::class;
+
     /**
      * Define the model's default state.
      *
@@ -25,6 +27,7 @@ class EloquentUserFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => (string) Str::uuid(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
