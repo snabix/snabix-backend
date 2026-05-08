@@ -6,16 +6,19 @@ RUN apk add --no-cache \
         curl \
         git \
         icu-dev \
+        linux-headers \
         libzip-dev \
         oniguruma-dev \
         postgresql-dev \
         unzip \
     && docker-php-ext-install \
         bcmath \
+        exif \
         intl \
         opcache \
         pdo_pgsql \
         pgsql \
+        sockets \
         zip \
     && pecl install redis \
     && docker-php-ext-enable redis

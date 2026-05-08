@@ -88,4 +88,5 @@ tasks:
   test:
     desc: Запустить тесты Laravel
     cmds:
-      - docker compose exec -T app php artisan test
+      - docker compose up -d db-test
+      - docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=pgsql -e DB_HOST=db-test -e DB_PORT=5432 -e DB_DATABASE=snabix_test -e DB_USERNAME=root -e DB_PASSWORD=1234 -e DB_URL= app php artisan test

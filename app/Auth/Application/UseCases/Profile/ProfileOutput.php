@@ -10,8 +10,11 @@ class ProfileOutput extends Output
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $name,
+        public readonly string $firstName,
+        public readonly string $lastName,
         public readonly string $email,
+        public readonly ?string $phoneNumber,
+        public readonly bool $isActive,
         public readonly ?string $emailVerifiedAt,
     ) {}
 }

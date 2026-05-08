@@ -14,17 +14,17 @@ class MakeAdminUserCommandTest extends FeatureTestCase
     {
         $exitCode = Artisan::call('app:make-admin', [
             '--name' => 'admin',
-            '--email' => 'admin@admin.com',
+            '--email' => 'created-admin@admin.com',
             '--password' => '1',
         ]);
 
         $this->assertSame(0, $exitCode);
 
         $this->assertDatabaseHas('admins', [
-            'email' => 'admin@admin.com',
+            'email' => 'created-admin@admin.com',
             'name' => 'admin',
         ]);
 
-        $this->assertTrue(EloquentAdmin::query()->where('email', 'admin@admin.com')->exists());
+        $this->assertTrue(EloquentAdmin::query()->where('email', 'created-admin@admin.com')->exists());
     }
 }

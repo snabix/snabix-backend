@@ -25,7 +25,7 @@ readonly class SendEmailVerificationNotification
         SendEmailVerificationJob::dispatch(
             userId: $user->id->value(),
             email: $user->email->value(),
-            name: $user->name->value(),
+            name: $user->fullName(),
             verificationUrl: $url,
         );
     }

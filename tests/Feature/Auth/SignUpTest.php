@@ -16,7 +16,9 @@ class SignUpTest extends FeatureTestCase
         Queue::fake();
 
         $response = $this->postJson('/api/v1/auth/sign-up', [
-            'name' => 'Imran',
+            'firstName' => 'Imran',
+            'lastName' => 'Khan',
+            'phoneNumber' => '+79991234567',
             'email' => 'imran@example.com',
             'password' => 'StrongPassword123!',
             'passwordConfirmation' => 'StrongPassword123!',
@@ -29,7 +31,11 @@ class SignUpTest extends FeatureTestCase
             ]);
 
         $this->assertDatabaseHas('users', [
+            'first_name' => 'Imran',
+            'last_name' => 'Khan',
+            'phone_number' => '+79991234567',
             'email' => 'imran@example.com',
+            'is_active' => true,
         ]);
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',

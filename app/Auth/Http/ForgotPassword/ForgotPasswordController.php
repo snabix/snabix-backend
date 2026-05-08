@@ -14,11 +14,11 @@ class ForgotPasswordController
         path: '/api/v1/auth/forgot-password',
         operationId: 'authForgotPassword',
         summary: 'Request password reset instructions',
-        tags: ['Auth'],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(ref: '#/components/schemas/AuthForgotPasswordRequest'),
         ),
+        tags: ['Auth'],
         responses: [
             new OA\Response(
                 response: 200,

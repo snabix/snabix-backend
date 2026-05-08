@@ -7,7 +7,7 @@ namespace App\Auth\Domain\ValueObjects;
 use InvalidArgumentException;
 use Stringable;
 
-readonly class Name implements Stringable
+readonly class FirstName implements Stringable
 {
     public string $value;
 

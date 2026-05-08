@@ -92,7 +92,20 @@ return (new Config())
             'sort_algorithm' => 'alpha',
         ],
         'method_chaining_indentation' => true,
-        'phpdoc_align' => ['align' => 'left'],
+        'phpdoc_align' => [
+            'align' => 'vertical',
+            'tags' => [
+                'method',
+                'param',
+                'property',
+                'property-read',
+                'property-write',
+                'return',
+                'throws',
+                'type',
+                'var',
+            ],
+        ],
         'phpdoc_line_span' => [
             'const' => 'single',
             'property' => 'single',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Auth\Filament\Resources\Users\Tables;
 
-use App\Auth\Infrastructure\Models\EloquentUser;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -20,12 +19,32 @@ class UsersTable
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('name')
-                    ->label('Пользователь')
+                TextColumn::make('first_name')
+                    ->label('Имя')
                     ->searchable()
                     ->sortable()
-                    ->weight('semibold')
-                    ->description(fn(EloquentUser $record): string => $record->email),
+                    ->weight('semibold'),
+
+                TextColumn::make('last_name')
+                    ->label('Фамилия')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('phone_number')
+                    ->label('Телефон')
+                    ->searchable()
+                    ->toggleable(),
+
+                TextColumn::make('email')
+                    ->translateLabel()
+                    ->searchable()
+                    ->copyable(),
+
+                TextColumn::make('is_active')
+                    ->label('Статус')
+                    ->badge()
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Активен' : 'Отключен')
+                    ->color(fn(bool $state): string => $state ? 'success' : 'danger'),
 
                 TextColumn::make('email_verified_at')
                     ->translateLabel()

@@ -20,12 +20,23 @@ class UserInfolist
                 Section::make('Профиль')
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('name')
-                            ->translateLabel(),
+                        TextEntry::make('first_name')
+                            ->label('Имя'),
+
+                        TextEntry::make('last_name')
+                            ->label('Фамилия'),
 
                         TextEntry::make('email')
                             ->translateLabel()
                             ->copyable(),
+
+                        TextEntry::make('phone_number')
+                            ->label('Телефон')
+                            ->placeholder('Не указан'),
+
+                        IconEntry::make('is_active')
+                            ->label('Аккаунт активен')
+                            ->boolean(),
 
                         IconEntry::make('email_verified_at')
                             ->label('Почта подтверждена')

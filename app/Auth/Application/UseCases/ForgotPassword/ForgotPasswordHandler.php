@@ -34,7 +34,7 @@ readonly class ForgotPasswordHandler
 
             SendPasswordResetJob::dispatch(
                 email: $user->email,
-                name: $user->name,
+                name: trim($user->first_name . ' ' . $user->last_name),
                 resetUrl: $resetUrl,
             );
 

@@ -12,7 +12,8 @@ class LogoutTest extends FeatureTestCase
     public function test_authenticated_user_can_logout_and_revoke_current_token(): void
     {
         $user = EloquentUser::factory()->create([
-            'name' => 'Imran',
+            'first_name' => 'Imran',
+            'last_name' => 'Khan',
             'email' => 'imran@example.com',
             'password' => 'StrongPassword123!',
         ]);

@@ -29,8 +29,11 @@ readonly class ProfileHandler
 
         return ProfileOutput::from([
             'id' => $user->id->value(),
-            'name' => $user->name->value(),
+            'firstName' => $user->firstName->value(),
+            'lastName' => $user->lastName->value(),
             'email' => $user->email->value(),
+            'phoneNumber' => $user->phoneNumber?->value(),
+            'isActive' => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
         ]);
     }

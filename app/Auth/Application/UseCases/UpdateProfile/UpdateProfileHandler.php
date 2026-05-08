@@ -7,7 +7,9 @@ namespace App\Auth\Application\UseCases\UpdateProfile;
 use App\Auth\Domain\Contracts\UserRepositoryInterface;
 use App\Auth\Domain\Events\UserEmailVerificationRequested;
 use App\Auth\Domain\Events\UserProfileUpdated;
-use App\Auth\Domain\ValueObjects\Name;
+use App\Auth\Domain\ValueObjects\FirstName;
+use App\Auth\Domain\ValueObjects\LastName;
+use App\Auth\Domain\ValueObjects\PhoneNumber;
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
 use App\Shared\Domain\ValueObjects\Email;
 use App\Shared\Domain\ValueObjects\UUID;
@@ -40,8 +42,10 @@ readonly class UpdateProfileHandler
         }
 
         $emailChanged = $user->updateProfile(
-            new Name($data->name),
+            new FirstName($data->firstName),
+            new LastName($data->lastName),
             $email,
+            filled($data->phoneNumber) ? new PhoneNumber($data->phoneNumber) : null,
         );
 
         $this->userRepository->save($user);
@@ -57,8 +61,11 @@ readonly class UpdateProfileHandler
 
         return UpdateProfileOutput::from([
             'id' => $user->id->value(),
-            'name' => $user->name->value(),
+            'firstName' => $user->firstName->value(),
+            'lastName' => $user->lastName->value(),
             'email' => $user->email->value(),
+            'phoneNumber' => $user->phoneNumber?->value(),
+            'isActive' => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
         ]);
     }

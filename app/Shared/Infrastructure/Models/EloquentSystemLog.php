@@ -14,24 +14,24 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * @property string $id
- * @property SystemLogLevel $level
- * @property string $category
- * @property string|null $action
- * @property string $message
- * @property array<string, mixed>|null $context
- * @property string|null $route_name
- * @property string|null $method
- * @property string|null $path
- * @property int|null $status_code
- * @property int|null $duration_ms
- * @property string|null $ip_address
- * @property string|null $user_agent
- * @property string|null $user_id
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property-read EloquentUser|null $user
- * @property-read string|null $short_context
+ * @property      string                    $id
+ * @property      SystemLogLevel            $level
+ * @property      string                    $category
+ * @property      string|null               $action
+ * @property      string                    $message
+ * @property      array<string, mixed>|null $context
+ * @property      string|null               $route_name
+ * @property      string|null               $method
+ * @property      string|null               $path
+ * @property      int|null                  $status_code
+ * @property      int|null                  $duration_ms
+ * @property      string|null               $ip_address
+ * @property      string|null               $user_agent
+ * @property      string|null               $user_id
+ * @property      Carbon                    $created_at
+ * @property      Carbon                    $updated_at
+ * @property-read EloquentUser|null         $user
+ * @property-read string|null               $short_context
  */
 class EloquentSystemLog extends Model
 {

@@ -6,6 +6,7 @@ namespace App\Auth\Filament\Resources\Users\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -21,13 +22,20 @@ class UserForm
                     ->description('Базовые данные пользователя, которые используются для аутентификации и отображения в системе.')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('name')
-                            ->translateLabel()
+                        TextInput::make('first_name')
+                            ->label('Имя')
                             ->placeholder('Например, Imran')
                             ->prefixIcon(Heroicon::OutlinedUser)
                             ->autofocus()
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(100),
+
+                        TextInput::make('last_name')
+                            ->label('Фамилия')
+                            ->placeholder('Например, Khan')
+                            ->prefixIcon(Heroicon::OutlinedUser)
+                            ->required()
+                            ->maxLength(100),
 
                         TextInput::make('email')
                             ->translateLabel()
@@ -37,6 +45,13 @@ class UserForm
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
+
+                        TextInput::make('phone_number')
+                            ->label('Телефон')
+                            ->tel()
+                            ->placeholder('+79991234567')
+                            ->prefixIcon(Heroicon::OutlinedPhone)
+                            ->maxLength(20),
                     ]),
 
                 Section::make('Безопасность')
@@ -66,7 +81,12 @@ class UserForm
 
                 Section::make('Статус верификации')
                     ->description('При необходимости администратор может вручную отметить почту пользователя как подтверждённую.')
+                    ->columns(2)
                     ->schema([
+                        Toggle::make('is_active')
+                            ->label('Аккаунт активен')
+                            ->default(true),
+
                         DateTimePicker::make('email_verified_at')
                             ->label('Подтверждено в')
                             ->seconds(false)

@@ -13,10 +13,10 @@ class TestDatabaseSeeder extends Seeder
     public function run(): void
     {
         EloquentAdmin::query()->firstOrCreate(
-            ['email' => 'admin@test.local'],
+            ['email' => 'admin@admin.com'],
             [
-                'name' => 'Test Admin',
-                'password' => Hash::make('admin12345'),
+                'name' => 'Admin',
+                'password' => Hash::make('1'),
                 'email_verified_at' => now(),
             ],
         );

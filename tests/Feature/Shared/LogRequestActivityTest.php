@@ -12,7 +12,8 @@ class LogRequestActivityTest extends FeatureTestCase
     public function test_api_requests_are_logged_via_middleware(): void
     {
         EloquentUser::factory()->create([
-            'name' => 'Imran',
+            'first_name' => 'Imran',
+            'last_name' => 'Khan',
             'email' => 'imran@example.com',
             'password' => 'StrongPassword123!',
         ]);

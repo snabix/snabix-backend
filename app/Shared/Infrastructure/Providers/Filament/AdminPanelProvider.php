@@ -34,9 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Pink,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverResources(in: app_path('Auth/Filament/Resources'), for: 'App\Auth\Filament\Resources')
-            ->discoverResources(in: app_path('Shared/Filament/Resources'), for: 'App\Shared\Filament\Resources')
+            ->discoverResources(in: app_path(), for: 'App')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverPages(in: app_path('Auth/Filament/Pages'), for: 'App\Auth\Filament\Pages')
             ->pages([

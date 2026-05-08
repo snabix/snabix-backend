@@ -15,7 +15,8 @@ class VerifyEmailTest extends FeatureTestCase
         config()->set('frontend.email_verification_redirect_url', 'https://frontend.test/auth/email-verified');
 
         $user = EloquentUser::factory()->unverified()->create([
-            'name' => 'Unverified User',
+            'first_name' => 'Unverified',
+            'last_name' => 'User',
             'email' => 'unverified@example.com',
             'password' => 'StrongPassword123!',
         ]);

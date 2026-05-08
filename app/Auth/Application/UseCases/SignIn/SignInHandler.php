@@ -58,6 +58,18 @@ readonly class SignInHandler
             ]);
         }
 
+        if (! $user->isActive()) {
+            event(new AuthenticationFailed(
+                email: $data->email,
+                reason: 'inactive_user',
+                userId: $user->id->value(),
+            ));
+
+            throw ValidationException::withMessages([
+                'email' => ['Аккаунт деактивирован.'],
+            ]);
+        }
+
         $token = $this->tokenCreator->create(
             userId: $user->id->value(),
             tokenName: 'auth_token',
