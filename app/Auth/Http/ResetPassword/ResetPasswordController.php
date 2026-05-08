@@ -15,11 +15,11 @@ class ResetPasswordController
         path: '/api/v1/auth/reset-password',
         operationId: 'authResetPassword',
         summary: 'Reset password using a previously issued token',
-        tags: ['Auth'],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(ref: '#/components/schemas/AuthResetPasswordRequest'),
         ),
+        tags: ['Auth'],
         responses: [
             new OA\Response(
                 response: 200,

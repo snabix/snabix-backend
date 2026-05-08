@@ -12,7 +12,8 @@ class SignInTest extends FeatureTestCase
     public function test_user_can_sign_in_with_valid_credentials(): void
     {
         $user = EloquentUser::factory()->create([
-            'name' => 'Imran',
+            'first_name' => 'Imran',
+            'last_name' => 'Khan',
             'email' => 'imran@example.com',
             'password' => 'StrongPassword123!',
         ]);
@@ -40,7 +41,8 @@ class SignInTest extends FeatureTestCase
     public function test_failed_sign_in_is_logged(): void
     {
         EloquentUser::factory()->create([
-            'name' => 'Imran',
+            'first_name' => 'Imran',
+            'last_name' => 'Khan',
             'email' => 'imran@example.com',
             'password' => 'StrongPassword123!',
         ]);
@@ -49,6 +51,29 @@ class SignInTest extends FeatureTestCase
             'email' => 'imran@example.com',
             'password' => 'wrong-password',
         ])->assertUnprocessable();
+
+        $this->assertDatabaseHas('system_logs', [
+            'category' => 'auth',
+            'action' => 'auth.sign-in.failed',
+        ]);
+    }
+
+    public function test_inactive_user_cannot_sign_in(): void
+    {
+        EloquentUser::factory()->create([
+            'first_name' => 'Imran',
+            'last_name' => 'Khan',
+            'email' => 'inactive@example.com',
+            'password' => 'StrongPassword123!',
+            'is_active' => false,
+        ]);
+
+        $this->postJson('/api/v1/auth/sign-in', [
+            'email' => 'inactive@example.com',
+            'password' => 'StrongPassword123!',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['email']);
 
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',

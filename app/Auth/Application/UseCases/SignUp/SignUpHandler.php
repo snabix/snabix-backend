@@ -7,7 +7,9 @@ namespace App\Auth\Application\UseCases\SignUp;
 use App\Auth\Domain\Contracts\UserRepositoryInterface;
 use App\Auth\Domain\Entities\User;
 use App\Auth\Domain\Events\UserRegistered;
-use App\Auth\Domain\ValueObjects\Name;
+use App\Auth\Domain\ValueObjects\FirstName;
+use App\Auth\Domain\ValueObjects\LastName;
+use App\Auth\Domain\ValueObjects\PhoneNumber;
 use App\Shared\Domain\Contracts\HasherInterface;
 use App\Shared\Domain\Contracts\TokenCreatorInterface;
 use App\Shared\Domain\ValueObjects\Email;
@@ -41,13 +43,15 @@ readonly class SignUpHandler
 
         $domainUser = new User(
             id: UUID::generate(),
-            name: new Name($data->name),
+            firstName: new FirstName($data->firstName),
+            lastName: new LastName($data->lastName),
             email: new Email($data->email),
             password: new Password(
                 $this->hasherService->hash(
                     $data->password,
                 ),
             ),
+            phoneNumber: new PhoneNumber($data->phoneNumber),
         );
 
         /** @var SignUpOutput $result */

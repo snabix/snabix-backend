@@ -6,7 +6,9 @@ namespace App\Auth\Infrastructure\Repositories;
 
 use App\Auth\Domain\Contracts\UserRepositoryInterface;
 use App\Auth\Domain\Entities\User;
-use App\Auth\Domain\ValueObjects\Name;
+use App\Auth\Domain\ValueObjects\FirstName;
+use App\Auth\Domain\ValueObjects\LastName;
+use App\Auth\Domain\ValueObjects\PhoneNumber;
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Shared\Domain\ValueObjects\Email;
 use App\Shared\Domain\ValueObjects\Password;
@@ -51,9 +53,12 @@ class EloquentUserRepository implements UserRepositoryInterface
         EloquentUser::query()->updateOrCreate(
             ['id' => $model->id->value()],
             [
-                'name' => $model->name->value(),
+                'first_name' => $model->firstName->value(),
+                'last_name' => $model->lastName->value(),
                 'email' => $model->email->value(),
                 'password' => $model->password->value(),
+                'phone_number' => $model->phoneNumber?->value(),
+                'is_active' => $model->isActive(),
                 'email_verified_at' => $model->emailVerifiedAt?->format('Y-m-d H:i:s'),
             ],
         );
@@ -63,12 +68,25 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         return new User(
             id: new UUID((string) $user->getKey()),
-            name: new Name($user->name),
+            firstName: new FirstName($this->resolveFirstName($user)),
+            lastName: new LastName($this->resolveLastName($user)),
             email: new Email($user->email),
             password: new Password($user->password),
+            isActive: $user->is_active,
+            phoneNumber: filled($user->phone_number) ? new PhoneNumber($user->phone_number) : null,
             emailVerifiedAt: $user->email_verified_at
                 ? new DateTimeImmutable($user->email_verified_at->toDateTimeString())
                 : null,
         );
+    }
+
+    private function resolveFirstName(EloquentUser $user): string
+    {
+        return filled($user->first_name) ? $user->first_name : 'User';
+    }
+
+    private function resolveLastName(EloquentUser $user): string
+    {
+        return filled($user->last_name) ? $user->last_name : 'Account';
     }
 }
