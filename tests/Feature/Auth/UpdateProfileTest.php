@@ -58,7 +58,7 @@ class UpdateProfileTest extends FeatureTestCase
 
         Queue::assertPushed(
             SendEmailVerificationJob::class,
-            fn (SendEmailVerificationJob $job): bool => $job->email === 'new@example.com',
+            fn(SendEmailVerificationJob $job): bool => $job->email === 'new@example.com',
         );
     }
 }

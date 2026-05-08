@@ -63,10 +63,10 @@ class UserForm
                             ->password()
                             ->revealable()
                             ->autocomplete('new-password')
-                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->required(fn(string $operation): bool => $operation === 'create')
                             ->minLength(8)
                             ->maxLength(255)
-                            ->saved(fn (?string $state): bool => filled($state))
+                            ->saved(fn(?string $state): bool => filled($state))
                             ->confirmed(),
 
                         TextInput::make('password_confirmation')
@@ -74,7 +74,7 @@ class UserForm
                             ->password()
                             ->revealable()
                             ->autocomplete('new-password')
-                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->required(fn(string $operation): bool => $operation === 'create')
                             ->same('password')
                             ->saved(false),
                     ]),

@@ -45,7 +45,7 @@ class SignUpTest extends FeatureTestCase
 
         Queue::assertPushed(
             SendEmailVerificationJob::class,
-            fn (SendEmailVerificationJob $job): bool => $job->email === 'imran@example.com'
+            fn(SendEmailVerificationJob $job): bool => $job->email === 'imran@example.com'
                 && $job->queue === 'notifications',
         );
     }

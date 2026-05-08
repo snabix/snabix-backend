@@ -43,14 +43,14 @@ class UsersTable
                 TextColumn::make('is_active')
                     ->label('Статус')
                     ->badge()
-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Активен' : 'Отключен')
-                    ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Активен' : 'Отключен')
+                    ->color(fn(bool $state): string => $state ? 'success' : 'danger'),
 
                 TextColumn::make('email_verified_at')
                     ->translateLabel()
                     ->badge()
-                    ->formatStateUsing(fn ($state): string => $state ? 'Подтвержден' : 'Ожидает подтверждения')
-                    ->color(fn ($state): string => $state ? 'success' : 'warning')
+                    ->formatStateUsing(fn($state): string => $state ? 'Подтвержден' : 'Ожидает подтверждения')
+                    ->color(fn($state): string => $state ? 'success' : 'warning')
                     ->sortable(),
 
                 TextColumn::make('id')

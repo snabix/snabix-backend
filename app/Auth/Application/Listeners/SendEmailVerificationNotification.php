@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\URL;
 readonly class SendEmailVerificationNotification
 {
     public function handle(
-        UserRegistered|UserEmailVerificationRequested $event,
+        UserRegistered | UserEmailVerificationRequested $event,
     ): void {
         $user = $event->user;
 

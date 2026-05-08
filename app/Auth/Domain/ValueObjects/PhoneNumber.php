@@ -32,12 +32,12 @@ readonly class PhoneNumber implements Stringable
         $this->value = $normalized;
     }
 
-    public function value(): string
+    public function __toString(): string
     {
         return $this->value;
     }
 
-    public function __toString(): string
+    public function value(): string
     {
         return $this->value;
     }

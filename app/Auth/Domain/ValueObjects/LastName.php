@@ -34,12 +34,12 @@ readonly class LastName implements Stringable
         $this->value = $value;
     }
 
-    public function value(): string
+    public function __toString(): string
     {
         return $this->value;
     }
 
-    public function __toString(): string
+    public function value(): string
     {
         return $this->value;
     }

@@ -30,7 +30,7 @@ class VerifyEmailTest extends FeatureTestCase
         $response = $this->get($url);
 
         $response
-            ->assertRedirect('https://frontend.test/auth/email-verified?verified=1&user='.$user->id);
+            ->assertRedirect('https://frontend.test/auth/email-verified?verified=1&user=' . $user->id);
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,

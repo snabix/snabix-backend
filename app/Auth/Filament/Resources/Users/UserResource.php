@@ -29,11 +29,11 @@ class UserResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'first_name';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedUsers;
 
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Users;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::Users;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Управление доступом';
+    protected static string | UnitEnum | null $navigationGroup = 'Управление доступом';
 
     protected static ?string $navigationLabel = 'Пользователи';
 

@@ -57,22 +57,6 @@ class EloquentUser extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-            'is_active' => 'boolean'
-        ];
-    }
-
-    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
@@ -85,5 +69,21 @@ class EloquentUser extends Authenticatable
     protected static function newFactory(): Factory
     {
         return EloquentUserFactory::new();
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'is_active' => 'boolean',
+        ];
     }
 }

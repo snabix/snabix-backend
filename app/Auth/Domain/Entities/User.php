@@ -27,7 +27,7 @@ class User
 
     public function verifyEmail(): void
     {
-        $this->emailVerifiedAt = new DateTimeImmutable;
+        $this->emailVerifiedAt = new DateTimeImmutable();
     }
 
     public function isEmailVerified(): bool
@@ -37,7 +37,7 @@ class User
 
     public function fullName(): string
     {
-        return trim($this->firstName->value().' '.$this->lastName->value());
+        return trim($this->firstName->value() . ' ' . $this->lastName->value());
     }
 
     public function updateProfile(

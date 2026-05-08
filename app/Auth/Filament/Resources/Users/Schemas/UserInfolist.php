@@ -41,7 +41,7 @@ class UserInfolist
                         IconEntry::make('email_verified_at')
                             ->label('Почта подтверждена')
                             ->boolean()
-                            ->state(fn (EloquentUser $record): bool => $record->email_verified_at !== null),
+                            ->state(fn(EloquentUser $record): bool => $record->email_verified_at !== null),
 
                         TextEntry::make('email_verified_at')
                             ->label('Подтверждено в')
