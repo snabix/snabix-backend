@@ -129,7 +129,7 @@ class SystemHealthChecksWidget extends Widget
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>                      $context
      * @return list<array{label: string, value: string}>
      */
     private function resolveContextItems(array $context): array
@@ -164,7 +164,7 @@ class SystemHealthChecksWidget extends Widget
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>                                                   $context
      * @return list<array{label: string, value: string, percent: int, color: string}>
      */
     private function resolveHighlights(array $context): array

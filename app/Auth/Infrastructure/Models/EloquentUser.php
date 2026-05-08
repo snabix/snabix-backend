@@ -15,15 +15,15 @@ use Laravel\Sanctum\HasApiTokens;
 /**
  * Class EloquentUser
  *
- * @property string $id
- * @property string $first_name
- * @property string $last_name
- * @property string $email
+ * @property string  $id
+ * @property string  $first_name
+ * @property string  $last_name
+ * @property string  $email
  * @property boolean $is_active
- * @property string $phone_number
+ * @property string  $phone_number
  *
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property Carbon      $created_at
+ * @property Carbon      $updated_at
  * @property Carbon|null $email_verified_at
  */
 class EloquentUser extends Authenticatable
