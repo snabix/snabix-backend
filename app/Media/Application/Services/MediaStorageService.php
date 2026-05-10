@@ -89,12 +89,19 @@ readonly class MediaStorageService
             $targetDisk = $this->resolveDisk($attributes);
 
             $media->forceFill([
+                'model_type' => $attributes['model_type'] ?? $media->model_type,
+                'model_id' => $attributes['model_id'] ?? $media->model_id,
+                'collection_name' => $attributes['collection_name'] ?? $media->collection_name,
+                'name' => $attributes['name'] ?? $media->name,
                 'file_name' => $fileName,
                 'mime_type' => $mimeType,
                 'disk' => $targetDisk,
                 'conversions_disk' => $targetDisk,
                 'size' => $source->size($sourcePath),
                 'media_type' => $this->resolveMediaType($attributes['media_type'] ?? null, $mimeType, $fileName),
+                'visibility' => $attributes['visibility'] ?? $media->visibility,
+                'uploaded_by_admin_id' => $attributes['uploaded_by_admin_id'] ?? $media->uploaded_by_admin_id,
+                'description' => $attributes['description'] ?? $media->description,
                 'generated_conversions' => [],
                 'responsive_images' => [],
             ])->saveQuietly();

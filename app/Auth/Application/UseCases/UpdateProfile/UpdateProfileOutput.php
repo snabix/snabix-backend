@@ -16,5 +16,6 @@ class UpdateProfileOutput extends Output
         public readonly ?string $phoneNumber,
         public readonly bool $isActive,
         public readonly ?string $emailVerifiedAt,
+        public readonly ?array $avatar,
     ) {}
 }

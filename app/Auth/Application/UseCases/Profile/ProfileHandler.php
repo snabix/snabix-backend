@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Application\UseCases\Profile;
 
+use App\Auth\Application\Services\UserAvatarService;
 use App\Auth\Domain\Contracts\UserRepositoryInterface;
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
 use App\Shared\Domain\ValueObjects\UUID;
@@ -12,6 +13,7 @@ readonly class ProfileHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
+        private UserAvatarService $userAvatarService,
     ) {}
 
     /**
@@ -35,6 +37,7 @@ readonly class ProfileHandler
             'phoneNumber' => $user->phoneNumber?->value(),
             'isActive' => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
+            'avatar' => $this->userAvatarService->toPayload($data->userId),
         ]);
     }
 }
