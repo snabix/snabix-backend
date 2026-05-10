@@ -25,6 +25,9 @@ class MediaTable
             ->columns([
                 ImageColumn::make('preview_url')
                     ->label('Превью')
+                    ->getStateUsing(fn(EloquentMedia $record): ?string => $record->media_type === MediaType::IMAGE ? $record->getFullUrl() : null)
+                    ->defaultImageUrl(fn(EloquentMedia $record): string => self::filePreviewPlaceholder($record))
+                    ->checkFileExistence(false)
                     ->square()
                     ->size(52)
                     ->toggleable(),
@@ -115,5 +118,22 @@ class MediaTable
             ])
             ->emptyStateHeading('Медиафайлы пока не загружены')
             ->emptyStateDescription('Загрузите первый файл через административную панель.');
+    }
+
+    private static function filePreviewPlaceholder(EloquentMedia $record): string
+    {
+        $label = strtoupper(pathinfo($record->file_name, PATHINFO_EXTENSION) ?: $record->media_type->name);
+        $label = mb_substr($label, 0, 5);
+
+        $svg = <<<SVG
+            <svg xmlns="http://www.w3.org/2000/svg" width="104" height="104" viewBox="0 0 104 104">
+              <rect width="104" height="104" rx="18" fill="#f3f4f6"/>
+              <path d="M34 18h25l17 17v51H34z" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+              <path d="M59 18v18h17" fill="none" stroke="#d1d5db" stroke-width="2"/>
+              <text x="52" y="67" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#004643">{$label}</text>
+            </svg>
+            SVG;
+
+        return 'data:image/svg+xml;utf8,' . rawurlencode($svg);
     }
 }

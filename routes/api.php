@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Auth\Http\EmailVerification\VerifyEmailController;
 use App\Auth\Http\ForgotPassword\ForgotPasswordController;
 use App\Auth\Http\Logout\LogoutController;
+use App\Auth\Http\Profile\DeleteProfileAvatarController;
 use App\Auth\Http\Profile\ProfileController;
+use App\Auth\Http\Profile\UpdateProfileAvatarController;
 use App\Auth\Http\Profile\UpdateProfileController;
 use App\Auth\Http\ResetPassword\ResetPasswordController;
 use App\Auth\Http\SignIn\SignInController;
@@ -24,6 +26,10 @@ Route::prefix('v1')->group(function () {
         Route::get('me', ProfileController::class)
             ->middleware('auth:sanctum');
         Route::patch('me', UpdateProfileController::class)
+            ->middleware('auth:sanctum');
+        Route::post('me/avatar', UpdateProfileAvatarController::class)
+            ->middleware('auth:sanctum');
+        Route::delete('me/avatar', DeleteProfileAvatarController::class)
             ->middleware('auth:sanctum');
         Route::post('logout', LogoutController::class)
             ->middleware('auth:sanctum');

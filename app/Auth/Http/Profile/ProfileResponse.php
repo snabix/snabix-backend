@@ -22,13 +22,26 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'phoneNumber', type: 'string', nullable: true, example: '+79991234567'),
         new OA\Property(property: 'isActive', type: 'boolean', example: true),
         new OA\Property(property: 'emailVerifiedAt', type: 'string', format: 'date-time', nullable: true),
+        new OA\Property(
+            property: 'avatar',
+            properties: [
+                new OA\Property(property: 'id', type: 'integer', example: 1),
+                new OA\Property(property: 'url', type: 'string', nullable: true, example: 'http://localhost/storage/images/1/avatar.jpg'),
+                new OA\Property(property: 'fileName', type: 'string', example: 'avatar.jpg'),
+                new OA\Property(property: 'mimeType', type: 'string', nullable: true, example: 'image/jpeg'),
+                new OA\Property(property: 'size', type: 'integer', example: 102400),
+                new OA\Property(property: 'humanReadableSize', type: 'string', example: '100 KB'),
+            ],
+            type: 'object',
+            nullable: true,
+        ),
     ],
     type: 'object',
 )]
 class ProfileResponse extends JsonResource
 {
     /**
-     * @return array{id: string, firstName: string, lastName: string, email: string, phoneNumber: ?string, isActive: bool, emailVerifiedAt: ?string}
+     * @return array{id: string, firstName: string, lastName: string, email: string, phoneNumber: ?string, isActive: bool, emailVerifiedAt: ?string, avatar: ?array}
      */
     public function toArray(Request $request): array
     {
@@ -40,6 +53,7 @@ class ProfileResponse extends JsonResource
             'phoneNumber' => $this->phoneNumber,
             'isActive' => $this->isActive,
             'emailVerifiedAt' => $this->emailVerifiedAt,
+            'avatar' => $this->avatar,
         ];
     }
 }
