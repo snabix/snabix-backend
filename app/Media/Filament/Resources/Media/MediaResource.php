@@ -22,19 +22,19 @@ use UnitEnum;
 
 class MediaResource extends Resource
 {
-    protected static ?string $model = EloquentMedia::class;
+    protected static ?string $model                                   = EloquentMedia::class;
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute                    = 'name';
 
-    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedPhoto;
+    protected static string | BackedEnum | null $navigationIcon       = Heroicon::OutlinedPhoto;
 
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::Photo;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Контент';
+    protected static string | UnitEnum | null $navigationGroup        = 'Контент';
 
-    protected static ?string $navigationLabel = 'Медиафайлы';
+    protected static ?string $navigationLabel                         = 'Медиафайлы';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort                             = 20;
 
     public static function getModelLabel(): string
     {
@@ -77,10 +77,10 @@ class MediaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListMedia::route('/'),
+            'index'  => ListMedia::route('/'),
             'create' => CreateMedia::route('/create'),
-            'view' => ViewMedia::route('/{record}'),
-            'edit' => EditMedia::route('/{record}/edit'),
+            'view'   => ViewMedia::route('/{record}'),
+            'edit'   => EditMedia::route('/{record}/edit'),
         ];
     }
 }

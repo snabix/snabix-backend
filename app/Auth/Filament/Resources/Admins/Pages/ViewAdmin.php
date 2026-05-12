@@ -12,7 +12,7 @@ class ViewAdmin extends ViewRecord
 {
     protected static string $resource = AdminResource::class;
 
-    protected static ?string $title = 'Просмотр администратора';
+    protected static ?string $title   = 'Просмотр администратора';
 
     protected function getHeaderActions(): array
     {

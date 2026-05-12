@@ -22,38 +22,38 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        UserRegistered::class => [
+        UserRegistered::class                 => [
             SendEmailVerificationNotification::class,
             PersistLoggableEventListener::class,
         ],
         UserEmailVerificationRequested::class => [
             SendEmailVerificationNotification::class,
         ],
-        UserSignedIn::class => [
+        UserSignedIn::class                   => [
             PersistLoggableEventListener::class,
         ],
-        AuthenticationFailed::class => [
+        AuthenticationFailed::class           => [
             PersistLoggableEventListener::class,
         ],
-        UserLoggedOut::class => [
+        UserLoggedOut::class                  => [
             PersistLoggableEventListener::class,
         ],
-        UserEmailVerified::class => [
+        UserEmailVerified::class              => [
             PersistLoggableEventListener::class,
         ],
-        PasswordResetRequested::class => [
+        PasswordResetRequested::class         => [
             PersistLoggableEventListener::class,
         ],
-        PasswordResetCompleted::class => [
+        PasswordResetCompleted::class         => [
             PersistLoggableEventListener::class,
         ],
-        UserProfileUpdated::class => [
+        UserProfileUpdated::class             => [
             PersistLoggableEventListener::class,
         ],
-        UserAvatarUpdated::class => [
+        UserAvatarUpdated::class              => [
             PersistLoggableEventListener::class,
         ],
-        UserAvatarDeleted::class => [
+        UserAvatarDeleted::class              => [
             PersistLoggableEventListener::class,
         ],
     ];

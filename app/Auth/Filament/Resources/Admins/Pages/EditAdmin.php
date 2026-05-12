@@ -13,7 +13,7 @@ class EditAdmin extends EditRecord
 {
     protected static string $resource = AdminResource::class;
 
-    protected static ?string $title = 'Редактирование администратора';
+    protected static ?string $title   = 'Редактирование администратора';
 
     protected function getHeaderActions(): array
     {

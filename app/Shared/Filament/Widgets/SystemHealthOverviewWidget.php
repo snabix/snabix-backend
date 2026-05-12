@@ -14,13 +14,13 @@ class SystemHealthOverviewWidget extends StatsOverviewWidget
 {
     protected function getStats(): array
     {
-        $statuses = $this->resolveStatuses();
-        $checksCount = $statuses->count();
-        $problemCount = $statuses->where('status', 'PROBLEM')->count();
+        $statuses      = $this->resolveStatuses();
+        $checksCount   = $statuses->count();
+        $problemCount  = $statuses->where('status', 'PROBLEM')->count();
         $degradedCount = $statuses->where('status', 'DEGRADED')->count();
-        $okayCount = $statuses->where('status', 'OK')->count();
-        $systemCheck = $statuses->firstWhere('name', 'system_resources');
-        $systemCheck = is_array($systemCheck) ? $systemCheck : null;
+        $okayCount     = $statuses->where('status', 'OK')->count();
+        $systemCheck   = $statuses->firstWhere('name', 'system_resources');
+        $systemCheck   = is_array($systemCheck) ? $systemCheck : null;
 
         return [
             Stat::make('Проверки системы', sprintf('%d из %d', $okayCount, $checksCount))
@@ -47,7 +47,7 @@ class SystemHealthOverviewWidget extends StatsOverviewWidget
     }
 
     /**
-     * @return Collection<int, array{name: string, status: string|null, message: string, context: array<string, mixed>}>
+     * @return Collection<int, array{name: string, status: string|null, message: string, context: array<string, array<string, string>|int|string>}>
      */
     private function resolveStatuses(): Collection
     {
@@ -58,8 +58,8 @@ class SystemHealthOverviewWidget extends StatsOverviewWidget
             $status = $check->status();
 
             return [
-                'name' => $check->name(),
-                'status' => $status->getStatus(),
+                'name'    => $check->name(),
+                'status'  => $status->getStatus(),
                 'message' => $status->message(),
                 'context' => $status->context(),
             ];
@@ -67,19 +67,19 @@ class SystemHealthOverviewWidget extends StatsOverviewWidget
     }
 
     /**
-     * @param array{name: string, status: string|null, message: string, context: array<string, mixed>}|null $status
+     * @param array{name: string, status: string|null, message: string, context: array<string, array<string, string>|int|string>}|null $status
      */
     private function contextString(?array $status, string $key, string $fallback): string
     {
         $value = $status['context'][$key] ?? null;
 
-        return is_string($value) || is_int($value) || is_float($value)
+        return is_string($value) || is_int($value)
             ? (string) $value
             : $fallback;
     }
 
     /**
-     * @param array{name: string, status: string|null, message: string, context: array<string, mixed>}|null $status
+     * @param array{name: string, status: string|null, message: string, context: array<string, array<string, string>|int|string>}|null $status
      */
     private function contextInt(?array $status, string $key): int
     {
@@ -93,7 +93,7 @@ class SystemHealthOverviewWidget extends StatsOverviewWidget
         return match (true) {
             $usagePercent >= 90 => 'danger',
             $usagePercent >= 75 => 'warning',
-            default => 'success',
+            default             => 'success',
         };
     }
 }

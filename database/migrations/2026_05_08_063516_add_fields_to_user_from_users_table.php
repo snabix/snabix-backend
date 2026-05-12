@@ -30,16 +30,16 @@ return new class extends Migration {
             ->orderBy('id')
             ->get()
             ->each(function (object $user): void {
-                $name = trim((string) ($user->name ?? ''));
-                $parts = preg_split('/\s+/u', $name, 2) ?: [];
+                $name      = trim((string) ($user->name ?? ''));
+                $parts     = preg_split('/\s+/u', $name, 2) ?: [];
                 $firstName = $parts[0] ?? 'User';
-                $lastName = $parts[1] ?? 'Account';
+                $lastName  = $parts[1] ?? 'Account';
 
                 DB::table('users')
                     ->where('id', $user->id)
                     ->update([
                         'first_name' => $firstName,
-                        'last_name' => $lastName,
+                        'last_name'  => $lastName,
                     ]);
             });
 

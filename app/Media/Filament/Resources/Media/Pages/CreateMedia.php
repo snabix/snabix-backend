@@ -15,21 +15,21 @@ class CreateMedia extends CreateRecord
 {
     protected static string $resource = MediaResource::class;
 
-    protected static ?string $title = 'Загрузить медиафайл';
+    protected static ?string $title   = 'Загрузить медиафайл';
 
     /**
      * @param array<string, mixed> $data
      */
     protected function handleRecordCreation(array $data): Model
     {
-        $uploadedPath = $this->extractUploadedPath($data['uploaded_file'] ?? null);
+        $uploadedPath                 = $this->extractUploadedPath($data['uploaded_file'] ?? null);
         unset($data['uploaded_file']);
 
-        $data = $this->normalizeAttachment($data);
+        $data                         = $this->normalizeAttachment($data);
         $data['uploaded_by_admin_id'] = Filament::auth()->id();
 
         /** @var MediaStorageService $storage */
-        $storage = app(MediaStorageService::class);
+        $storage                      = app(MediaStorageService::class);
 
         return $storage->createFromStoredUpload('local', (string) $uploadedPath, $data);
     }
@@ -54,7 +54,7 @@ class CreateMedia extends CreateRecord
     {
         if (blank($data['model_type'] ?? null) || blank($data['model_id'] ?? null)) {
             $data['model_type'] = null;
-            $data['model_id'] = null;
+            $data['model_id']   = null;
         }
 
         return $data;

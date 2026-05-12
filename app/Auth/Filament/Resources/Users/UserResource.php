@@ -21,23 +21,23 @@ use UnitEnum;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = EloquentUser::class;
+    protected static ?string $model                                   = EloquentUser::class;
 
-    protected static ?string $modelLabel = 'пользователь';
+    protected static ?string $modelLabel                              = 'пользователь';
 
-    protected static ?string $pluralModelLabel = 'пользователи';
+    protected static ?string $pluralModelLabel                        = 'пользователи';
 
-    protected static ?string $recordTitleAttribute = 'first_name';
+    protected static ?string $recordTitleAttribute                    = 'first_name';
 
-    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string | BackedEnum | null $navigationIcon       = Heroicon::OutlinedUsers;
 
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::Users;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Управление доступом';
+    protected static string | UnitEnum | null $navigationGroup        = 'Управление доступом';
 
-    protected static ?string $navigationLabel = 'Пользователи';
+    protected static ?string $navigationLabel                         = 'Пользователи';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort                             = 10;
 
     public static function form(Schema $schema): Schema
     {
@@ -67,10 +67,10 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListUsers::route('/'),
+            'index'  => ListUsers::route('/'),
             'create' => CreateUser::route('/create'),
-            'view' => ViewUser::route('/{record}'),
-            'edit' => EditUser::route('/{record}/edit'),
+            'view'   => ViewUser::route('/{record}'),
+            'edit'   => EditUser::route('/{record}/edit'),
         ];
     }
 }

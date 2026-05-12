@@ -38,7 +38,7 @@ readonly class AuthenticationFailed implements LoggableEvent
     public function logContext(): ?array
     {
         return [
-            'email' => $this->email,
+            'email'  => $this->email,
             'reason' => $this->reason,
         ];
     }

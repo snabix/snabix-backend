@@ -57,17 +57,20 @@ class VerifyEmailController
         VerifyEmailHandler $handler,
         FrontendUrlBuilder $frontendUrlBuilder,
     ): RedirectResponse {
+        $userId                  = $request->string('user')->toString();
+        $verificationRedirectUrl = config('frontend.email_verification_redirect_url');
+
         $handler->execute(
             VerifyEmailInput::from([
-                'userId' => $request->query('user'),
+                'userId' => $userId,
             ]),
         );
 
         return redirect()->away($frontendUrlBuilder->build(
-            (string) config('frontend.email_verification_redirect_url'),
+            is_string($verificationRedirectUrl) ? $verificationRedirectUrl : '/',
             [
                 'verified' => 1,
-                'user' => (string) $request->query('user'),
+                'user'     => $userId,
             ],
         ));
     }

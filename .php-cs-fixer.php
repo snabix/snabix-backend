@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
@@ -26,17 +28,18 @@ return (new Config())
     ->setIndent('    ')
     ->setLineEnding("\n")
     ->setRules([
-        '@PER-CS2x0' => true,
-        '@PHP8x3Migration' => true,
-        'declare_strict_types' => true,
-        'array_syntax' => ['syntax' => 'short'],
-        'binary_operator_spaces' => [
-            'default' => 'single_space',
+        '@PER-CS2x0'                                       => true,
+        '@PHP8x3Migration'                                 => true,
+        'declare_strict_types'                             => true,
+        'array_syntax'                                     => ['syntax' => 'short'],
+        'binary_operator_spaces'                           => [
+            'default'   => 'single_space',
             'operators' => [
-                '=>' => 'single_space',
+                '='  => 'align_by_scope',
+                '=>' => 'align_by_scope',
             ],
         ],
-        'blank_line_before_statement' => [
+        'blank_line_before_statement'                      => [
             'statements' => [
                 'break',
                 'continue',
@@ -46,20 +49,20 @@ return (new Config())
                 'try',
             ],
         ],
-        'class_attributes_separation' => [
+        'class_attributes_separation'                      => [
             'elements' => [
-                'const' => 'one',
-                'method' => 'one',
-                'property' => 'one',
+                'const'        => 'one',
+                'method'       => 'one',
+                'property'     => 'one',
                 'trait_import' => 'none',
             ],
         ],
-        'concat_space' => ['spacing' => 'one'],
+        'concat_space'                                     => ['spacing' => 'one'],
         'nullable_type_declaration_for_default_null_value' => true,
-        'no_superfluous_phpdoc_tags' => true,
-        'no_unused_imports' => true,
-        'ordered_class_elements' => [
-            'order' => [
+        'no_superfluous_phpdoc_tags'                       => true,
+        'no_unused_imports'                                => true,
+        'ordered_class_elements'                           => [
+            'order'          => [
                 'use_trait',
                 'case',
                 'constant_public',
@@ -87,14 +90,14 @@ return (new Config())
             ],
             'sort_algorithm' => 'none',
         ],
-        'ordered_imports' => [
-            'imports_order' => ['class', 'function', 'const'],
+        'ordered_imports'                                  => [
+            'imports_order'  => ['class', 'function', 'const'],
             'sort_algorithm' => 'alpha',
         ],
-        'method_chaining_indentation' => true,
-        'phpdoc_align' => [
+        'method_chaining_indentation'                      => true,
+        'phpdoc_align'                                     => [
             'align' => 'vertical',
-            'tags' => [
+            'tags'  => [
                 'method',
                 'param',
                 'property',
@@ -106,20 +109,20 @@ return (new Config())
                 'var',
             ],
         ],
-        'phpdoc_line_span' => [
-            'const' => 'single',
+        'phpdoc_line_span'                                 => [
+            'const'    => 'single',
             'property' => 'single',
-            'method' => 'multi',
+            'method'   => 'multi',
         ],
-        'single_line_empty_body' => true,
-        'single_trait_insert_per_statement' => true,
-        'trailing_comma_in_multiline' => [
+        'single_line_empty_body'                           => true,
+        'single_trait_insert_per_statement'                => true,
+        'trailing_comma_in_multiline'                      => [
             'after_heredoc' => true,
-            'elements' => ['arrays', 'arguments', 'parameters', 'match'],
+            'elements'      => ['arrays', 'arguments', 'parameters', 'match'],
         ],
-        'types_spaces' => ['space' => 'single'],
-        'global_namespace_import' => [
-            'import_classes' => true,
+        'types_spaces'                                     => ['space' => 'single'],
+        'global_namespace_import'                          => [
+            'import_classes'   => true,
             'import_constants' => true,
             'import_functions' => true,
         ],

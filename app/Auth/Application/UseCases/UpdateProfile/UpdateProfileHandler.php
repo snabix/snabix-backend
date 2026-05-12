@@ -29,9 +29,9 @@ readonly class UpdateProfileHandler
      */
     public function execute(UpdateProfileInput $data): UpdateProfileOutput
     {
-        $userId = new UUID($data->userId);
-        $email = new Email($data->email);
-        $user = $this->userRepository->byId($userId);
+        $userId       = new UUID($data->userId);
+        $email        = new Email($data->email);
+        $user         = $this->userRepository->byId($userId);
 
         if ($user === null) {
             throw new NotFoundException('Пользователь не найден.');
@@ -62,14 +62,14 @@ readonly class UpdateProfileHandler
         }
 
         return UpdateProfileOutput::from([
-            'id' => $user->id->value(),
-            'firstName' => $user->firstName->value(),
-            'lastName' => $user->lastName->value(),
-            'email' => $user->email->value(),
-            'phoneNumber' => $user->phoneNumber?->value(),
-            'isActive' => $user->isActive(),
+            'id'              => $user->id->value(),
+            'firstName'       => $user->firstName->value(),
+            'lastName'        => $user->lastName->value(),
+            'email'           => $user->email->value(),
+            'phoneNumber'     => $user->phoneNumber?->value(),
+            'isActive'        => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
-            'avatar' => $this->userAvatarService->toPayload($data->userId),
+            'avatar'          => $this->userAvatarService->toPayload($data->userId),
         ]);
     }
 }

@@ -23,7 +23,7 @@ readonly class Password
             throw new InvalidArgumentException('Пароль слишком длинный (максимум 255 символов)');
         }
 
-        $this->value = $plainPassword;
+        $this->value   = $plainPassword;
     }
 
     public function __toString(): string

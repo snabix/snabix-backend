@@ -29,11 +29,11 @@ class SignUpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstName' => ['required', 'string', 'max:100'],
-            'lastName' => ['required', 'string', 'max:100'],
-            'phoneNumber' => ['required', 'string', 'max:20'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::default()],
+            'firstName'            => ['required', 'string', 'max:100'],
+            'lastName'             => ['required', 'string', 'max:100'],
+            'phoneNumber'          => ['required', 'string', 'max:20'],
+            'email'                => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password'             => ['required', 'confirmed', Password::default()],
             'passwordConfirmation' => ['required', 'string'],
         ];
     }

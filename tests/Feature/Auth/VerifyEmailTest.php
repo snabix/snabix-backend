@@ -14,20 +14,20 @@ class VerifyEmailTest extends FeatureTestCase
     {
         config()->set('frontend.email_verification_redirect_url', 'https://frontend.test/auth/email-verified');
 
-        $user = EloquentUser::factory()->unverified()->create([
+        $user      = EloquentUser::factory()->unverified()->create([
             'first_name' => 'Unverified',
-            'last_name' => 'User',
-            'email' => 'unverified@example.com',
-            'password' => 'StrongPassword123!',
+            'last_name'  => 'User',
+            'email'      => 'unverified@example.com',
+            'password'   => 'StrongPassword123!',
         ]);
 
-        $url = URL::temporarySignedRoute(
+        $url       = URL::temporarySignedRoute(
             'verify-email',
             now()->addMinutes(60),
             ['user' => $user->id],
         );
 
-        $response = $this->get($url);
+        $response  = $this->get($url);
 
         $response
             ->assertRedirect('https://frontend.test/auth/email-verified?verified=1&user=' . $user->id);
@@ -42,8 +42,8 @@ class VerifyEmailTest extends FeatureTestCase
         $this->assertTrue($freshUser->email_verified_at !== null);
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
-            'action' => 'auth.verify-email',
-            'user_id' => $user->id,
+            'action'   => 'auth.verify-email',
+            'user_id'  => $user->id,
         ]);
     }
 }

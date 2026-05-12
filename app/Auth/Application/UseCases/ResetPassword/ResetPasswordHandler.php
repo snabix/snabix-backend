@@ -20,33 +20,37 @@ readonly class ResetPasswordHandler
     {
         $status = Password::broker('users')->reset(
             [
-                'email' => $data->email,
-                'token' => $data->token,
-                'password' => $data->password,
+                'email'                 => $data->email,
+                'token'                 => $data->token,
+                'password'              => $data->password,
                 'password_confirmation' => $data->password,
             ],
             function (EloquentUser $user, string $password): void {
+                $userId = $user->getKey();
+
                 $user->forceFill([
-                    'password' => $password,
+                    'password'       => $password,
                     'remember_token' => Str::random(60),
                 ])->save();
 
                 event(new PasswordReset($user));
                 event(new PasswordResetCompleted(
-                    userId: (string) $user->getKey(),
+                    userId: is_string($userId) || is_int($userId) ? (string) $userId : '',
                     email: $user->email,
                 ));
             },
         );
 
         if ($status !== Password::PASSWORD_RESET) {
+            $translationKey = is_string($status) ? $status : 'passwords.reset';
+
             throw ValidationException::withMessages([
-                'email' => [trans($status)],
+                'email' => [trans($translationKey)],
             ]);
         }
 
         return ResetPasswordOutput::from([
-            'reset' => true,
+            'reset'   => true,
             'message' => 'Пароль успешно обновлен.',
         ]);
     }

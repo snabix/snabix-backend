@@ -84,7 +84,7 @@ class MediaForm
                             ->label('Диск')
                             ->options([
                                 'public' => 'public',
-                                'local' => 'private/local',
+                                'local'  => 'private/local',
                             ])
                             ->default('public')
                             ->required()
@@ -111,7 +111,13 @@ class MediaForm
 
                         Select::make('model_id')
                             ->label('Запись')
-                            ->options(fn(Get $get): array => MediaAttachableModels::recordOptions($get('model_type')))
+                            ->options(function (Get $get): array {
+                                $modelClass = $get('model_type');
+
+                                return MediaAttachableModels::recordOptions(
+                                    is_string($modelClass) ? $modelClass : null,
+                                );
+                            })
                             ->native(false)
                             ->searchable()
                             ->placeholder('Выберите запись')
@@ -122,19 +128,19 @@ class MediaForm
 
     private static function fillMetadataFromUpload(mixed $state, Set $set): null
     {
-        $file = Arr::first(Arr::wrap($state));
+        $file         = Arr::first(Arr::wrap($state));
 
         if (! $file instanceof TemporaryUploadedFile) {
             return null;
         }
 
         $originalName = $file->getClientOriginalName();
-        $extension = $file->getClientOriginalExtension() ?: null;
-        $mimeType = $file->getMimeType();
+        $extension    = $file->getClientOriginalExtension() ?: null;
+        $mimeType     = $file->getMimeType();
 
         /** @var MediaTypeDetector $detector */
-        $detector = app(MediaTypeDetector::class);
-        $mediaType = $detector->detect($mimeType, $extension);
+        $detector     = app(MediaTypeDetector::class);
+        $mediaType    = $detector->detect($mimeType, $extension);
 
         $set('name', pathinfo($originalName, PATHINFO_FILENAME) ?: $originalName);
         $set('media_type', $mediaType->value, shouldCallUpdatedHooks: true);

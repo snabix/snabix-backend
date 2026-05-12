@@ -11,7 +11,7 @@ class CreateAdmin extends CreateRecord
 {
     protected static string $resource = AdminResource::class;
 
-    protected static ?string $title = 'Создать администратора';
+    protected static ?string $title   = 'Создать администратора';
 
     protected function getRedirectUrl(): string
     {

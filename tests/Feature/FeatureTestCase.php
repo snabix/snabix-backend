@@ -12,7 +12,7 @@ abstract class FeatureTestCase extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    protected bool $seed = true;
+    protected bool $seed     = true;
 
     protected string $seeder = TestDatabaseSeeder::class;
 }

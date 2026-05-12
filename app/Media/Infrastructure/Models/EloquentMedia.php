@@ -36,20 +36,22 @@ class EloquentMedia extends Media
         'is_previewable',
     ];
 
-    protected $casts = [
-        'manipulations' => 'array',
-        'custom_properties' => 'array',
+    protected $casts   = [
+        'manipulations'         => 'array',
+        'custom_properties'     => 'array',
         'generated_conversions' => 'array',
-        'responsive_images' => 'array',
-        'media_type' => MediaType::class,
-        'visibility' => MediaVisibility::class,
-        'size' => 'integer',
+        'responsive_images'     => 'array',
+        'media_type'            => MediaType::class,
+        'visibility'            => MediaVisibility::class,
+        'size'                  => 'integer',
     ];
 
     protected static function booted(): void
     {
         static::saving(function (self $media): void {
-            if ($media->media_type instanceof MediaType) {
+            $mediaType = $media->getAttribute('media_type');
+
+            if ($mediaType instanceof MediaType) {
                 return;
             }
 
@@ -68,7 +70,7 @@ class EloquentMedia extends Media
     public function detectedMediaType(): MediaType
     {
         /** @var MediaTypeDetector $detector */
-        $detector = app(MediaTypeDetector::class);
+        $detector  = app(MediaTypeDetector::class);
 
         $extension = pathinfo($this->file_name, PATHINFO_EXTENSION) ?: null;
 
@@ -91,21 +93,33 @@ class EloquentMedia extends Media
         return parent::getMediaConversionNames();
     }
 
+    /**
+     * @return Attribute<string, never>
+     */
     protected function mediaTypeLabel(): Attribute
     {
         return Attribute::get(fn(): string => $this->media_type->label());
     }
 
+    /**
+     * @return Attribute<string, never>
+     */
     protected function visibilityLabel(): Attribute
     {
         return Attribute::get(fn(): string => $this->visibility->label());
     }
 
+    /**
+     * @return Attribute<string, never>
+     */
     protected function humanReadableSize(): Attribute
     {
         return Attribute::get(fn(): string => Number::fileSize($this->size));
     }
 
+    /**
+     * @return Attribute<bool, never>
+     */
     protected function isPreviewable(): Attribute
     {
         return Attribute::get(

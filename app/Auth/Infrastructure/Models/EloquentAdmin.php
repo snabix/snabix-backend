@@ -13,7 +13,7 @@ class EloquentAdmin extends Authenticatable implements FilamentUser
 {
     use Notifiable;
 
-    protected $table = 'admins';
+    protected $table    = 'admins';
 
     /** @var list<string> */
     protected $fillable = [
@@ -23,7 +23,7 @@ class EloquentAdmin extends Authenticatable implements FilamentUser
     ];
 
     /** @var list<string> */
-    protected $hidden = [
+    protected $hidden   = [
         'password',
         'remember_token',
     ];
@@ -40,7 +40,7 @@ class EloquentAdmin extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 }

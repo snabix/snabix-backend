@@ -8,6 +8,9 @@ use App\Shared\Domain\DTO\Output;
 
 class ProfileOutput extends Output
 {
+    /**
+     * @param array<string, mixed>|null $avatar
+     */
     public function __construct(
         public readonly string $id,
         public readonly string $firstName,

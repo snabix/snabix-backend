@@ -46,11 +46,11 @@ class User
         Email $email,
         ?PhoneNumber $phoneNumber = null,
     ): bool {
-        $emailChanged = $this->email->value() !== $email->value();
+        $emailChanged      = $this->email->value() !== $email->value();
 
-        $this->firstName = $firstName;
-        $this->lastName = $lastName;
-        $this->email = $email;
+        $this->firstName   = $firstName;
+        $this->lastName    = $lastName;
+        $this->email       = $email;
         $this->phoneNumber = $phoneNumber;
 
         if ($emailChanged) {

@@ -36,13 +36,17 @@ class LogoutRequest extends FormRequest
             return '';
         }
 
-        return (string) $user->getAuthIdentifier();
+        $identifier = $user->getAuthIdentifier();
+
+        return is_string($identifier) || is_int($identifier)
+            ? (string) $identifier
+            : '';
     }
 
     public function currentTokenId(): ?int
     {
-        $user = $this->user();
-        $token = $user instanceof EloquentUser
+        $user    = $this->user();
+        $token   = $user instanceof EloquentUser
             ? $user->currentAccessToken()
             : null;
 

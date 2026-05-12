@@ -21,15 +21,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class ErrorLogResource extends Resource
 {
-    protected static ?string $model = EloquentSystemLog::class;
+    protected static ?string $model                                   = EloquentSystemLog::class;
 
-    protected static ?string $recordTitleAttribute = 'message';
+    protected static ?string $recordTitleAttribute                    = 'message';
 
-    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
+    protected static string | BackedEnum | null $navigationIcon       = Heroicon::OutlinedExclamationTriangle;
 
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::ExclamationTriangle;
 
-    protected static ?int $navigationSort = 71;
+    protected static ?int $navigationSort                             = 71;
 
     public static function getModelLabel(): string
     {
@@ -92,7 +92,7 @@ class ErrorLogResource extends Resource
     {
         return [
             'index' => ListErrorLogs::route('/'),
-            'view' => ViewErrorLog::route('/{record}'),
+            'view'  => ViewErrorLog::route('/{record}'),
         ];
     }
 }

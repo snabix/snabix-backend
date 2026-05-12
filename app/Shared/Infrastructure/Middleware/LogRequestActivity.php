@@ -19,21 +19,22 @@ readonly class LogRequestActivity
 
     public function handle(Request $request, Closure $next): Response
     {
-        $startedAt = microtime(true);
+        $startedAt  = microtime(true);
         /** @var Response $response */
-        $response = $next($request);
+        $response   = $next($request);
 
         if (! $this->shouldLog($request)) {
             return $response;
         }
 
         $statusCode = $response->getStatusCode();
-        $level = $statusCode >= 500
+        $level      = $statusCode >= 500
             ? SystemLogLevel::ERROR
             : ($statusCode >= 400 ? SystemLogLevel::WARNING : SystemLogLevel::INFO);
-        $routeName = $request->route()->getName();
-        $userId = Auth::id();
-        $path = $this->normalizePath($request);
+        $route      = $request->route();
+        $routeName  = $route?->getName();
+        $userId     = Auth::id();
+        $path       = $this->normalizePath($request);
 
         $this->systemLogManager->log(
             level: $level,

@@ -19,8 +19,8 @@ class ProfileAvatarTest extends FeatureTestCase
     {
         Storage::fake('public');
 
-        $user = EloquentUser::factory()->create();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user     = EloquentUser::factory()->create();
+        $token    = $user->createToken('auth_token')->plainTextToken;
 
         $response = $this
             ->withToken($token)
@@ -33,7 +33,7 @@ class ProfileAvatarTest extends FeatureTestCase
             ->assertJsonPath('data.avatar.fileName', 'avatar.jpg')
             ->assertJsonPath('data.avatar.mimeType', 'image/jpeg');
 
-        $media = EloquentMedia::query()
+        $media    = EloquentMedia::query()
             ->where('model_type', EloquentUser::class)
             ->where('model_id', $user->id)
             ->where('collection_name', UserAvatarService::COLLECTION_NAME)
@@ -45,8 +45,8 @@ class ProfileAvatarTest extends FeatureTestCase
         Storage::disk('public')->assertExists(MediaType::IMAGE->directory() . '/' . $media->id . '/avatar.jpg');
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
-            'action' => 'auth.profile.avatar.update',
-            'user_id' => $user->id,
+            'action'   => 'auth.profile.avatar.update',
+            'user_id'  => $user->id,
         ]);
     }
 
@@ -54,8 +54,8 @@ class ProfileAvatarTest extends FeatureTestCase
     {
         Storage::fake('public');
 
-        $user = EloquentUser::factory()->create();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user    = EloquentUser::factory()->create();
+        $token   = $user->createToken('auth_token')->plainTextToken;
 
         $this
             ->withToken($token)
@@ -64,7 +64,7 @@ class ProfileAvatarTest extends FeatureTestCase
             ])
             ->assertOk();
 
-        $media = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
+        $media   = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
         $oldPath = MediaType::IMAGE->directory() . '/' . $media->id . '/old-avatar.jpg';
 
         Storage::disk('public')->assertExists($oldPath);
@@ -89,8 +89,8 @@ class ProfileAvatarTest extends FeatureTestCase
     {
         Storage::fake('public');
 
-        $user = EloquentUser::factory()->create();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user      = EloquentUser::factory()->create();
+        $token     = $user->createToken('auth_token')->plainTextToken;
 
         $this
             ->withToken($token)
@@ -99,7 +99,7 @@ class ProfileAvatarTest extends FeatureTestCase
             ])
             ->assertOk();
 
-        $media = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
+        $media     = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
         $mediaPath = MediaType::IMAGE->directory() . '/' . $media->id . '/avatar.jpg';
 
         Storage::disk('public')->assertExists($mediaPath);
@@ -116,8 +116,8 @@ class ProfileAvatarTest extends FeatureTestCase
         ]);
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
-            'action' => 'auth.profile.avatar.delete',
-            'user_id' => $user->id,
+            'action'   => 'auth.profile.avatar.delete',
+            'user_id'  => $user->id,
         ]);
     }
 }

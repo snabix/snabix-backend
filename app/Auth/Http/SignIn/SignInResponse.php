@@ -34,7 +34,7 @@ class SignInResponse extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'token' => $this->token,
+            'token'  => $this->token,
             'userId' => $this->userId,
         ];
     }

@@ -35,7 +35,7 @@ class LogoutResponse extends JsonResource
     {
         return [
             'loggedOut' => $this->loggedOut,
-            'message' => $this->message,
+            'message'   => $this->message,
         ];
     }
 }

@@ -13,6 +13,9 @@ use OpenApi\Attributes as OA;
 )]
 class ProfileRequest extends FormRequest
 {
+    /**
+     * @return array<string, array<int, string>>
+     */
     public function rules(): array
     {
         return [];
@@ -27,6 +30,14 @@ class ProfileRequest extends FormRequest
     {
         $user = $this->user();
 
-        return is_object($user) ? (string) $user->getAuthIdentifier() : '';
+        if (! is_object($user)) {
+            return '';
+        }
+
+        $identifier = $user->getAuthIdentifier();
+
+        return is_string($identifier) || is_int($identifier)
+            ? (string) $identifier
+            : '';
     }
 }

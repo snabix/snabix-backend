@@ -12,7 +12,7 @@ class ListMedia extends ListRecords
 {
     protected static string $resource = MediaResource::class;
 
-    protected static ?string $title = 'Медиафайлы';
+    protected static ?string $title   = 'Медиафайлы';
 
     protected function getHeaderActions(): array
     {

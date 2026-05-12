@@ -41,19 +41,28 @@ use OpenApi\Attributes as OA;
 class ProfileResponse extends JsonResource
 {
     /**
-     * @return array{id: string, firstName: string, lastName: string, email: string, phoneNumber: ?string, isActive: bool, emailVerifiedAt: ?string, avatar: ?array}
+     * @return array{
+     *     id: string,
+     *     firstName: string,
+     *     lastName: string,
+     *     email: string,
+     *     phoneNumber: ?string,
+     *     isActive: bool,
+     *     emailVerifiedAt: ?string,
+     *     avatar: array<string, mixed>|null
+     * }
      */
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'firstName' => $this->firstName,
-            'lastName' => $this->lastName,
-            'email' => $this->email,
-            'phoneNumber' => $this->phoneNumber,
-            'isActive' => $this->isActive,
+            'id'              => $this->id,
+            'firstName'       => $this->firstName,
+            'lastName'        => $this->lastName,
+            'email'           => $this->email,
+            'phoneNumber'     => $this->phoneNumber,
+            'isActive'        => $this->isActive,
             'emailVerifiedAt' => $this->emailVerifiedAt,
-            'avatar' => $this->avatar,
+            'avatar'          => $this->avatar,
         ];
     }
 }

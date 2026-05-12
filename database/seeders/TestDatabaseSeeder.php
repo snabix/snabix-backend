@@ -15,8 +15,8 @@ class TestDatabaseSeeder extends Seeder
         EloquentAdmin::query()->firstOrCreate(
             ['email' => 'admin@admin.com'],
             [
-                'name' => 'Admin',
-                'password' => Hash::make('1'),
+                'name'              => 'Admin',
+                'password'          => Hash::make('1'),
                 'email_verified_at' => now(),
             ],
         );

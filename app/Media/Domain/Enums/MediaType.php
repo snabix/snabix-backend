@@ -6,10 +6,10 @@ namespace App\Media\Domain\Enums;
 
 enum MediaType: int
 {
-    case IMAGE = 1;
+    case IMAGE    = 1;
     case DOCUMENT = 2;
-    case VIDEO = 3;
-    case FILE = 4;
+    case VIDEO    = 3;
+    case FILE     = 4;
 
     /**
      * @return array<int, string>
@@ -24,30 +24,30 @@ enum MediaType: int
     public function label(): string
     {
         return match ($this) {
-            self::IMAGE => 'Изображение',
+            self::IMAGE    => 'Изображение',
             self::DOCUMENT => 'Документ',
-            self::VIDEO => 'Видео',
-            self::FILE => 'Файл',
+            self::VIDEO    => 'Видео',
+            self::FILE     => 'Файл',
         };
     }
 
     public function directory(): string
     {
         return match ($this) {
-            self::IMAGE => 'images',
+            self::IMAGE    => 'images',
             self::DOCUMENT => 'documents',
-            self::VIDEO => 'videos',
-            self::FILE => 'files',
+            self::VIDEO    => 'videos',
+            self::FILE     => 'files',
         };
     }
 
     public function color(): string
     {
         return match ($this) {
-            self::IMAGE => 'success',
+            self::IMAGE    => 'success',
             self::DOCUMENT => 'info',
-            self::VIDEO => 'warning',
-            self::FILE => 'gray',
+            self::VIDEO    => 'warning',
+            self::FILE     => 'gray',
         };
     }
 }

@@ -8,6 +8,7 @@ use App\Auth\Domain\Contracts\UserRepositoryInterface;
 use App\Auth\Domain\Events\AuthenticationFailed;
 use App\Auth\Domain\Events\UserSignedIn;
 use App\Shared\Domain\Contracts\HasherInterface;
+use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
 use App\Shared\Domain\Contracts\TokenCreatorInterface;
 use App\Shared\Domain\ValueObjects\Email;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +18,7 @@ readonly class SignInHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private HasherInterface $hasherService,
+        private SessionAuthenticatorInterface $sessionAuthenticator,
         private TokenCreatorInterface $tokenCreator,
     ) {}
 
@@ -26,7 +28,7 @@ readonly class SignInHandler
     public function execute(
         SignInInput $data,
     ): SignInOutput {
-        $user = $this->userRepository->byEmail(
+        $user            = $this->userRepository->byEmail(
             new Email($data->email),
         );
 
@@ -70,15 +72,18 @@ readonly class SignInHandler
             ]);
         }
 
-        $token = $this->tokenCreator->create(
+        $token           = $this->tokenCreator->create(
             userId: $user->id->value(),
             tokenName: 'auth_token',
+        );
+        $this->sessionAuthenticator->login(
+            $user->id->value(),
         );
 
         event(new UserSignedIn($user));
 
         return SignInOutput::from([
-            'token' => $token,
+            'token'  => $token,
             'userId' => $user->id->value(),
         ]);
     }

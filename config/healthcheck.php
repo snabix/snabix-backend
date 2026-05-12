@@ -12,14 +12,14 @@ use UKFast\HealthCheck\Checks\MigrationUpToDateHealthCheck;
 use UKFast\HealthCheck\Checks\RedisHealthCheck;
 
 return [
-    'base-path' => '',
+    'base-path'                 => '',
 
-    'route-paths' => [
+    'route-paths'               => [
         'health' => '/health',
-        'ping' => '/ping',
+        'ping'   => '/ping',
     ],
 
-    'checks' => [
+    'checks'                    => [
         LogHealthCheck::class,
         DatabaseHealthCheck::class,
         RedisHealthCheck::class,
@@ -30,20 +30,20 @@ return [
         RabbitMqHealthCheck::class,
     ],
 
-    'middleware' => [],
+    'middleware'                => [],
 
-    'auth' => [
-        'user' => env('HEALTH_CHECK_USER'),
+    'auth'                      => [
+        'user'     => env('HEALTH_CHECK_USER'),
         'password' => env('HEALTH_CHECK_PASSWORD'),
     ],
 
-    'route-name' => 'healthcheck',
+    'route-name'                => 'healthcheck',
 
-    'database' => [
+    'database'                  => [
         'connections' => ['default'],
     ],
 
-    'required-env' => [
+    'required-env'              => [
         'APP_KEY',
         'DB_DATABASE',
         'DB_USERNAME',
@@ -52,37 +52,37 @@ return [
         'RABBITMQ_PORT',
     ],
 
-    'addresses' => [],
+    'addresses'                 => [],
 
-    'default-response-code' => 200,
+    'default-response-code'     => 200,
 
     'default-problem-http-code' => 500,
 
-    'default-curl-timeout' => 2.0,
+    'default-curl-timeout'      => 2.0,
 
-    'x-service-checks' => [],
+    'x-service-checks'          => [],
 
-    'cache' => [
+    'cache'                     => [
         'stores' => [
             'array',
         ],
     ],
 
-    'storage' => [
+    'storage'                   => [
         'disks' => [
             'local',
         ],
     ],
 
-    'package-security' => [
+    'package-security'          => [
         'exclude-dev' => false,
-        'ignore' => [],
+        'ignore'      => [],
     ],
 
-    'scheduler' => [
-        'cache-key' => 'laravel-scheduler-health-check',
+    'scheduler'                 => [
+        'cache-key'              => 'laravel-scheduler-health-check',
         'minutes-between-checks' => 5,
     ],
 
-    'env-check-key' => 'HEALTH_CHECK_ENV_DEFAULT_VALUE',
+    'env-check-key'             => 'HEALTH_CHECK_ENV_DEFAULT_VALUE',
 ];

@@ -15,21 +15,21 @@ class UpdateProfileTest extends FeatureTestCase
     {
         Queue::fake();
 
-        $user = EloquentUser::factory()->create([
-            'first_name' => 'Old',
-            'last_name' => 'Name',
+        $user      = EloquentUser::factory()->create([
+            'first_name'   => 'Old',
+            'last_name'    => 'Name',
             'phone_number' => '+79991112233',
-            'email' => 'old@example.com',
+            'email'        => 'old@example.com',
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token     = $user->createToken('auth_token')->plainTextToken;
 
-        $response = $this
+        $response  = $this
             ->withToken($token)
             ->patchJson('/api/v1/auth/me', [
-                'firstName' => 'New',
-                'lastName' => 'Person',
-                'email' => 'new@example.com',
+                'firstName'   => 'New',
+                'lastName'    => 'Person',
+                'email'       => 'new@example.com',
                 'phoneNumber' => '+79994445566',
             ]);
 
@@ -52,8 +52,8 @@ class UpdateProfileTest extends FeatureTestCase
         $this->assertNull($freshUser->email_verified_at);
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
-            'action' => 'auth.profile.update',
-            'user_id' => $user->id,
+            'action'   => 'auth.profile.update',
+            'user_id'  => $user->id,
         ]);
 
         Queue::assertPushed(

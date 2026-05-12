@@ -11,7 +11,7 @@ use UKFast\HealthCheck\HealthCheck as HealthCheckContract;
 
 class SystemHealthChecksWidget extends Widget
 {
-    protected string $view = 'filament.widgets.system-health-checks-widget';
+    protected string $view                     = 'filament.widgets.system-health-checks-widget';
 
     protected int | string | array $columnSpan = 'full';
 
@@ -30,29 +30,29 @@ class SystemHealthChecksWidget extends Widget
 
             return [
                 ...$check,
-                'label' => $this->resolveCheckLabel($check['name']),
-                'status_label' => $this->resolveStatusLabel($status),
-                'badge_color' => $this->resolveBadgeColor($status),
-                'status_tone' => $this->resolveStatusTone($status),
-                'status_icon' => $this->resolveStatusIcon($status),
+                'label'         => $this->resolveCheckLabel($check['name']),
+                'status_label'  => $this->resolveStatusLabel($status),
+                'badge_color'   => $this->resolveBadgeColor($status),
+                'status_tone'   => $this->resolveStatusTone($status),
+                'status_icon'   => $this->resolveStatusIcon($status),
                 'context_items' => $this->resolveContextItems($check['context']),
-                'highlights' => $this->resolveHighlights($check['context']),
+                'highlights'    => $this->resolveHighlights($check['context']),
             ];
         });
 
         return [
-            'checks' => $checks,
+            'checks'  => $checks,
             'summary' => [
-                'total' => $checks->count(),
-                'ok' => $checks->where('status', 'OK')->count(),
+                'total'    => $checks->count(),
+                'ok'       => $checks->where('status', 'OK')->count(),
                 'degraded' => $checks->where('status', 'DEGRADED')->count(),
-                'problem' => $checks->where('status', 'PROBLEM')->count(),
+                'problem'  => $checks->where('status', 'PROBLEM')->count(),
             ],
         ];
     }
 
     /**
-     * @return Collection<int, array{name: string, status: string|null, message: string, context: array<string, mixed>}>
+     * @return Collection<int, array{name: string, status: string|null, message: string, context: array<string, array<string, string>|int|string>}>
      */
     private function resolveStatuses(): Collection
     {
@@ -65,8 +65,8 @@ class SystemHealthChecksWidget extends Widget
                     $status = $check->status();
 
                     return [
-                        'name' => $check->name(),
-                        'status' => $status->getStatus(),
+                        'name'    => $check->name(),
+                        'status'  => $status->getStatus(),
                         'message' => $status->message(),
                         'context' => $status->context(),
                     ];
@@ -77,54 +77,54 @@ class SystemHealthChecksWidget extends Widget
     private function resolveCheckLabel(string $name): string
     {
         return match ($name) {
-            'database' => 'База данных',
-            'redis' => 'Redis',
-            'cache' => 'Кэш',
-            'storage' => 'Файловое хранилище',
-            'migration' => 'Миграции',
-            'env' => 'Окружение',
+            'database'         => 'База данных',
+            'redis'            => 'Redis',
+            'cache'            => 'Кэш',
+            'storage'          => 'Файловое хранилище',
+            'migration'        => 'Миграции',
+            'env'              => 'Окружение',
             'system_resources' => 'Ресурсы системы',
-            default => str($name)->replace('_', ' ')->headline()->toString(),
+            default            => str($name)->replace('_', ' ')->headline()->toString(),
         };
     }
 
     private function resolveStatusLabel(?string $status): string
     {
         return match ($status) {
-            'OK' => 'Работает',
+            'OK'       => 'Работает',
             'DEGRADED' => 'Требует внимания',
-            'PROBLEM' => 'Ошибка',
-            default => 'Неизвестно',
+            'PROBLEM'  => 'Ошибка',
+            default    => 'Неизвестно',
         };
     }
 
     private function resolveBadgeColor(?string $status): string
     {
         return match ($status) {
-            'OK' => 'success',
+            'OK'       => 'success',
             'DEGRADED' => 'warning',
-            'PROBLEM' => 'danger',
-            default => 'gray',
+            'PROBLEM'  => 'danger',
+            default    => 'gray',
         };
     }
 
     private function resolveStatusTone(?string $status): string
     {
         return match ($status) {
-            'OK' => 'from-emerald-500/15 to-emerald-500/5 ring-emerald-500/20',
+            'OK'       => 'from-emerald-500/15 to-emerald-500/5 ring-emerald-500/20',
             'DEGRADED' => 'from-amber-500/15 to-amber-500/5 ring-amber-500/20',
-            'PROBLEM' => 'from-rose-500/15 to-rose-500/5 ring-rose-500/20',
-            default => 'from-slate-500/10 to-slate-500/5 ring-slate-500/10',
+            'PROBLEM'  => 'from-rose-500/15 to-rose-500/5 ring-rose-500/20',
+            default    => 'from-slate-500/10 to-slate-500/5 ring-slate-500/10',
         };
     }
 
     private function resolveStatusIcon(?string $status): string
     {
         return match ($status) {
-            'OK' => '●',
+            'OK'       => '●',
             'DEGRADED' => '▲',
-            'PROBLEM' => '■',
-            default => '○',
+            'PROBLEM'  => '■',
+            default    => '○',
         };
     }
 
@@ -149,17 +149,17 @@ class SystemHealthChecksWidget extends Widget
     private function resolveContextLabel(string $key): string
     {
         return match ($key) {
-            'media_disk' => 'Медиа-диск',
-            'media_root' => 'Корневая директория',
-            'disk_free_gb' => 'Свободно, ГБ',
-            'disk_total_gb' => 'Всего, ГБ',
-            'disk_used_gb' => 'Использовано, ГБ',
-            'disk_usage_percent' => 'Заполнение диска, %',
-            'php_memory_usage_mb' => 'Использование PHP, МБ',
-            'php_peak_memory_mb' => 'Пиковая память PHP, МБ',
-            'php_memory_limit_mb' => 'Лимит памяти PHP, МБ',
+            'media_disk'               => 'Медиа-диск',
+            'media_root'               => 'Корневая директория',
+            'disk_free_gb'             => 'Свободно, ГБ',
+            'disk_total_gb'            => 'Всего, ГБ',
+            'disk_used_gb'             => 'Использовано, ГБ',
+            'disk_usage_percent'       => 'Заполнение диска, %',
+            'php_memory_usage_mb'      => 'Использование PHP, МБ',
+            'php_peak_memory_mb'       => 'Пиковая память PHP, МБ',
+            'php_memory_limit_mb'      => 'Лимит памяти PHP, МБ',
             'php_memory_usage_percent' => 'Использование памяти, %',
-            default => str($key)->replace('_', ' ')->headline()->toString(),
+            default                    => str($key)->replace('_', ' ')->headline()->toString(),
         };
     }
 
@@ -172,22 +172,22 @@ class SystemHealthChecksWidget extends Widget
         $highlights = [];
 
         foreach ([
-            'disk_usage_percent' => 'Заполнение диска',
+            'disk_usage_percent'       => 'Заполнение диска',
             'php_memory_usage_percent' => 'Память PHP',
         ] as $key => $label) {
-            $value = $context[$key] ?? null;
+            $value        = $context[$key] ?? null;
 
             if (! is_int($value) && ! is_numeric($value)) {
                 continue;
             }
 
-            $percent = max(0, min(100, (int) $value));
+            $percent      = max(0, min(100, (int) $value));
 
             $highlights[] = [
-                'label' => $label,
-                'value' => $percent . '%',
+                'label'   => $label,
+                'value'   => $percent . '%',
                 'percent' => $percent,
-                'color' => $this->resolvePercentColor($percent),
+                'color'   => $this->resolvePercentColor($percent),
             ];
         }
 
@@ -199,7 +199,7 @@ class SystemHealthChecksWidget extends Widget
         return match (true) {
             $percent >= 90 => 'bg-rose-500',
             $percent >= 75 => 'bg-amber-500',
-            default => 'bg-emerald-500',
+            default        => 'bg-emerald-500',
         };
     }
 

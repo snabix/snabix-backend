@@ -16,7 +16,7 @@ readonly class SendEmailVerificationNotification
     ): void {
         $user = $event->user;
 
-        $url = URL::temporarySignedRoute(
+        $url  = URL::temporarySignedRoute(
             'verify-email',
             now()->addMinutes(60),
             ['user' => $user->id->value()],

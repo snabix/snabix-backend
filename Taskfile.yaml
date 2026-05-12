@@ -47,6 +47,10 @@ tasks:
     desc: PHP CS Fixer — проверить без изменений
     cmd: ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
 
+  stan:
+    desc: Larastan / PHPStan — статический анализ backend на уровне 9
+    cmd: composer stan
+
   shell:
     desc: Зайти в контейнер
     cmds:

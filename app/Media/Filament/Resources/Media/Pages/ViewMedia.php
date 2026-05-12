@@ -13,7 +13,7 @@ class ViewMedia extends ViewRecord
 {
     protected static string $resource = MediaResource::class;
 
-    protected static ?string $title = 'Просмотр медиафайла';
+    protected static ?string $title   = 'Просмотр медиафайла';
 
     protected function getHeaderActions(): array
     {

@@ -13,13 +13,13 @@ readonly class PhoneNumber implements Stringable
 
     public function __construct(string $value)
     {
-        $value = trim($value);
+        $value       = trim($value);
 
         if ($value === '') {
             throw new InvalidArgumentException('Номер телефона не может быть пустым.');
         }
 
-        $normalized = preg_replace('/[\s\-()]/', '', $value);
+        $normalized  = preg_replace('/[\s\-()]/', '', $value);
 
         if ($normalized === null || $normalized === '') {
             throw new InvalidArgumentException('Номер телефона содержит недопустимые символы.');

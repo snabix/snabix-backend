@@ -33,8 +33,10 @@ class DeleteProfileAvatarController
         DeleteProfileAvatarHandler $handler,
         ProfileHandler             $profileHandler,
     ): ProfileResponse {
-        $user = $request->user();
-        $userId = is_object($user) ? (string) $user->getAuthIdentifier() : '';
+        $user     = $request->user();
+        $userId   = is_object($user) && (is_string($user->getAuthIdentifier()) || is_int($user->getAuthIdentifier()))
+            ? (string) $user->getAuthIdentifier()
+            : '';
 
         $handler->execute(
             DeleteProfileAvatarInput::from([

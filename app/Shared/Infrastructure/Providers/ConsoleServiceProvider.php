@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Providers;
 
 use App\CLI\AuthCLIMakeAdminUser;
+use App\CLI\CatalogCLIImportCategories;
 use Illuminate\Support\ServiceProvider;
 
 class ConsoleServiceProvider extends ServiceProvider
@@ -13,6 +14,7 @@ class ConsoleServiceProvider extends ServiceProvider
     {
         $this->commands([
             AuthCLIMakeAdminUser::class,
+            CatalogCLIImportCategories::class,
         ]);
     }
 }

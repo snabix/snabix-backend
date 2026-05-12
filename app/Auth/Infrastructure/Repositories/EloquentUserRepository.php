@@ -53,12 +53,12 @@ class EloquentUserRepository implements UserRepositoryInterface
         EloquentUser::query()->updateOrCreate(
             ['id' => $model->id->value()],
             [
-                'first_name' => $model->firstName->value(),
-                'last_name' => $model->lastName->value(),
-                'email' => $model->email->value(),
-                'password' => $model->password->value(),
-                'phone_number' => $model->phoneNumber?->value(),
-                'is_active' => $model->isActive(),
+                'first_name'        => $model->firstName->value(),
+                'last_name'         => $model->lastName->value(),
+                'email'             => $model->email->value(),
+                'password'          => $model->password->value(),
+                'phone_number'      => $model->phoneNumber?->value(),
+                'is_active'         => $model->isActive(),
                 'email_verified_at' => $model->emailVerifiedAt?->format('Y-m-d H:i:s'),
             ],
         );
@@ -66,8 +66,10 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     private function toDomain(EloquentUser $user): User
     {
+        $userId = $user->getKey();
+
         return new User(
-            id: new UUID((string) $user->getKey()),
+            id: new UUID(is_string($userId) || is_int($userId) ? (string) $userId : ''),
             firstName: new FirstName($this->resolveFirstName($user)),
             lastName: new LastName($this->resolveLastName($user)),
             email: new Email($user->email),

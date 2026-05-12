@@ -17,7 +17,7 @@ class SendPasswordResetJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public int $tries = 3;
+    public int $tries   = 3;
 
     public int $timeout = 30;
 

@@ -16,13 +16,13 @@ class MediaAttachableModels
     public static function options(): array
     {
         return [
-            EloquentUser::class => 'Пользователи',
+            EloquentUser::class  => 'Пользователи',
             EloquentAdmin::class => 'Администраторы',
         ];
     }
 
     /**
-     * @return array<string, string>
+     * @return array<int|string, string>
      */
     public static function recordOptions(?string $modelClass): array
     {
@@ -31,25 +31,33 @@ class MediaAttachableModels
         }
 
         if ($modelClass === EloquentUser::class) {
-            return EloquentUser::query()
+            $options = [];
+
+            $users = EloquentUser::query()
                 ->orderBy('email')
                 ->limit(100)
-                ->get(['id', 'first_name', 'last_name', 'email'])
-                ->mapWithKeys(
-                    fn(EloquentUser $user): array => [
-                        $user->id => trim($user->first_name . ' ' . $user->last_name) . ' · ' . $user->email,
-                    ],
-                )
-                ->all();
+                ->get(['id', 'first_name', 'last_name', 'email']);
+
+            foreach ($users as $user) {
+                $options[(string) $user->id] = trim($user->first_name . ' ' . $user->last_name) . ' · ' . $user->email;
+            }
+
+            return $options;
         }
 
         if ($modelClass === EloquentAdmin::class) {
-            return EloquentAdmin::query()
+            $options = [];
+
+            $admins = EloquentAdmin::query()
                 ->orderBy('email')
                 ->limit(100)
-                ->pluck('email', 'id')
-                ->mapWithKeys(fn(string $email, int $id): array => [(string) $id => $email])
-                ->all();
+                ->get(['id', 'email']);
+
+            foreach ($admins as $admin) {
+                $options[(string) $admin->id] = $admin->email;
+            }
+
+            return $options;
         }
 
         return [];

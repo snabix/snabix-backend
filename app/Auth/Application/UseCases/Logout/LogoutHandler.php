@@ -6,10 +6,15 @@ namespace App\Auth\Application\UseCases\Logout;
 
 use App\Auth\Domain\Events\UserLoggedOut;
 use App\Auth\Infrastructure\Models\EloquentUser;
+use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
 use Laravel\Sanctum\PersonalAccessToken;
 
 readonly class LogoutHandler
 {
+    public function __construct(
+        private SessionAuthenticatorInterface $sessionAuthenticator,
+    ) {}
+
     public function execute(LogoutInput $data): LogoutOutput
     {
         if ($data->tokenId !== null) {
@@ -20,6 +25,8 @@ readonly class LogoutHandler
                 ->delete();
         }
 
+        $this->sessionAuthenticator->logout();
+
         event(new UserLoggedOut(
             userId: $data->userId,
             tokenId: $data->tokenId !== null ? (string) $data->tokenId : null,
@@ -27,7 +34,7 @@ readonly class LogoutHandler
 
         return LogoutOutput::from([
             'loggedOut' => true,
-            'message' => 'Вы успешно вышли из аккаунта.',
+            'message'   => 'Вы успешно вышли из аккаунта.',
         ]);
     }
 }
