@@ -38,8 +38,8 @@ class ResetPasswordController
     ): ResetPasswordResponse {
         $result = $handler->execute(
             ResetPasswordInput::from([
-                'email' => $request->string('email')->toString(),
-                'token' => $request->string('token')->toString(),
+                'email'    => $request->string('email')->toString(),
+                'token'    => $request->string('token')->toString(),
                 'password' => $request->string('password')->toString(),
             ]),
         );

@@ -31,7 +31,7 @@ class LogoutController
     ): LogoutResponse {
         $result = $handler->execute(
             LogoutInput::from([
-                'userId' => $request->authenticatedUserId(),
+                'userId'  => $request->authenticatedUserId(),
                 'tokenId' => $request->currentTokenId(),
             ]),
         );

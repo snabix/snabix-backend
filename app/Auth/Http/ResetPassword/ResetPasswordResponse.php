@@ -34,7 +34,7 @@ class ResetPasswordResponse extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'reset' => $this->reset,
+            'reset'   => $this->reset,
             'message' => $this->message,
         ];
     }

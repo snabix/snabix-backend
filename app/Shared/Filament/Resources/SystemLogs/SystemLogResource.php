@@ -18,15 +18,15 @@ use Filament\Tables\Table;
 
 class SystemLogResource extends Resource
 {
-    protected static ?string $model = EloquentSystemLog::class;
+    protected static ?string $model                                   = EloquentSystemLog::class;
 
-    protected static ?string $recordTitleAttribute = 'message';
+    protected static ?string $recordTitleAttribute                    = 'message';
 
-    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+    protected static string | BackedEnum | null $navigationIcon       = Heroicon::OutlinedClipboardDocumentList;
 
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::ClipboardDocumentList;
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort                             = 70;
 
     public static function getModelLabel(): string
     {
@@ -75,7 +75,7 @@ class SystemLogResource extends Resource
     {
         return [
             'index' => ListSystemLogs::route('/'),
-            'view' => ViewSystemLog::route('/{record}'),
+            'view'  => ViewSystemLog::route('/{record}'),
         ];
     }
 }

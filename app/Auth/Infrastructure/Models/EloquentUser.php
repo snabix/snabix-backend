@@ -28,24 +28,24 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class EloquentUser extends Authenticatable
 {
-    /** @use HasFactory<EloquentUserFactory> */
     use HasApiTokens;
 
+    /** @use HasFactory<EloquentUserFactory> */
     use HasFactory;
     use Notifiable;
 
     public $incrementing = false;
 
-    protected $table = 'users';
+    protected $table     = 'users';
 
-    protected $keyType = 'string';
+    protected $keyType   = 'string';
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = [
+    protected $fillable  = [
         'id',
         'email',
         'password',
@@ -61,11 +61,14 @@ class EloquentUser extends Authenticatable
      *
      * @var list<string>
      */
-    protected $hidden = [
+    protected $hidden    = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * @return Factory<EloquentUser>
+     */
     protected static function newFactory(): Factory
     {
         return EloquentUserFactory::new();
@@ -80,10 +83,10 @@ class EloquentUser extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-            'is_active' => 'boolean',
+            'password'          => 'hashed',
+            'created_at'        => 'datetime',
+            'updated_at'        => 'datetime',
+            'is_active'         => 'boolean',
         ];
     }
 }

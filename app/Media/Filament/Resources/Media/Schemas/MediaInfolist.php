@@ -77,10 +77,10 @@ class MediaInfolist
 
     private static function renderMediaPreview(EloquentMedia $record): HtmlString
     {
-        $url = e($record->getFullUrl());
+        $url      = e($record->getFullUrl());
         $fileName = e($record->file_name);
         $mimeType = e($record->mime_type ?? 'unknown');
-        $size = e($record->human_readable_size);
+        $size     = e($record->human_readable_size);
 
         if ($record->media_type === MediaType::IMAGE) {
             return new HtmlString(<<<HTML

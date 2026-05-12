@@ -13,31 +13,31 @@ class SystemResourcesHealthCheck extends HealthCheck
 
     public function status(): Status
     {
-        $configuredDisk = config('media-library.disk_name', 'public');
-        $disk = is_string($configuredDisk) ? $configuredDisk : 'public';
-        $configuredRoot = config("filesystems.disks.{$disk}.root", storage_path('app/public'));
-        $root = is_string($configuredRoot) ? $configuredRoot : storage_path('app/public');
-        $freeBytesValue = @disk_free_space($root);
-        $totalBytesValue = @disk_total_space($root);
-        $freeBytes = is_numeric($freeBytesValue) ? (int) $freeBytesValue : null;
-        $totalBytes = is_numeric($totalBytesValue) ? (int) $totalBytesValue : null;
-        $usedBytes = ($freeBytes !== null && $totalBytes !== null) ? max($totalBytes - $freeBytes, 0) : null;
-        $memoryLimitBytes = $this->toBytes(ini_get('memory_limit'));
-        $memoryUsageBytes = memory_get_usage(true);
-        $peakMemoryBytes = memory_get_peak_usage(true);
+        $configuredDisk     = config('media-library.disk_name', 'public');
+        $disk               = is_string($configuredDisk) ? $configuredDisk : 'public';
+        $configuredRoot     = config("filesystems.disks.{$disk}.root", storage_path('app/public'));
+        $root               = is_string($configuredRoot) ? $configuredRoot : storage_path('app/public');
+        $freeBytesValue     = @disk_free_space($root);
+        $totalBytesValue    = @disk_total_space($root);
+        $freeBytes          = is_numeric($freeBytesValue) ? (int) $freeBytesValue : null;
+        $totalBytes         = is_numeric($totalBytesValue) ? (int) $totalBytesValue : null;
+        $usedBytes          = ($freeBytes !== null && $totalBytes !== null) ? max($totalBytes - $freeBytes, 0) : null;
+        $memoryLimitBytes   = $this->toBytes(ini_get('memory_limit'));
+        $memoryUsageBytes   = memory_get_usage(true);
+        $peakMemoryBytes    = memory_get_peak_usage(true);
         $memoryUsagePercent = $this->percentage($memoryUsageBytes, $memoryLimitBytes);
-        $diskUsagePercent = $this->percentage($usedBytes, $totalBytes);
+        $diskUsagePercent   = $this->percentage($usedBytes, $totalBytes);
 
-        $context = [
-            'media_disk' => $disk,
-            'media_root' => $root,
-            'disk_free_gb' => $this->formatGb($freeBytes),
-            'disk_total_gb' => $this->formatGb($totalBytes),
-            'disk_used_gb' => $this->formatGb($usedBytes),
-            'disk_usage_percent' => $diskUsagePercent,
-            'php_memory_usage_mb' => $this->formatMb($memoryUsageBytes),
-            'php_peak_memory_mb' => $this->formatMb($peakMemoryBytes),
-            'php_memory_limit_mb' => $this->formatMb($memoryLimitBytes),
+        $context            = [
+            'media_disk'               => $disk,
+            'media_root'               => $root,
+            'disk_free_gb'             => $this->formatGb($freeBytes),
+            'disk_total_gb'            => $this->formatGb($totalBytes),
+            'disk_used_gb'             => $this->formatGb($usedBytes),
+            'disk_usage_percent'       => $diskUsagePercent,
+            'php_memory_usage_mb'      => $this->formatMb($memoryUsageBytes),
+            'php_peak_memory_mb'       => $this->formatMb($peakMemoryBytes),
+            'php_memory_limit_mb'      => $this->formatMb($memoryLimitBytes),
             'php_memory_usage_percent' => $memoryUsagePercent,
         ];
 
@@ -59,13 +59,13 @@ class SystemResourcesHealthCheck extends HealthCheck
         }
 
         $trimmed = strtolower(trim($value));
-        $number = (float) $trimmed;
-        $suffix = substr($trimmed, -1);
+        $number  = (float) $trimmed;
+        $suffix  = substr($trimmed, -1);
 
         return match ($suffix) {
-            'g' => (int) ($number * 1024 * 1024 * 1024),
-            'm' => (int) ($number * 1024 * 1024),
-            'k' => (int) ($number * 1024),
+            'g'     => (int) ($number * 1024 * 1024 * 1024),
+            'm'     => (int) ($number * 1024 * 1024),
+            'k'     => (int) ($number * 1024),
             default => (int) $number,
         };
     }

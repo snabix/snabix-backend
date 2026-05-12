@@ -6,7 +6,7 @@ namespace App\Media\Domain\Enums;
 
 enum MediaVisibility: int
 {
-    case PUBLIC = 1;
+    case PUBLIC  = 1;
     case PRIVATE = 2;
 
     /**
@@ -22,7 +22,7 @@ enum MediaVisibility: int
     public function label(): string
     {
         return match ($this) {
-            self::PUBLIC => 'Публичный',
+            self::PUBLIC  => 'Публичный',
             self::PRIVATE => 'Приватный',
         };
     }
@@ -30,7 +30,7 @@ enum MediaVisibility: int
     public function disk(): string
     {
         return match ($this) {
-            self::PUBLIC => 'public',
+            self::PUBLIC  => 'public',
             self::PRIVATE => 'local',
         };
     }
@@ -38,7 +38,7 @@ enum MediaVisibility: int
     public function color(): string
     {
         return match ($this) {
-            self::PUBLIC => 'success',
+            self::PUBLIC  => 'success',
             self::PRIVATE => 'gray',
         };
     }

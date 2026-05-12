@@ -42,10 +42,10 @@ class UpdateProfileController
     ): ProfileResponse {
         $result = $handler->execute(
             UpdateProfileInput::from([
-                'userId' => $request->authenticatedUserId(),
-                'firstName' => $request->string('firstName')->toString(),
-                'lastName' => $request->string('lastName')->toString(),
-                'email' => $request->string('email')->toString(),
+                'userId'      => $request->authenticatedUserId(),
+                'firstName'   => $request->string('firstName')->toString(),
+                'lastName'    => $request->string('lastName')->toString(),
+                'email'       => $request->string('email')->toString(),
                 'phoneNumber' => $request->input('phoneNumber'),
             ]),
         );

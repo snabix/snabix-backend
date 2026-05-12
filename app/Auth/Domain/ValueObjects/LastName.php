@@ -13,7 +13,7 @@ readonly class LastName implements Stringable
 
     public function __construct(string $value)
     {
-        $value = trim($value);
+        $value       = trim($value);
 
         if (empty($value)) {
             throw new InvalidArgumentException('Фамилия не может быть пустой.');

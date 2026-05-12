@@ -22,23 +22,23 @@ class MediaStorageServiceTest extends FeatureTestCase
         /** @var MediaStorageService $service */
         $service = app(MediaStorageService::class);
 
-        $media = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
-            'name' => 'Главное фото',
+        $media   = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
+            'name'            => 'Главное фото',
             'collection_name' => 'listing_images',
-            'media_type' => MediaType::IMAGE,
-            'visibility' => MediaVisibility::PUBLIC,
-            'disk' => 'public',
-            'description' => 'Фото объявления',
+            'media_type'      => MediaType::IMAGE,
+            'visibility'      => MediaVisibility::PUBLIC,
+            'disk'            => 'public',
+            'description'     => 'Фото объявления',
         ]);
 
         $this->assertDatabaseHas('media', [
-            'id' => $media->id,
-            'name' => 'Главное фото',
+            'id'              => $media->id,
+            'name'            => 'Главное фото',
             'collection_name' => 'listing_images',
-            'media_type' => MediaType::IMAGE->value,
-            'visibility' => MediaVisibility::PUBLIC->value,
-            'disk' => 'public',
-            'description' => 'Фото объявления',
+            'media_type'      => MediaType::IMAGE->value,
+            'visibility'      => MediaVisibility::PUBLIC->value,
+            'disk'            => 'public',
+            'description'     => 'Фото объявления',
         ]);
 
         Storage::disk('public')->assertExists(MediaType::IMAGE->directory() . '/' . $media->id . '/photo.jpg');
@@ -55,12 +55,12 @@ class MediaStorageServiceTest extends FeatureTestCase
         /** @var MediaStorageService $service */
         $service = app(MediaStorageService::class);
 
-        $media = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
-            'name' => 'Главное фото',
+        $media   = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
+            'name'            => 'Главное фото',
             'collection_name' => 'listing_images',
-            'media_type' => MediaType::IMAGE,
-            'visibility' => MediaVisibility::PUBLIC,
-            'disk' => 'public',
+            'media_type'      => MediaType::IMAGE,
+            'visibility'      => MediaVisibility::PUBLIC,
+            'disk'            => 'public',
         ]);
 
         Storage::disk('local')->put('filament-media-temp/document.pdf', 'new-document-content');
@@ -68,7 +68,7 @@ class MediaStorageServiceTest extends FeatureTestCase
         $service->replaceFromStoredUpload($media, 'local', 'filament-media-temp/document.pdf', [
             'media_type' => MediaType::DOCUMENT,
             'visibility' => MediaVisibility::PUBLIC,
-            'disk' => 'public',
+            'disk'       => 'public',
         ]);
 
         $media->refresh();
@@ -90,18 +90,18 @@ class MediaStorageServiceTest extends FeatureTestCase
         /** @var MediaStorageService $service */
         $service = app(MediaStorageService::class);
 
-        $media = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
-            'name' => 'Главное фото',
+        $media   = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
+            'name'            => 'Главное фото',
             'collection_name' => 'listing_images',
-            'media_type' => MediaType::IMAGE,
-            'visibility' => MediaVisibility::PUBLIC,
-            'disk' => 'public',
+            'media_type'      => MediaType::IMAGE,
+            'visibility'      => MediaVisibility::PUBLIC,
+            'disk'            => 'public',
         ]);
 
         $service->updateMetadata($media, [
             'media_type' => MediaType::DOCUMENT,
             'visibility' => MediaVisibility::PUBLIC,
-            'disk' => 'public',
+            'disk'       => 'public',
         ]);
 
         Storage::disk('public')->assertMissing(MediaType::IMAGE->directory() . '/' . $media->id . '/photo.jpg');
@@ -116,14 +116,14 @@ class MediaStorageServiceTest extends FeatureTestCase
         Storage::disk('local')->put('filament-media-temp/photo.jpg', 'image-content');
 
         /** @var MediaStorageService $service */
-        $service = app(MediaStorageService::class);
+        $service   = app(MediaStorageService::class);
 
-        $media = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
-            'name' => 'Главное фото',
+        $media     = $service->createFromStoredUpload('local', 'filament-media-temp/photo.jpg', [
+            'name'            => 'Главное фото',
             'collection_name' => 'listing_images',
-            'media_type' => MediaType::IMAGE,
-            'visibility' => MediaVisibility::PUBLIC,
-            'disk' => 'public',
+            'media_type'      => MediaType::IMAGE,
+            'visibility'      => MediaVisibility::PUBLIC,
+            'disk'            => 'public',
         ]);
 
         $mediaPath = MediaType::IMAGE->directory() . '/' . $media->id . '/photo.jpg';

@@ -101,7 +101,7 @@ class MediaTable
                     ->label('Диск')
                     ->options([
                         'public' => 'public',
-                        'local' => 'private/local',
+                        'local'  => 'private/local',
                     ]),
             ])
             ->recordActions([
@@ -125,7 +125,7 @@ class MediaTable
         $label = strtoupper(pathinfo($record->file_name, PATHINFO_EXTENSION) ?: $record->media_type->name);
         $label = mb_substr($label, 0, 5);
 
-        $svg = <<<SVG
+        $svg   = <<<SVG
             <svg xmlns="http://www.w3.org/2000/svg" width="104" height="104" viewBox="0 0 104 104">
               <rect width="104" height="104" rx="18" fill="#f3f4f6"/>
               <path d="M34 18h25l17 17v51H34z" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>

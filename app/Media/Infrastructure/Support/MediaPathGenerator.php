@@ -28,9 +28,11 @@ class MediaPathGenerator implements PathGenerator
 
     private function getBasePath(Media $media): string
     {
-        $prefix = trim((string) config('media-library.prefix', ''), '/');
+        $prefix    = config('media-library.prefix', '');
+        $prefix    = trim(is_string($prefix) ? $prefix : '', '/');
         $directory = $this->resolveDirectory($media);
-        $path = $directory . '/' . $media->getKey();
+        $mediaKey  = $media->getKey();
+        $path      = $directory . '/' . (is_string($mediaKey) || is_int($mediaKey) ? (string) $mediaKey : '');
 
         return $prefix !== ''
             ? $prefix . '/' . $path
@@ -39,8 +41,12 @@ class MediaPathGenerator implements PathGenerator
 
     private function resolveDirectory(Media $media): string
     {
-        if ($media instanceof EloquentMedia && $media->media_type instanceof MediaType) {
-            return $media->media_type->directory();
+        if ($media instanceof EloquentMedia) {
+            $mediaType = $media->getAttribute('media_type');
+
+            if ($mediaType instanceof MediaType) {
+                return $mediaType->directory();
+            }
         }
 
         return MediaType::FILE->directory();

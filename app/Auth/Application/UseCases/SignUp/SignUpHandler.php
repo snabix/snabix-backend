@@ -11,6 +11,7 @@ use App\Auth\Domain\ValueObjects\FirstName;
 use App\Auth\Domain\ValueObjects\LastName;
 use App\Auth\Domain\ValueObjects\PhoneNumber;
 use App\Shared\Domain\Contracts\HasherInterface;
+use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
 use App\Shared\Domain\Contracts\TokenCreatorInterface;
 use App\Shared\Domain\ValueObjects\Email;
 use App\Shared\Domain\ValueObjects\Password;
@@ -24,6 +25,7 @@ readonly class SignUpHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private HasherInterface $hasherService,
+        private SessionAuthenticatorInterface $sessionAuthenticator,
         private TokenCreatorInterface $tokenCreator,
     ) {}
 
@@ -33,7 +35,7 @@ readonly class SignUpHandler
     public function execute(
         SignUpInput $data,
     ): SignUpOutput {
-        $email = new Email($data->email);
+        $email      = new Email($data->email);
 
         if ($this->userRepository->existByEmail($email)) {
             throw ValidationException::withMessages([
@@ -55,7 +57,7 @@ readonly class SignUpHandler
         );
 
         /** @var SignUpOutput $result */
-        $result = DB::transaction(
+        $result     = DB::transaction(
             function () use ($domainUser): SignUpOutput {
                 $this->userRepository->save($domainUser);
 
@@ -66,6 +68,9 @@ readonly class SignUpHandler
                 $token = $this->tokenCreator->create(
                     userId: $domainUser->id->value(),
                     tokenName: 'web',
+                );
+                $this->sessionAuthenticator->login(
+                    $domainUser->id->value(),
                 );
 
                 return SignUpOutput::from([

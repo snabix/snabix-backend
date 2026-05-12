@@ -26,8 +26,8 @@ class SwaggerGenerationTest extends TestCase
         $this->assertJson($contents);
 
         /** @var array<string, mixed> $decoded */
-        $decoded = json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
-        $paths = $decoded['paths'] ?? null;
+        $decoded  = json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
+        $paths    = $decoded['paths'] ?? null;
 
         $this->assertArrayHasKey('paths', $decoded);
         $this->assertIsArray($paths);

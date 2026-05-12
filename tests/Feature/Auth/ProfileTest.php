@@ -11,12 +11,12 @@ class ProfileTest extends FeatureTestCase
 {
     public function test_authenticated_user_can_get_profile_with_new_user_fields(): void
     {
-        $user = EloquentUser::factory()->create([
-            'first_name' => 'Imran',
-            'last_name' => 'Khan',
+        $user  = EloquentUser::factory()->create([
+            'first_name'   => 'Imran',
+            'last_name'    => 'Khan',
             'phone_number' => '+79991234567',
-            'email' => 'imran@example.com',
-            'is_active' => true,
+            'email'        => 'imran@example.com',
+            'is_active'    => true,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

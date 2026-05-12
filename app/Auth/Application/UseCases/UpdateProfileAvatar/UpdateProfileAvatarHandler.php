@@ -24,7 +24,7 @@ readonly class UpdateProfileAvatarHandler
      */
     public function execute(UpdateProfileAvatarInput $data): void
     {
-        $user = $this->userRepository->byId(new UUID($data->userId));
+        $user   = $this->userRepository->byId(new UUID($data->userId));
 
         if ($user === null) {
             throw new NotFoundException('Пользователь не найден.');

@@ -38,7 +38,7 @@ readonly class UserProfileUpdated implements LoggableEvent
     public function logContext(): ?array
     {
         return [
-            'email' => $this->user->email->value(),
+            'email'         => $this->user->email->value(),
             'email_changed' => $this->emailChanged,
         ];
     }

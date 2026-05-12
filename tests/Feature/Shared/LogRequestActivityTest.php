@@ -13,20 +13,20 @@ class LogRequestActivityTest extends FeatureTestCase
     {
         EloquentUser::factory()->create([
             'first_name' => 'Imran',
-            'last_name' => 'Khan',
-            'email' => 'imran@example.com',
-            'password' => 'StrongPassword123!',
+            'last_name'  => 'Khan',
+            'email'      => 'imran@example.com',
+            'password'   => 'StrongPassword123!',
         ]);
 
         $this->postJson('/api/v1/auth/sign-in', [
-            'email' => 'imran@example.com',
+            'email'    => 'imran@example.com',
             'password' => 'StrongPassword123!',
         ])->assertOk();
 
         $this->assertDatabaseHas('system_logs', [
-            'category' => 'http',
-            'method' => 'POST',
-            'path' => '/api/v1/auth/sign-in',
+            'category'    => 'http',
+            'method'      => 'POST',
+            'path'        => '/api/v1/auth/sign-in',
             'status_code' => 200,
         ]);
     }

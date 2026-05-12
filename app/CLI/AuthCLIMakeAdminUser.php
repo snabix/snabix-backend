@@ -11,10 +11,10 @@ use Symfony\Component\Console\Attribute\AsCommand;
 #[AsCommand(name: 'app:make-admin', aliases: ['auth:make-admin'])]
 class AuthCLIMakeAdminUser extends MakeUserCommand
 {
-    protected $name = 'app:make-admin';
+    protected $name        = 'app:make-admin';
 
     /** @var array<string> */
-    protected $aliases = [
+    protected $aliases     = [
         'auth:make-admin',
     ];
 

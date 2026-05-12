@@ -77,9 +77,9 @@ class SystemLogsTable
                 SelectFilter::make('level')
                     ->label('Уровень')
                     ->options([
-                        'info' => 'Информация',
-                        'warning' => 'Предупреждение',
-                        'error' => 'Ошибка',
+                        'info'     => 'Информация',
+                        'warning'  => 'Предупреждение',
+                        'error'    => 'Ошибка',
                         'critical' => 'Критическая ошибка',
                     ]),
                 SelectFilter::make('category')
@@ -88,10 +88,10 @@ class SystemLogsTable
                 SelectFilter::make('method')
                     ->label('Метод')
                     ->options([
-                        'GET' => 'GET',
-                        'POST' => 'POST',
-                        'PUT' => 'PUT',
-                        'PATCH' => 'PATCH',
+                        'GET'    => 'GET',
+                        'POST'   => 'POST',
+                        'PUT'    => 'PUT',
+                        'PATCH'  => 'PATCH',
                         'DELETE' => 'DELETE',
                     ]),
                 SelectFilter::make('status_code')
@@ -104,7 +104,7 @@ class SystemLogsTable
                         DatePicker::make('until')->label('По'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        $from = $data['from'] ?? null;
+                        $from  = $data['from'] ?? null;
                         $until = $data['until'] ?? null;
 
                         if (is_string($from) && $from !== '') {
@@ -160,14 +160,14 @@ class SystemLogsTable
             ->pluck('status_code', 'status_code')
             ->all();
 
-        $options = [];
+        $options    = [];
 
         foreach ($rawOptions as $value) {
             if (! is_int($value) && ! (is_string($value) && is_numeric($value))) {
                 continue;
             }
 
-            $statusCode = (int) $value;
+            $statusCode           = (int) $value;
             $options[$statusCode] = (string) $statusCode;
         }
 

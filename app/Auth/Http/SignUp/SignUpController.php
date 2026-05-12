@@ -37,12 +37,12 @@ class SignUpController
         SignUpRequest $request,
         SignUpHandler $handler,
     ): SignUpResponse {
-        $data = SignUpInput::from([
-            'firstName' => $request->string('firstName')->toString(),
-            'lastName' => $request->string('lastName')->toString(),
-            'phoneNumber' => $request->string('phoneNumber')->toString(),
-            'email' => $request->string('email')->toString(),
-            'password' => $request->string('password')->toString(),
+        $data     = SignUpInput::from([
+            'firstName'            => $request->string('firstName')->toString(),
+            'lastName'             => $request->string('lastName')->toString(),
+            'phoneNumber'          => $request->string('phoneNumber')->toString(),
+            'email'                => $request->string('email')->toString(),
+            'password'             => $request->string('password')->toString(),
             'passwordConfirmation' => $request->string('passwordConfirmation')->toString(),
         ]);
 

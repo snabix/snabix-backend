@@ -17,7 +17,7 @@ class EditMedia extends EditRecord
 {
     protected static string $resource = MediaResource::class;
 
-    protected static ?string $title = 'Редактировать медиафайл';
+    protected static ?string $title   = 'Редактировать медиафайл';
 
     protected function getHeaderActions(): array
     {
@@ -37,17 +37,17 @@ class EditMedia extends EditRecord
         $uploadedPath = $this->extractUploadedPath($data['uploaded_file'] ?? null);
         unset($data['uploaded_file']);
 
-        $data = $this->normalizeAttachment($data);
+        $data         = $this->normalizeAttachment($data);
 
         /** @var EloquentMedia $record */
         /** @var MediaStorageService $storage */
-        $storage = app(MediaStorageService::class);
+        $storage      = app(MediaStorageService::class);
 
         if ($uploadedPath !== null) {
-            $record = $storage->replaceFromStoredUpload('local', $uploadedPath, [
+            $record = $storage->replaceFromStoredUpload($record, 'local', $uploadedPath, [
                 ...$data,
                 'visibility' => $record->visibility,
-                'disk' => $record->disk,
+                'disk'       => $record->disk,
             ]);
 
             $record = $storage->updateMetadata($record, $data);
@@ -73,7 +73,7 @@ class EditMedia extends EditRecord
     {
         if (blank($data['model_type'] ?? null) || blank($data['model_id'] ?? null)) {
             $data['model_type'] = null;
-            $data['model_id'] = null;
+            $data['model_id']   = null;
         }
 
         return $data;

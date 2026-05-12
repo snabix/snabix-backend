@@ -35,7 +35,7 @@ class VerifyEmailResponse extends JsonResource
     {
         return [
             'verified' => (bool) data_get($this->resource, 'verified'),
-            'message' => 'Email успешно подтвержден',
+            'message'  => 'Email успешно подтвержден',
         ];
     }
 }

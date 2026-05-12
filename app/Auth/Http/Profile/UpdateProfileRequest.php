@@ -30,9 +30,9 @@ class UpdateProfileRequest extends FormRequest
         $userId = $this->authenticatedUserId();
 
         return [
-            'firstName' => ['required', 'string', 'max:100'],
-            'lastName' => ['required', 'string', 'max:100'],
-            'email' => [
+            'firstName'   => ['required', 'string', 'max:100'],
+            'lastName'    => ['required', 'string', 'max:100'],
+            'email'       => [
                 'required',
                 'email',
                 'max:255',
@@ -51,6 +51,14 @@ class UpdateProfileRequest extends FormRequest
     {
         $user = $this->user();
 
-        return is_object($user) ? (string) $user->getAuthIdentifier() : '';
+        if (! is_object($user)) {
+            return '';
+        }
+
+        $identifier = $user->getAuthIdentifier();
+
+        return is_string($identifier) || is_int($identifier)
+            ? (string) $identifier
+            : '';
     }
 }

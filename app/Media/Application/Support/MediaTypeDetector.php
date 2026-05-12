@@ -10,7 +10,7 @@ class MediaTypeDetector
 {
     public function detect(?string $mimeType, ?string $extension = null): MediaType
     {
-        $mimeType = strtolower((string) $mimeType);
+        $mimeType  = strtolower((string) $mimeType);
         $extension = strtolower((string) $extension);
 
         if (str_starts_with($mimeType, 'image/')) {

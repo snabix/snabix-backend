@@ -18,14 +18,17 @@ readonly class ForgotPasswordHandler
 
     public function execute(ForgotPasswordInput $data): ForgotPasswordOutput
     {
+        $resetPasswordUrl = config('frontend.reset_password_url');
+
         $user = EloquentUser::query()
             ->where('email', $data->email)
             ->first();
 
-        if ($user instanceof EloquentUser) {
-            $token = Password::broker('users')->createToken($user);
+        if ($user instanceof EloquentUser && is_string($resetPasswordUrl)) {
+            $userId   = $user->getKey();
+            $token    = Password::broker('users')->createToken($user);
             $resetUrl = $this->frontendUrlBuilder->build(
-                (string) config('frontend.reset_password_url'),
+                $resetPasswordUrl,
                 [
                     'token' => $token,
                     'email' => $user->email,
@@ -39,13 +42,13 @@ readonly class ForgotPasswordHandler
             );
 
             event(new PasswordResetRequested(
-                userId: (string) $user->getKey(),
+                userId: is_string($userId) || is_int($userId) ? (string) $userId : '',
                 email: $user->email,
             ));
         }
 
         return ForgotPasswordOutput::from([
-            'sent' => true,
+            'sent'    => true,
             'message' => 'Если пользователь с таким email существует, инструкция по восстановлению уже отправлена.',
         ]);
     }

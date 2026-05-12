@@ -14,7 +14,7 @@ class SanctumTokenCreatorService implements TokenCreatorInterface
         string $userId,
         string $tokenName,
     ): string {
-        $user = EloquentUser::query()->find($userId);
+        $user  = EloquentUser::query()->find($userId);
 
         if (! $user) {
             throw new RuntimeException(

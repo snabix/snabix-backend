@@ -21,23 +21,23 @@ use UnitEnum;
 
 class AdminResource extends Resource
 {
-    protected static ?string $model = EloquentAdmin::class;
+    protected static ?string $model                                   = EloquentAdmin::class;
 
-    protected static ?string $modelLabel = 'администратор';
+    protected static ?string $modelLabel                              = 'администратор';
 
-    protected static ?string $pluralModelLabel = 'администраторы';
+    protected static ?string $pluralModelLabel                        = 'администраторы';
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute                    = 'name';
 
-    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedShieldCheck;
+    protected static string | BackedEnum | null $navigationIcon       = Heroicon::OutlinedShieldCheck;
 
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::ShieldCheck;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Управление доступом';
+    protected static string | UnitEnum | null $navigationGroup        = 'Управление доступом';
 
-    protected static ?string $navigationLabel = 'Администраторы';
+    protected static ?string $navigationLabel                         = 'Администраторы';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort                             = 20;
 
     public static function form(Schema $schema): Schema
     {
@@ -67,10 +67,10 @@ class AdminResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListAdmins::route('/'),
+            'index'  => ListAdmins::route('/'),
             'create' => CreateAdmin::route('/create'),
-            'view' => ViewAdmin::route('/{record}'),
-            'edit' => EditAdmin::route('/{record}/edit'),
+            'view'   => ViewAdmin::route('/{record}'),
+            'edit'   => EditAdmin::route('/{record}/edit'),
         ];
     }
 }

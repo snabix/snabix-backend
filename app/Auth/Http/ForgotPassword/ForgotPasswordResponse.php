@@ -34,7 +34,7 @@ class ForgotPasswordResponse extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'sent' => $this->sent,
+            'sent'    => $this->sent,
             'message' => $this->message,
         ];
     }

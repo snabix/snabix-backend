@@ -39,11 +39,11 @@ class EloquentSystemLog extends Model
 
     public $incrementing = false;
 
-    protected $table = 'system_logs';
+    protected $table     = 'system_logs';
 
-    protected $keyType = 'string';
+    protected $keyType   = 'string';
 
-    protected $fillable = [
+    protected $fillable  = [
         'id',
         'level',
         'category',
@@ -74,13 +74,16 @@ class EloquentSystemLog extends Model
     protected function casts(): array
     {
         return [
-            'level' => SystemLogLevel::class,
-            'context' => 'array',
+            'level'       => SystemLogLevel::class,
+            'context'     => 'array',
             'status_code' => 'integer',
             'duration_ms' => 'integer',
         ];
     }
 
+    /**
+     * @return Attribute<?string, never>
+     */
     protected function shortContext(): Attribute
     {
         return Attribute::get(function (): ?string {

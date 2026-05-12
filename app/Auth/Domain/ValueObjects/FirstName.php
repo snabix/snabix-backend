@@ -13,7 +13,7 @@ readonly class FirstName implements Stringable
 
     public function __construct(string $value)
     {
-        $value = trim($value);
+        $value       = trim($value);
 
         if (empty($value)) {
             throw new InvalidArgumentException('Имя не может быть пустым');

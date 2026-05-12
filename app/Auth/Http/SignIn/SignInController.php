@@ -36,7 +36,7 @@ class SignInController
         SignInRequest $request,
         SignInHandler $handler,
     ): SignInResponse {
-        $data = SignInInput::from(
+        $data   = SignInInput::from(
             $request->validated(),
         );
 

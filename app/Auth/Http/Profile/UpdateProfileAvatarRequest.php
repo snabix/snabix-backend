@@ -41,6 +41,14 @@ class UpdateProfileAvatarRequest extends FormRequest
     {
         $user = $this->user();
 
-        return is_object($user) ? (string) $user->getAuthIdentifier() : '';
+        if (! is_object($user)) {
+            return '';
+        }
+
+        $identifier = $user->getAuthIdentifier();
+
+        return is_string($identifier) || is_int($identifier)
+            ? (string) $identifier
+            : '';
     }
 }

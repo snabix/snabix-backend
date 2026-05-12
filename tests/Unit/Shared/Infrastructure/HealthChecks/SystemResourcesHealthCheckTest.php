@@ -12,9 +12,9 @@ class SystemResourcesHealthCheckTest extends TestCase
 {
     public function test_system_resources_health_check_returns_disk_and_memory_metrics(): void
     {
-        $check = new SystemResourcesHealthCheck();
+        $check   = new SystemResourcesHealthCheck();
 
-        $status = $check->status();
+        $status  = $check->status();
         $context = $status->context();
 
         $this->assertContains($status->getStatus(), [

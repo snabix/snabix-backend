@@ -12,7 +12,7 @@ class FrontendUrlBuilder
     public function build(string $baseUrl, array $query = []): string
     {
         $normalizedBaseUrl = rtrim($baseUrl, '/');
-        $filteredQuery = array_filter(
+        $filteredQuery     = array_filter(
             $query,
             static fn(mixed $value): bool => $value !== null && $value !== '',
         );
@@ -21,7 +21,7 @@ class FrontendUrlBuilder
             return $normalizedBaseUrl;
         }
 
-        $separator = str_contains($normalizedBaseUrl, '?') ? '&' : '?';
+        $separator         = str_contains($normalizedBaseUrl, '?') ? '&' : '?';
 
         return $normalizedBaseUrl . $separator . http_build_query($filteredQuery);
     }

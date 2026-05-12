@@ -12,6 +12,8 @@ use App\Auth\Http\Profile\UpdateProfileController;
 use App\Auth\Http\ResetPassword\ResetPasswordController;
 use App\Auth\Http\SignIn\SignInController;
 use App\Auth\Http\SignUp\SignUpController;
+use App\Catalog\Http\Categories\ListRootCategoriesController;
+use App\Catalog\Http\Categories\ShowCategoryBranchController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -33,5 +35,9 @@ Route::prefix('v1')->group(function () {
             ->middleware('auth:sanctum');
         Route::post('logout', LogoutController::class)
             ->middleware('auth:sanctum');
+    });
+    Route::prefix('categories')->group(function () {
+        Route::get('/list', ListRootCategoriesController::class);
+        Route::get('/{categoryId}/branch', ShowCategoryBranchController::class);
     });
 });

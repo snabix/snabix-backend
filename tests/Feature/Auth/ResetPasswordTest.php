@@ -13,17 +13,17 @@ class ResetPasswordTest extends FeatureTestCase
 {
     public function test_user_can_reset_password_with_valid_token(): void
     {
-        $user = EloquentUser::factory()->create([
-            'email' => 'imran@example.com',
+        $user      = EloquentUser::factory()->create([
+            'email'    => 'imran@example.com',
             'password' => 'OldStrongPassword123!',
         ]);
 
-        $token = Password::broker('users')->createToken($user);
+        $token     = Password::broker('users')->createToken($user);
 
-        $response = $this->postJson('/api/v1/auth/reset-password', [
-            'email' => $user->email,
-            'token' => $token,
-            'password' => 'NewStrongPassword123!',
+        $response  = $this->postJson('/api/v1/auth/reset-password', [
+            'email'                => $user->email,
+            'token'                => $token,
+            'password'             => 'NewStrongPassword123!',
             'passwordConfirmation' => 'NewStrongPassword123!',
         ]);
 
@@ -37,8 +37,8 @@ class ResetPasswordTest extends FeatureTestCase
         $this->assertTrue(Hash::check('NewStrongPassword123!', $freshUser->password));
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
-            'action' => 'auth.reset-password',
-            'user_id' => $user->id,
+            'action'   => 'auth.reset-password',
+            'user_id'  => $user->id,
         ]);
     }
 }

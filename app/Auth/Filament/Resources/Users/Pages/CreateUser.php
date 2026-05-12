@@ -11,7 +11,7 @@ class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
 
-    protected static ?string $title = 'Создать пользователя';
+    protected static ?string $title   = 'Создать пользователя';
 
     protected function getRedirectUrl(): string
     {

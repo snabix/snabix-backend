@@ -6,6 +6,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
+        "ext-dom": "*",
         "php": "^8.3",
         "ans-group/laravel-health-check": "^3.0",
         "darkaonline/l5-swagger": "^11.0",
@@ -23,6 +24,7 @@
         "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.23",
         "friendsofphp/php-cs-fixer": "^3.95",
+        "larastan/larastan": "^3.0",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
@@ -58,6 +60,9 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "stan": [
+            "@php vendor/bin/phpstan analyse --memory-limit=1G"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

@@ -14,18 +14,21 @@ class RabbitMqHealthCheck extends HealthCheck
 
     public function status(): Status
     {
-        $host = (string) config('queue.connections.rabbitmq.hosts.0.host', 'rabbitmq');
-        $port = (int) config('queue.connections.rabbitmq.hosts.0.port', 5672);
+        $host    = config('queue.connections.rabbitmq.hosts.0.host', 'rabbitmq');
+        $port    = config('queue.connections.rabbitmq.hosts.0.port', 5672);
         $timeout = 2;
+
+        $host    = is_string($host) ? $host : 'rabbitmq';
+        $port    = is_int($port) ? $port : (is_numeric($port) ? (int) $port : 5672);
 
         try {
             $socket = @fsockopen($host, $port, $errorCode, $errorMessage, $timeout);
 
             if ($socket === false) {
                 return $this->problem('Could not connect to RabbitMQ', [
-                    'host' => $host,
-                    'port' => $port,
-                    'errorCode' => $errorCode,
+                    'host'         => $host,
+                    'port'         => $port,
+                    'errorCode'    => $errorCode,
                     'errorMessage' => $errorMessage,
                 ]);
             }
@@ -38,11 +41,11 @@ class RabbitMqHealthCheck extends HealthCheck
             ]);
         } catch (Throwable $exception) {
             return $this->problem('RabbitMQ check failed', [
-                'host' => $host,
-                'port' => $port,
+                'host'      => $host,
+                'port'      => $port,
                 'exception' => [
                     'message' => $exception->getMessage(),
-                    'class' => $exception::class,
+                    'class'   => $exception::class,
                 ],
             ]);
         }

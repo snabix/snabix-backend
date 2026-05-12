@@ -30,19 +30,19 @@ class SystemLogManager
     ): void {
         try {
             EloquentSystemLog::query()->create([
-                'level' => $level,
-                'category' => $category,
-                'action' => $action,
-                'message' => $message,
-                'context' => $context,
-                'route_name' => $routeName,
-                'method' => $method,
-                'path' => $path,
+                'level'       => $level,
+                'category'    => $category,
+                'action'      => $action,
+                'message'     => $message,
+                'context'     => $context,
+                'route_name'  => $routeName,
+                'method'      => $method,
+                'path'        => $path,
                 'status_code' => $statusCode,
                 'duration_ms' => $durationMs,
-                'ip_address' => $ipAddress,
-                'user_agent' => $userAgent,
-                'user_id' => $userId,
+                'ip_address'  => $ipAddress,
+                'user_agent'  => $userAgent,
+                'user_id'     => $userId,
             ]);
         } catch (Throwable) {
             // Avoid recursive failures when logging itself breaks.

@@ -15,7 +15,7 @@ class ForgotPasswordTest extends FeatureTestCase
     {
         Queue::fake();
 
-        $user = EloquentUser::factory()->create([
+        $user     = EloquentUser::factory()->create([
             'email' => 'imran@example.com',
         ]);
 
@@ -36,8 +36,8 @@ class ForgotPasswordTest extends FeatureTestCase
 
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
-            'action' => 'auth.forgot-password',
-            'user_id' => $user->id,
+            'action'   => 'auth.forgot-password',
+            'user_id'  => $user->id,
         ]);
     }
 }

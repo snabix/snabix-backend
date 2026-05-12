@@ -17,7 +17,7 @@ class SendEmailVerificationJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public int $tries = 3;
+    public int $tries   = 3;
 
     public int $timeout = 30;
 
@@ -46,7 +46,7 @@ class SendEmailVerificationJob implements ShouldQueue
             'Верификация почты',
             'emails.email-verification',
             [
-                'username' => $this->name,
+                'username'        => $this->name,
                 'verificationUrl' => $this->verificationUrl,
             ],
         );

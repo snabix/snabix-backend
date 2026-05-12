@@ -30,14 +30,14 @@ readonly class ProfileHandler
         }
 
         return ProfileOutput::from([
-            'id' => $user->id->value(),
-            'firstName' => $user->firstName->value(),
-            'lastName' => $user->lastName->value(),
-            'email' => $user->email->value(),
-            'phoneNumber' => $user->phoneNumber?->value(),
-            'isActive' => $user->isActive(),
+            'id'              => $user->id->value(),
+            'firstName'       => $user->firstName->value(),
+            'lastName'        => $user->lastName->value(),
+            'email'           => $user->email->value(),
+            'phoneNumber'     => $user->phoneNumber?->value(),
+            'isActive'        => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
-            'avatar' => $this->userAvatarService->toPayload($data->userId),
+            'avatar'          => $this->userAvatarService->toPayload($data->userId),
         ]);
     }
 }

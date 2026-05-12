@@ -13,8 +13,8 @@ class MakeAdminUserCommandTest extends FeatureTestCase
     public function test_admin_user_can_be_created_via_project_command(): void
     {
         $exitCode = Artisan::call('app:make-admin', [
-            '--name' => 'admin',
-            '--email' => 'created-admin@admin.com',
+            '--name'     => 'admin',
+            '--email'    => 'created-admin@admin.com',
             '--password' => '1',
         ]);
 
@@ -22,7 +22,7 @@ class MakeAdminUserCommandTest extends FeatureTestCase
 
         $this->assertDatabaseHas('admins', [
             'email' => 'created-admin@admin.com',
-            'name' => 'admin',
+            'name'  => 'admin',
         ]);
 
         $this->assertTrue(EloquentAdmin::query()->where('email', 'created-admin@admin.com')->exists());
