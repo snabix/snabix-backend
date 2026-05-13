@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Infrastructure\Models;
 
+use App\Catalog\Domain\Enums\CategoryCatalogType;
 use Database\Factories\EloquentCategoryFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property      int                               $id
+ * @property      CategoryCatalogType               $catalog_type
  * @property      int|null                          $parent_id
  * @property      string                            $name
  * @property      string                            $slug
@@ -26,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read string                            $full_name
  * @property-read EloquentCategory|null             $parentCategory
  * @property-read Collection<int, EloquentCategory> $children
+ * @property-read Collection<int, EloquentCategoryAttributeDefinition> $attributeDefinitions
  */
 class EloquentCategory extends Model
 {
@@ -37,6 +40,7 @@ class EloquentCategory extends Model
     /** @var list<string> */
     protected $fillable = [
         'parent_id',
+        'catalog_type',
         'name',
         'slug',
         'description',
@@ -73,6 +77,16 @@ class EloquentCategory extends Model
     }
 
     /**
+     * @return HasMany<EloquentCategoryAttributeDefinition, $this>
+     */
+    public function attributeDefinitions(): HasMany
+    {
+        return $this->hasMany(EloquentCategoryAttributeDefinition::class, 'category_id')
+            ->orderBy('sort_order')
+            ->orderBy('name');
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -81,6 +95,7 @@ class EloquentCategory extends Model
             'sort_order' => 'integer',
             'is_active'  => 'boolean',
             'depth'      => 'integer',
+            'catalog_type'=> CategoryCatalogType::class,
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

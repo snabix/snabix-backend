@@ -52,6 +52,8 @@ readonly class ShowCategoryBranchHandler
 
         return [
             'id'          => $category->id,
+            'catalogType' => $category->catalog_type->value,
+            'catalogTypeLabel' => $category->catalog_type->label(),
             'parentId'    => $category->parent_id,
             'name'        => $category->name,
             'slug'        => $category->slug,

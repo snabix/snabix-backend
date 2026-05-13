@@ -4,27 +4,22 @@ declare(strict_types=1);
 
 namespace App\Auth\Http\EmailVerification;
 
+use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Foundation\Http\FormRequest;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'AuthVerifyEmailRequest',
-    required: ['code'],
-    properties: [
-        new OA\Property(property: 'code', type: 'string', example: '482913'),
-    ],
+    schema: 'AuthResendEmailVerificationRequest',
     type: 'object',
 )]
-class VerifyEmailRequest extends FormRequest
+class ResendEmailVerificationRequest extends FormRequest
 {
     /**
      * @return array<string, array<int, string>>
      */
     public function rules(): array
     {
-        return [
-            'code' => ['required', 'digits:6'],
-        ];
+        return [];
     }
 
     public function authorize(): bool
@@ -36,7 +31,7 @@ class VerifyEmailRequest extends FormRequest
     {
         $user = $this->user();
 
-        if (! is_object($user)) {
+        if (! $user instanceof EloquentUser) {
             return '';
         }
 

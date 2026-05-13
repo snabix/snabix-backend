@@ -15,10 +15,10 @@ use OpenApi\Attributes as OA;
     ),
 )]
 #[OA\SecurityScheme(
-    securityScheme: 'sanctumBearer',
-    type: 'http',
-    description: 'Передавайте токен Sanctum в заголовке Authorization: Bearer {token}.',
-    bearerFormat: 'Token',
-    scheme: 'bearer',
+    securityScheme: 'sanctumSession',
+    type: 'apiKey',
+    description: 'Для first-party SPA используется cookie-based сессия Laravel Sanctum с CSRF-защитой.',
+    name: 'snabix_session',
+    in: 'cookie',
 )]
 final class OpenApiSpec {}

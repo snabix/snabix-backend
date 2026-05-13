@@ -18,7 +18,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'data',
             properties: [
-                new OA\Property(property: 'token', type: 'string', example: '2|sanctum-token'),
                 new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000'),
             ],
             type: 'object',
@@ -29,12 +28,11 @@ use OpenApi\Attributes as OA;
 class SignInResponse extends JsonResource
 {
     /**
-     * @return array{token: string, userId: string}
+     * @return array{userId: string}
      */
     public function toArray(Request $request): array
     {
         return [
-            'token'  => $this->token,
             'userId' => $this->userId,
         ];
     }

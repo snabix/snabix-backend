@@ -11,7 +11,7 @@ use OpenApi\Attributes as OA;
 class ListRootCategoriesController
 {
     #[OA\Get(
-        path: '/api/v1/categories',
+        path: '/api/v1/categories/list',
         operationId: 'categoriesRootIndex',
         summary: 'Получить корневые категории',
         tags: ['Categories'],

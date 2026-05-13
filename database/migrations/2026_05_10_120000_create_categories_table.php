@@ -12,6 +12,7 @@ return new class extends Migration {
         Schema::create('categories', function (Blueprint $table) {
             $table->timestamps();
             $table->id();
+            $table->unsignedTinyInteger('catalog_type')->default(1)->index();
             $table->foreignId('parent_id')
                 ->nullable()
                 ->constrained('categories')

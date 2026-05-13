@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Infrastructure\Repositories;
 
+use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Illuminate\Support\Collection;
@@ -155,12 +156,13 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
         );
 
         $category->fill([
-            'parent_id'   => $parentId,
-            'name'        => $name,
-            'slug'        => $slug,
-            'description' => is_string($rawDescription) ? $rawDescription : null,
-            'sort_order'  => is_numeric($rawSortOrder) ? (int) $rawSortOrder : 0,
-            'is_active'   => (bool) ($attributes['is_active'] ?? true),
+            'parent_id'    => $parentId,
+            'catalog_type' => $this->resolveCatalogType($attributes['catalog_type'] ?? null),
+            'name'         => $name,
+            'slug'         => $slug,
+            'description'  => is_string($rawDescription) ? $rawDescription : null,
+            'sort_order'   => is_numeric($rawSortOrder) ? (int) $rawSortOrder : 0,
+            'is_active'    => (bool) ($attributes['is_active'] ?? true),
         ]);
         $category->save();
 
@@ -275,5 +277,22 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
     private function indentedName(EloquentCategory $category): string
     {
         return str_repeat('— ', max($category->depth, 0)) . $category->name;
+    }
+
+    private function resolveCatalogType(mixed $catalogType): CategoryCatalogType
+    {
+        if ($catalogType instanceof CategoryCatalogType) {
+            return $catalogType;
+        }
+
+        if (is_int($catalogType)) {
+            return CategoryCatalogType::tryFrom($catalogType) ?? CategoryCatalogType::PRODUCT;
+        }
+
+        if (is_string($catalogType) && is_numeric($catalogType)) {
+            return CategoryCatalogType::tryFrom((int) $catalogType) ?? CategoryCatalogType::PRODUCT;
+        }
+
+        return CategoryCatalogType::PRODUCT;
     }
 }

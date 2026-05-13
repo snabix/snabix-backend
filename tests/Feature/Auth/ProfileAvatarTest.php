@@ -20,10 +20,9 @@ class ProfileAvatarTest extends FeatureTestCase
         Storage::fake('public');
 
         $user     = EloquentUser::factory()->create();
-        $token    = $user->createToken('auth_token')->plainTextToken;
 
         $response = $this
-            ->withToken($token)
+            ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
                 'avatar' => UploadedFile::fake()->create('avatar.jpg', 256, 'image/jpeg'),
             ]);
@@ -55,10 +54,9 @@ class ProfileAvatarTest extends FeatureTestCase
         Storage::fake('public');
 
         $user    = EloquentUser::factory()->create();
-        $token   = $user->createToken('auth_token')->plainTextToken;
 
         $this
-            ->withToken($token)
+            ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
                 'avatar' => UploadedFile::fake()->create('old-avatar.jpg', 256, 'image/jpeg'),
             ])
@@ -70,7 +68,7 @@ class ProfileAvatarTest extends FeatureTestCase
         Storage::disk('public')->assertExists($oldPath);
 
         $this
-            ->withToken($token)
+            ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
                 'avatar' => UploadedFile::fake()->create('new-avatar.png', 256, 'image/png'),
             ])
@@ -90,10 +88,9 @@ class ProfileAvatarTest extends FeatureTestCase
         Storage::fake('public');
 
         $user      = EloquentUser::factory()->create();
-        $token     = $user->createToken('auth_token')->plainTextToken;
 
         $this
-            ->withToken($token)
+            ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
                 'avatar' => UploadedFile::fake()->create('avatar.jpg', 256, 'image/jpeg'),
             ])
@@ -105,7 +102,7 @@ class ProfileAvatarTest extends FeatureTestCase
         Storage::disk('public')->assertExists($mediaPath);
 
         $this
-            ->withToken($token)
+            ->actingAs($user)
             ->deleteJson('/api/v1/auth/me/avatar')
             ->assertOk()
             ->assertJsonPath('data.avatar', null);

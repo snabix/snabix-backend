@@ -17,7 +17,7 @@ class DeleteProfileAvatarController
         path: '/api/v1/auth/me/avatar',
         operationId: 'authDeleteProfileAvatar',
         summary: 'Delete current authenticated user avatar',
-        security: [['sanctum' => []]],
+        security: [['sanctumSession' => []]],
         tags: ['Auth'],
         responses: [
             new OA\Response(

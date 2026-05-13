@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Application\UseCases\Logout;
+namespace App\Auth\Application\UseCases\ResendEmailVerification;
 
 use App\Shared\Domain\DTO\Input;
 
-class LogoutInput extends Input
+class ResendEmailVerificationInput extends Input
 {
     public function __construct(
         public readonly string $userId,

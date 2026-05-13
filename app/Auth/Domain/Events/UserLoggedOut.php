@@ -11,7 +11,6 @@ readonly class UserLoggedOut implements LoggableEvent
 {
     public function __construct(
         public string $userId,
-        public ?string $tokenId,
     ) {}
 
     public function logLevel(): SystemLogLevel
@@ -36,9 +35,7 @@ readonly class UserLoggedOut implements LoggableEvent
 
     public function logContext(): ?array
     {
-        return [
-            'token_id' => $this->tokenId,
-        ];
+        return null;
     }
 
     public function logUserId(): ?string

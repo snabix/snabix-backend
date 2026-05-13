@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -50,14 +51,15 @@ class EloquentCategoryFactory extends Factory
         $slug = Str::slug($name);
 
         return [
-            'parent_id'   => null,
-            'name'        => $name,
-            'slug'        => $slug !== '' ? $slug : 'kategoriya-' . fake()->unique()->numberBetween(1, 999999),
-            'description' => fake()->optional()->sentence(),
-            'sort_order'  => fake()->numberBetween(0, 50),
-            'is_active'   => fake()->boolean(90),
-            'path'        => $slug !== '' ? $slug : null,
-            'depth'       => 0,
+            'parent_id'    => null,
+            'catalog_type' => CategoryCatalogType::PRODUCT,
+            'name'         => $name,
+            'slug'         => $slug !== '' ? $slug : 'kategoriya-' . fake()->unique()->numberBetween(1, 999999),
+            'description'  => fake()->optional()->sentence(),
+            'sort_order'   => fake()->numberBetween(0, 50),
+            'is_active'    => fake()->boolean(90),
+            'path'         => $slug !== '' ? $slug : null,
+            'depth'        => 0,
         ];
     }
 
@@ -79,11 +81,19 @@ class EloquentCategoryFactory extends Factory
                 : Str::slug(is_string($name) ? $name : '');
 
             return [
-                'parent_id'  => $parent->id,
-                'sort_order' => fake()->numberBetween(0, 20),
-                'depth'      => $parent->depth + 1,
-                'path'       => $parent->path !== null ? $parent->path . '/' . $resolvedSlug : $resolvedSlug,
+                'parent_id'    => $parent->id,
+                'catalog_type' => $parent->catalog_type,
+                'sort_order'   => fake()->numberBetween(0, 20),
+                'depth'        => $parent->depth + 1,
+                'path'         => $parent->path !== null ? $parent->path . '/' . $resolvedSlug : $resolvedSlug,
             ];
         });
+    }
+
+    public function forServices(): static
+    {
+        return $this->state(fn(): array => [
+            'catalog_type' => CategoryCatalogType::SERVICE,
+        ]);
     }
 }

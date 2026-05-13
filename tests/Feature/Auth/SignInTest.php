@@ -26,11 +26,6 @@ class SignInTest extends FeatureTestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.userId', $user->id);
-
-        $token    = $response->json('data.token');
-
-        $this->assertIsString($token);
-        $this->assertNotSame('', $token);
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
             'action'   => 'auth.sign-in',

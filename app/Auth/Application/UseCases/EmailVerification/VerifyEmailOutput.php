@@ -10,5 +10,7 @@ class VerifyEmailOutput extends Output
 {
     public function __construct(
         public readonly bool $verified,
+        public readonly bool $alreadyVerified,
+        public readonly string $message,
     ) {}
 }

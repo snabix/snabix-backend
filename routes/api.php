@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Auth\Http\EmailVerification\VerifyEmailController;
+use App\Auth\Http\EmailVerification\ResendEmailVerificationController;
 use App\Auth\Http\ForgotPassword\ForgotPasswordController;
 use App\Auth\Http\Logout\LogoutController;
 use App\Auth\Http\Profile\DeleteProfileAvatarController;
@@ -12,19 +13,28 @@ use App\Auth\Http\Profile\UpdateProfileController;
 use App\Auth\Http\ResetPassword\ResetPasswordController;
 use App\Auth\Http\SignIn\SignInController;
 use App\Auth\Http\SignUp\SignUpController;
+use App\Catalog\Http\Categories\GetCategoryAttributesController;
 use App\Catalog\Http\Categories\ListRootCategoriesController;
 use App\Catalog\Http\Categories\ShowCategoryBranchController;
+use App\Listing\Http\Listings\CreateListingController;
+use App\Listing\Http\Listings\ShowListingController;
+use App\Listing\Http\Listings\UpdateListingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
-        Route::post('sign-up', SignUpController::class);
-        Route::post('sign-in', SignInController::class);
-        Route::post('forgot-password', ForgotPasswordController::class);
-        Route::post('reset-password', ResetPasswordController::class);
-        Route::get('verify-email', VerifyEmailController::class)
-            ->middleware('signed')
-            ->name('verify-email');
+        Route::post('sign-up', SignUpController::class)
+            ->middleware('throttle:auth.sign-up');
+        Route::post('sign-in', SignInController::class)
+            ->middleware('throttle:auth.sign-in');
+        Route::post('forgot-password', ForgotPasswordController::class)
+            ->middleware('throttle:auth.forgot-password');
+        Route::post('reset-password', ResetPasswordController::class)
+            ->middleware('throttle:auth.reset-password');
+        Route::post('verify-email', VerifyEmailController::class)
+            ->middleware(['auth:sanctum', 'throttle:auth.verify-email']);
+        Route::post('email-verification-notification', ResendEmailVerificationController::class)
+            ->middleware(['auth:sanctum', 'throttle:auth.resend-verification']);
         Route::get('me', ProfileController::class)
             ->middleware('auth:sanctum');
         Route::patch('me', UpdateProfileController::class)
@@ -39,5 +49,11 @@ Route::prefix('v1')->group(function () {
     Route::prefix('categories')->group(function () {
         Route::get('/list', ListRootCategoriesController::class);
         Route::get('/{categoryId}/branch', ShowCategoryBranchController::class);
+        Route::get('/{categoryId}/attributes', GetCategoryAttributesController::class);
+    });
+    Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
+        Route::post('/', CreateListingController::class);
+        Route::get('/{listingId}', ShowListingController::class);
+        Route::patch('/{listingId}', UpdateListingController::class);
     });
 });

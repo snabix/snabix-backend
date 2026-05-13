@@ -22,10 +22,8 @@ class UpdateProfileTest extends FeatureTestCase
             'email'        => 'old@example.com',
         ]);
 
-        $token     = $user->createToken('auth_token')->plainTextToken;
-
         $response  = $this
-            ->withToken($token)
+            ->actingAs($user)
             ->patchJson('/api/v1/auth/me', [
                 'firstName'   => 'New',
                 'lastName'    => 'Person',

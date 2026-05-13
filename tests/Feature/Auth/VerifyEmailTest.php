@@ -4,37 +4,33 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Auth;
 
+use App\Auth\Application\Services\EmailVerificationCodeService;
 use App\Auth\Infrastructure\Models\EloquentUser;
-use Illuminate\Support\Facades\URL;
 use Tests\Feature\FeatureTestCase;
 
 class VerifyEmailTest extends FeatureTestCase
 {
-    public function test_signed_verification_link_marks_email_as_verified_and_redirects_to_frontend(): void
+    public function test_authenticated_user_can_verify_email_by_code(): void
     {
-        config()->set('frontend.email_verification_redirect_url', 'https://frontend.test/auth/email-verified');
-
-        $user      = EloquentUser::factory()->unverified()->create([
+        $user = EloquentUser::factory()->unverified()->create([
             'first_name' => 'Unverified',
             'last_name'  => 'User',
             'email'      => 'unverified@example.com',
             'password'   => 'StrongPassword123!',
         ]);
 
-        $url       = URL::temporarySignedRoute(
-            'verify-email',
-            now()->addMinutes(60),
-            ['user' => $user->id],
-        );
+        /** @var EmailVerificationCodeService $emailVerificationCodeService */
+        $emailVerificationCodeService = app(EmailVerificationCodeService::class);
+        $code = $emailVerificationCodeService->issue((string) $user->id, $user->email);
 
-        $response  = $this->get($url);
-
-        $response
-            ->assertRedirect('https://frontend.test/auth/email-verified?verified=1&user=' . $user->id);
-
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-        ]);
+        $this->actingAs($user)
+            ->postJson('/api/v1/auth/verify-email', [
+                'code' => $code,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.verified', true)
+            ->assertJsonPath('data.alreadyVerified', false)
+            ->assertJsonPath('data.message', 'Email успешно подтвержден.');
 
         $freshUser = $user->fresh();
 
@@ -45,5 +41,21 @@ class VerifyEmailTest extends FeatureTestCase
             'action'   => 'auth.verify-email',
             'user_id'  => $user->id,
         ]);
+    }
+
+    public function test_verified_user_receives_already_verified_response(): void
+    {
+        $user = EloquentUser::factory()->create([
+            'email' => 'repeat@example.com',
+        ]);
+
+        $this->actingAs($user)
+            ->postJson('/api/v1/auth/verify-email', [
+                'code' => '123456',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.verified', false)
+            ->assertJsonPath('data.alreadyVerified', true)
+            ->assertJsonPath('data.message', 'Email уже подтвержден.');
     }
 }

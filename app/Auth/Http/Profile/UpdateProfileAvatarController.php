@@ -16,7 +16,7 @@ class UpdateProfileAvatarController
         path: '/api/v1/auth/me/avatar',
         operationId: 'authUpdateProfileAvatar',
         summary: 'Upload or replace current authenticated user avatar',
-        security: [['sanctum' => []]],
+        security: [['sanctumSession' => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(

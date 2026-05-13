@@ -15,7 +15,7 @@ class ProfileController
         path: '/api/v1/auth/me',
         operationId: 'authProfile',
         summary: 'Get current authenticated user profile',
-        security: [['sanctumBearer' => []]],
+        security: [['sanctumSession' => []]],
         tags: ['Auth'],
         responses: [
             new OA\Response(

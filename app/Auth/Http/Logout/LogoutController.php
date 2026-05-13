@@ -13,8 +13,8 @@ class LogoutController
     #[OA\Post(
         path: '/api/v1/auth/logout',
         operationId: 'authLogout',
-        summary: 'Logout current user and revoke current Sanctum token',
-        security: [['sanctumBearer' => []]],
+        summary: 'Logout current authenticated user from web session',
+        security: [['sanctumSession' => []]],
         tags: ['Auth'],
         responses: [
             new OA\Response(
@@ -31,8 +31,7 @@ class LogoutController
     ): LogoutResponse {
         $result = $handler->execute(
             LogoutInput::from([
-                'userId'  => $request->authenticatedUserId(),
-                'tokenId' => $request->currentTokenId(),
+                'userId' => $request->authenticatedUserId(),
             ]),
         );
 

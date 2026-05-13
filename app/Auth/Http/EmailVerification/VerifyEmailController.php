@@ -7,71 +7,46 @@ namespace App\Auth\Http\EmailVerification;
 use App\Auth\Application\UseCases\EmailVerification\VerifyEmailHandler;
 use App\Auth\Application\UseCases\EmailVerification\VerifyEmailInput;
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
-use App\Shared\Infrastructure\Services\FrontendUrlBuilder;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 class VerifyEmailController
 {
-    #[OA\Get(
+    #[OA\Post(
         path: '/api/v1/auth/verify-email',
         operationId: 'authVerifyEmail',
-        summary: 'Verify user email by signed URL',
+        summary: 'Verify current authenticated user email by code',
+        security: [['sanctumSession' => []]],
         tags: ['Auth'],
-        parameters: [
-            new OA\Parameter(
-                name: 'user',
-                description: 'User UUID',
-                in: 'query',
-                required: true,
-                schema: new OA\Schema(type: 'string', format: 'uuid'),
-            ),
-            new OA\Parameter(
-                name: 'expires',
-                description: 'Signed URL expiration timestamp',
-                in: 'query',
-                required: true,
-                schema: new OA\Schema(type: 'integer'),
-            ),
-            new OA\Parameter(
-                name: 'signature',
-                description: 'Signed URL hash',
-                in: 'query',
-                required: true,
-                schema: new OA\Schema(type: 'string'),
-            ),
-        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: '#/components/schemas/AuthVerifyEmailRequest'),
+        ),
         responses: [
             new OA\Response(
-                response: 302,
-                description: 'Redirect to frontend after email verification',
+                response: 200,
+                description: 'Email verified successfully',
+                content: new OA\JsonContent(ref: '#/components/schemas/AuthVerifyEmailResponse'),
             ),
-            new OA\Response(response: 403, description: 'Invalid or expired signed URL'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 422, description: 'Invalid verification code'),
         ],
     )]
     /**
      * @throws NotFoundException
+     * @throws ValidationException
      */
     public function __invoke(
         VerifyEmailRequest $request,
         VerifyEmailHandler $handler,
-        FrontendUrlBuilder $frontendUrlBuilder,
-    ): RedirectResponse {
-        $userId                  = $request->string('user')->toString();
-        $verificationRedirectUrl = config('frontend.email_verification_redirect_url');
-
-        $handler->execute(
+    ): VerifyEmailResponse {
+        $result = $handler->execute(
             VerifyEmailInput::from([
-                'userId' => $userId,
+                'userId' => $request->authenticatedUserId(),
+                'code'   => $request->string('code')->toString(),
             ]),
         );
 
-        return redirect()->away($frontendUrlBuilder->build(
-            is_string($verificationRedirectUrl) ? $verificationRedirectUrl : '/',
-            [
-                'verified' => 1,
-                'user'     => $userId,
-            ],
-        ));
+        return VerifyEmailResponse::make($result);
     }
 }

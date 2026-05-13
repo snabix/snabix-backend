@@ -6,7 +6,6 @@ namespace App\Auth\Http\Logout;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Foundation\Http\FormRequest;
-use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -41,21 +40,5 @@ class LogoutRequest extends FormRequest
         return is_string($identifier) || is_int($identifier)
             ? (string) $identifier
             : '';
-    }
-
-    public function currentTokenId(): ?int
-    {
-        $user    = $this->user();
-        $token   = $user instanceof EloquentUser
-            ? $user->currentAccessToken()
-            : null;
-
-        $tokenId = $token instanceof PersonalAccessToken
-            ? $token->getKey()
-            : null;
-
-        return is_int($tokenId)
-            ? $tokenId
-            : null;
     }
 }

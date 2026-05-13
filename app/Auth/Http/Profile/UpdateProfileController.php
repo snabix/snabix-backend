@@ -16,12 +16,12 @@ class UpdateProfileController
         path: '/api/v1/auth/me',
         operationId: 'authUpdateProfile',
         summary: 'Update current authenticated user profile',
-        security: [['sanctumBearer' => []]],
-        tags: ['Auth'],
+        security: [['sanctumSession' => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(ref: '#/components/schemas/AuthUpdateProfileRequest'),
         ),
+        tags: ['Auth'],
         responses: [
             new OA\Response(
                 response: 200,
