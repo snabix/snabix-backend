@@ -19,11 +19,11 @@ class SharedCLICleanupSystemLogs extends Command
 
     public function handle(): int
     {
-        $days = $this->resolveRetentionDays();
+        $days         = $this->resolveRetentionDays();
 
-        $cutoff = CarbonImmutable::now()->subDays($days);
+        $cutoff       = CarbonImmutable::now()->subDays($days);
 
-        $deleted = EloquentSystemLog::query()
+        $deleted      = EloquentSystemLog::query()
             ->where('created_at', '<', $cutoff)
             ->delete();
 
@@ -40,7 +40,7 @@ class SharedCLICleanupSystemLogs extends Command
 
     private function resolveRetentionDays(): int
     {
-        $days = $this->option('days');
+        $days           = $this->option('days');
 
         if (is_numeric($days) && (int) $days > 0) {
             return (int) $days;

@@ -7,19 +7,7 @@ namespace App\Auth\Http\Profile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
-use OpenApi\Attributes as OA;
 
-#[OA\Schema(
-    schema: 'AuthUpdateProfileRequest',
-    required: ['firstName', 'lastName', 'email'],
-    properties: [
-        new OA\Property(property: 'firstName', type: 'string', example: 'Imran'),
-        new OA\Property(property: 'lastName', type: 'string', example: 'Khan'),
-        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'imran@example.com'),
-        new OA\Property(property: 'phoneNumber', type: 'string', nullable: true, example: '+79991234567'),
-    ],
-    type: 'object',
-)]
 class UpdateProfileRequest extends FormRequest
 {
     /**
@@ -27,7 +15,11 @@ class UpdateProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->authenticatedUserId();
+        $user       = $this->user();
+        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
+        $userId     = is_string($identifier) || is_int($identifier)
+            ? (string) $identifier
+            : '';
 
         return [
             'firstName'   => ['required', 'string', 'max:100'],
@@ -45,20 +37,5 @@ class UpdateProfileRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
-    }
-
-    public function authenticatedUserId(): string
-    {
-        $user = $this->user();
-
-        if (! is_object($user)) {
-            return '';
-        }
-
-        $identifier = $user->getAuthIdentifier();
-
-        return is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Catalog;
 
+use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Illuminate\Validation\ValidationException;
 use Tests\Feature\FeatureTestCase;
@@ -12,17 +13,22 @@ class CategoryHierarchyTest extends FeatureTestCase
 {
     public function test_it_builds_depth_and_path_for_nested_categories(): void
     {
-        $root       = EloquentCategory::query()->create([
+        $repository = app(CategoryRepositoryInterface::class);
+
+        $root       = $repository->save([
             'name' => 'Электроника',
+            'slug' => 'elektronika',
         ]);
 
-        $child      = EloquentCategory::query()->create([
+        $child      = $repository->save([
             'name'      => 'Смартфоны',
+            'slug'      => 'smartfony',
             'parent_id' => $root->id,
         ]);
 
-        $grandChild = EloquentCategory::query()->create([
+        $grandChild = $repository->save([
             'name'      => 'Android',
+            'slug'      => 'android',
             'parent_id' => $child->id,
         ]);
 
@@ -46,19 +52,25 @@ class CategoryHierarchyTest extends FeatureTestCase
 
     public function test_it_rejects_circular_parenting(): void
     {
-        $root            = EloquentCategory::query()->create([
+        $repository      = app(CategoryRepositoryInterface::class);
+
+        $root            = $repository->save([
             'name' => 'Транспорт',
+            'slug' => 'transport',
         ]);
 
-        $child           = EloquentCategory::query()->create([
+        $child           = $repository->save([
             'name'      => 'Автомобили',
+            'slug'      => 'avtomobili',
             'parent_id' => $root->id,
         ]);
 
-        $root->parent_id = $child->id;
-
         $this->expectException(ValidationException::class);
 
-        $root->save();
+        $repository->save([
+            'name'      => $root->name,
+            'slug'      => $root->slug,
+            'parent_id' => $child->id,
+        ], (int) $root->id);
     }
 }

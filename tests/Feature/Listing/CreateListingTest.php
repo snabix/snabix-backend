@@ -1,0 +1,71 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Listing;
+
+use App\Auth\Infrastructure\Models\EloquentUser;
+use App\Catalog\Domain\Contracts\CategoryAttributeDefinitionRepositoryInterface;
+use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
+use Tests\Feature\FeatureTestCase;
+
+class CreateListingTest extends FeatureTestCase
+{
+    public function test_user_can_create_listing_with_prepared_category_attributes(): void
+    {
+        $categoryRepository            = app(CategoryRepositoryInterface::class);
+        $attributeDefinitionRepository = app(CategoryAttributeDefinitionRepositoryInterface::class);
+        $user                          = EloquentUser::factory()->create();
+        $category                      = $categoryRepository->save([
+            'name'         => 'Запчасти',
+            'slug'         => 'zapchasti',
+            'catalog_type' => 1,
+        ]);
+        $brandAttribute                = $attributeDefinitionRepository->save([
+            'category_id'         => $category->id,
+            'name'                => 'Бренд',
+            'slug'                => 'brend',
+            'type'                => 4,
+            'options'             => ['Bosch', 'Makita'],
+            'is_required'         => true,
+            'is_filterable'       => true,
+            'is_active'           => true,
+            'applies_to_children' => true,
+            'sort_order'          => 10,
+        ]);
+        $isOriginalAttribute           = $attributeDefinitionRepository->save([
+            'category_id'         => $category->id,
+            'name'                => 'Оригинальная деталь',
+            'slug'                => 'original',
+            'type'                => 3,
+            'is_required'         => false,
+            'is_filterable'       => true,
+            'is_active'           => true,
+            'applies_to_children' => true,
+            'sort_order'          => 20,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/listings', [
+                'categoryId'      => $category->id,
+                'type'            => 1,
+                'status'          => 1,
+                'condition'       => 2,
+                'title'           => 'Редуктор Bosch',
+                'description'     => 'Оригинальная запасная часть в хорошем состоянии.',
+                'price'           => 14500,
+                'currency'        => 'rub',
+                'isNegotiable'    => true,
+                'attributeValues' => [
+                    $brandAttribute->id      => 'Bosch',
+                    $isOriginalAttribute->id => true,
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.title', 'Редуктор Bosch')
+            ->assertJsonPath('data.category.id', $category->id)
+            ->assertJsonPath('data.attributeValues.0.displayValue', 'Bosch')
+            ->assertJsonPath('data.attributeValues.1.displayValue', 'Да');
+    }
+}

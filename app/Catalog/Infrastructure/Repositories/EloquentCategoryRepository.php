@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Catalog\Infrastructure\Repositories;
 
-use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
+use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -103,7 +103,7 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
             return collect();
         }
 
-        $query = EloquentCategory::query()
+        $query        = EloquentCategory::query()
             ->where('path', 'like', $rootCategory->path . '/%')
             ->whereBetween('depth', [
                 $rootCategory->depth + 1,
@@ -127,12 +127,12 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
         array $attributes,
         ?int  $id = null,
     ): EloquentCategory {
-        $category = $id !== null
+        $category       = $id !== null
             ? EloquentCategory::query()->findOrFail($id)
             : new EloquentCategory();
 
-        $rawName  = $attributes['name'] ?? null;
-        $name     = is_string($rawName) ? trim($rawName) : '';
+        $rawName        = $attributes['name'] ?? null;
+        $name           = is_string($rawName) ? trim($rawName) : '';
 
         if ($name === '') {
             throw ValidationException::withMessages([
@@ -140,16 +140,16 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
             ]);
         }
 
-        $parentId = $attributes['parent_id'] ?? null;
-        $parentId = is_numeric($parentId) ? (int) $parentId : null;
+        $parentId       = $attributes['parent_id'] ?? null;
+        $parentId       = is_numeric($parentId) ? (int) $parentId : null;
 
         $this->assertParentIsValid($category, $parentId);
 
-        $rawSlug  = $attributes['slug'] ?? null;
+        $rawSlug        = $attributes['slug'] ?? null;
         $rawDescription = $attributes['description'] ?? null;
-        $rawSortOrder = $attributes['sort_order'] ?? 0;
+        $rawSortOrder   = $attributes['sort_order'] ?? 0;
 
-        $slug     = $this->generateUniqueSlug(
+        $slug           = $this->generateUniqueSlug(
             name: $name,
             slug: is_string($rawSlug) ? $rawSlug : null,
             ignoreId: $category->exists ? (int) $category->id : null,

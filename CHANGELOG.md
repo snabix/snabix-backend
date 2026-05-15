@@ -36,8 +36,13 @@
   - `GET /docs/api`
   - `GET /docs/api.json`
   - task-команды для анализа и экспорта документации
+- Добавлена единая команда полной backend-проверки
+  - `task check`
+  - `composer check`
 
 ### Changed
+- Проект отказался от `l5-swagger` и ручных `OpenAPI`-атрибутов в HTTP-слое
+  - единственным источником API-документации стал `Scramble`
 - Новый модуль объявлений переведен на `int-backed enum`
   - `catalog_type`
   - `listing.type`
@@ -73,6 +78,56 @@
 - Исправлен operational-рассинхрон, из-за которого worker в Docker и ручной worker могли слушать разные очереди
 - Удалён устаревший backend-конфиг для redirect-based email verification
 - Уточнены `.env` и maintenance-настройки очередей под текущую cookie-auth и queue-архитектуру
+- Обновлён тестовый и quality-check контур backend
+  - удалены устаревшие Swagger-specific тесты
+  - добавлены проверки доступности `Scramble`-документации
+  - введена единая команда `task check` для `cs-fixer`, `phpstan`, `Scramble` и `php artisan test`
+
+## [0.7.0] - 2026-05-15
+
+### Added
+- Расширен CRUD объявлений для пользовательского кабинета
+  - `GET /api/v1/listings`
+  - `DELETE /api/v1/listings/{listingId}`
+- Добавлен backend CRUD API характеристик категорий для admin-сценариев
+  - list
+  - show
+  - create
+  - update
+  - delete
+- Добавлены feature-тесты на:
+  - CRUD характеристик категорий
+  - создание объявления с подготовленными характеристиками
+  - список и удаление собственных объявлений
+
+### Changed
+- `Http`-слой объявлений и характеристик категорий декомпозирован по use-case директориям
+  - `Create*`
+  - `Show*`
+  - `Update*`
+  - `List*`
+  - `Delete*`
+  - каждый сценарий теперь хранит собственные `Controller`, `Request` и `Response`
+  - общие `ListingRequest/Response` и `CategoryAttributeDefinitionRequest/Response` удалены
+- Цена объявления переведена на целочисленную модель хранения
+  - schema `unsignedInteger`
+  - request validation `integer`
+  - repository normalization только в `int`
+- Filament-форма характеристик категорий переработана
+  - секции получили более выразительную структуру
+  - улучшены подсказки, helper texts и визуальная читаемость полей
+  - сценарий подготовки готовых полей для формы объявления стал нагляднее
+- Валидация значений характеристик объявления усилена по типу поля
+  - text
+  - number
+  - boolean
+  - select
+  - multiselect
+  - date
+
+### Fixed
+- Системное HTTP-логирование больше не пытается сохранять integer `admin` id в UUID-поле `system_logs.user_id`
+- Тестовый и runtime-контур приведён к новой структуре `Http`-слоя без потери покрытия
 
 ## [0.5.0] - 2026-05-12
 

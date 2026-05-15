@@ -10,6 +10,7 @@ use App\Media\Domain\Enums\MediaType;
 use App\Media\Domain\Enums\MediaVisibility;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Http\UploadedFile;
+use RuntimeException;
 use Throwable;
 
 readonly class UserAvatarService
@@ -44,7 +45,7 @@ readonly class UserAvatarService
         );
 
         if (! is_string($sourcePath) || $sourcePath === '') {
-            throw new \RuntimeException('Не удалось сохранить временный файл аватара.');
+            throw new RuntimeException('Не удалось сохранить временный файл аватара.');
         }
 
         $currentAvatar = $this->findForUser($userId);

@@ -15,19 +15,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property      int                               $id
- * @property      CategoryCatalogType               $catalog_type
- * @property      int|null                          $parent_id
- * @property      string                            $name
- * @property      string                            $slug
- * @property      string|null                       $description
- * @property      int                               $sort_order
- * @property      bool                              $is_active
- * @property      string|null                       $path
- * @property      int                               $depth
- * @property-read string                            $full_name
- * @property-read EloquentCategory|null             $parentCategory
- * @property-read Collection<int, EloquentCategory> $children
+ * @property      int                                                  $id
+ * @property      CategoryCatalogType                                  $catalog_type
+ * @property      int|null                                             $parent_id
+ * @property      string                                               $name
+ * @property      string                                               $slug
+ * @property      string|null                                          $description
+ * @property      int                                                  $sort_order
+ * @property      bool                                                 $is_active
+ * @property      string|null                                          $path
+ * @property      int                                                  $depth
+ * @property-read string                                               $full_name
+ * @property-read EloquentCategory|null                                $parentCategory
+ * @property-read Collection<int, EloquentCategory>                    $children
  * @property-read Collection<int, EloquentCategoryAttributeDefinition> $attributeDefinitions
  */
 class EloquentCategory extends Model
@@ -92,12 +92,12 @@ class EloquentCategory extends Model
     protected function casts(): array
     {
         return [
-            'sort_order' => 'integer',
-            'is_active'  => 'boolean',
-            'depth'      => 'integer',
+            'sort_order'  => 'integer',
+            'is_active'   => 'boolean',
+            'depth'       => 'integer',
             'catalog_type'=> CategoryCatalogType::class,
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+            'created_at'  => 'datetime',
+            'updated_at'  => 'datetime',
         ];
     }
 

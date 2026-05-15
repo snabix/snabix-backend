@@ -58,11 +58,11 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth.verify-email', function (Request $request): Limit {
-            $user = $request->user();
+            $user   = $request->user();
             $userId = is_object($user) && (is_string($user->getAuthIdentifier()) || is_int($user->getAuthIdentifier()))
                 ? (string) $user->getAuthIdentifier()
                 : '';
-            $ip = $request->ip() ?? 'unknown';
+            $ip     = $request->ip() ?? 'unknown';
 
             return Limit::perMinutes(15, 5)
                 ->by($userId !== '' ? $userId . '|' . $ip : $ip)
@@ -72,7 +72,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth.resend-verification', function (Request $request): Limit {
-            $user = $request->user();
+            $user   = $request->user();
             $userId = is_object($user) && (is_string($user->getAuthIdentifier()) || is_int($user->getAuthIdentifier()))
                 ? (string) $user->getAuthIdentifier()
                 : ($request->ip() ?? 'unknown');

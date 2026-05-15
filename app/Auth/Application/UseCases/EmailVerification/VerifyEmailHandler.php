@@ -25,7 +25,7 @@ readonly class VerifyEmailHandler
     public function execute(
         VerifyEmailInput $data,
     ): VerifyEmailOutput {
-        $user = $this->userRepository->byId(
+        $user        = $this->userRepository->byId(
             new UUID($data->userId),
         );
 

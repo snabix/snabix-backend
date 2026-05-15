@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Services\SystemLogManager;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class LogRequestActivity
@@ -65,7 +66,7 @@ readonly class LogRequestActivity
             durationMs: $durationMs,
             ipAddress: $request->ip(),
             userAgent: $request->userAgent(),
-            userId: is_string($userId) || is_int($userId) ? (string) $userId : null,
+            userId: $this->resolveLoggableUserId($userId),
         );
 
         return $response;
@@ -128,5 +129,18 @@ readonly class LogRequestActivity
         $path = trim($request->path(), '/');
 
         return $path === '' ? '/' : '/' . $path;
+    }
+
+    private function resolveLoggableUserId(mixed $userId): ?string
+    {
+        if (! is_string($userId) && ! is_int($userId)) {
+            return null;
+        }
+
+        $resolvedUserId = (string) $userId;
+
+        return Str::isUuid($resolvedUserId)
+            ? $resolvedUserId
+            : null;
     }
 }

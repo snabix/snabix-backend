@@ -51,6 +51,14 @@ tasks:
     desc: Larastan / PHPStan — статический анализ backend на уровне 9
     cmd: composer stan
 
+  check:
+    desc: "Полная проверка backend: cs-fixer, larastan, scramble и тесты"
+    cmds:
+      - task "cs:dry"
+      - task stan
+      - task "docs:scramble"
+      - task test
+
   docs:scramble:
     desc: Scramble — открыть и проверить сгенерированную API-документацию
     cmds:

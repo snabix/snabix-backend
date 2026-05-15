@@ -20,9 +20,9 @@ class SendEmailVerificationJob implements ShouldBeUnique, ShouldQueue
 
     public int $uniqueFor = 60;
 
-    public int $tries   = 3;
+    public int $tries     = 3;
 
-    public int $timeout = 30;
+    public int $timeout   = 30;
 
     public function __construct(
         public string $userId,

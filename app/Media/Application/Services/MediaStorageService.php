@@ -159,7 +159,7 @@ readonly class MediaStorageService
                 : MediaVisibility::PUBLIC;
         }
 
-        $disk = $attributes['disk'] ?? null;
+        $disk       = $attributes['disk'] ?? null;
 
         return is_string($disk) && $disk !== ''
             ? $disk

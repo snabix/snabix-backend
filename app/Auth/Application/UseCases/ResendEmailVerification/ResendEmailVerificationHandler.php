@@ -22,7 +22,7 @@ readonly class ResendEmailVerificationHandler
      */
     public function execute(ResendEmailVerificationInput $data): ResendEmailVerificationOutput
     {
-        $user = $this->userRepository->byId(
+        $user            = $this->userRepository->byId(
             new UUID($data->userId),
         );
 

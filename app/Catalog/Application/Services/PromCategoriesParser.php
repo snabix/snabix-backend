@@ -18,13 +18,13 @@ readonly class PromCategoriesParser
     {
         libxml_use_internal_errors(true);
 
-        $document = new DOMDocument();
+        $document       = new DOMDocument();
         $document->loadHTML('<?xml encoding="utf-8" ?>' . $html);
 
         libxml_clear_errors();
 
-        $xpath    = new DOMXPath($document);
-        $nodes    = [];
+        $xpath          = new DOMXPath($document);
+        $nodes          = [];
         $categoryBlocks = $xpath->query('//div[@data-qaid="category-block"]');
 
         if ($categoryBlocks === false) {
@@ -36,7 +36,7 @@ readonly class PromCategoriesParser
                 continue;
             }
 
-            $rootLink       = $this->firstElement($xpath, './/*[@data-qaid="category_name"]//a[1]', $categoryBlock);
+            $rootLink         = $this->firstElement($xpath, './/*[@data-qaid="category_name"]//a[1]', $categoryBlock);
 
             if ($rootLink === null) {
                 continue;
@@ -60,7 +60,7 @@ readonly class PromCategoriesParser
                 $leafNodes     = [];
                 $leafSortOrder = 0;
 
-                $leafLinks = $xpath->query('.//*[@data-qaid="sub_category_name"]//a', $subcategoryGroup);
+                $leafLinks     = $xpath->query('.//*[@data-qaid="sub_category_name"]//a', $subcategoryGroup);
 
                 if ($leafLinks === false) {
                     continue;
@@ -87,7 +87,7 @@ readonly class PromCategoriesParser
                 }
             }
 
-            $rootNode       = $this->makeNodeFromLink($rootLink, count($nodes), $children);
+            $rootNode         = $this->makeNodeFromLink($rootLink, count($nodes), $children);
 
             if ($rootNode !== null) {
                 $nodes[] = $rootNode;

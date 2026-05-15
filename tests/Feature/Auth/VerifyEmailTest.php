@@ -12,7 +12,7 @@ class VerifyEmailTest extends FeatureTestCase
 {
     public function test_authenticated_user_can_verify_email_by_code(): void
     {
-        $user = EloquentUser::factory()->unverified()->create([
+        $user                         = EloquentUser::factory()->unverified()->create([
             'first_name' => 'Unverified',
             'last_name'  => 'User',
             'email'      => 'unverified@example.com',
@@ -21,7 +21,7 @@ class VerifyEmailTest extends FeatureTestCase
 
         /** @var EmailVerificationCodeService $emailVerificationCodeService */
         $emailVerificationCodeService = app(EmailVerificationCodeService::class);
-        $code = $emailVerificationCodeService->issue((string) $user->id, $user->email);
+        $code                         = $emailVerificationCodeService->issue((string) $user->id, $user->email);
 
         $this->actingAs($user)
             ->postJson('/api/v1/auth/verify-email', [
@@ -32,7 +32,7 @@ class VerifyEmailTest extends FeatureTestCase
             ->assertJsonPath('data.alreadyVerified', false)
             ->assertJsonPath('data.message', 'Email успешно подтвержден.');
 
-        $freshUser = $user->fresh();
+        $freshUser                    = $user->fresh();
 
         $this->assertInstanceOf(EloquentUser::class, $freshUser);
         $this->assertTrue($freshUser->email_verified_at !== null);

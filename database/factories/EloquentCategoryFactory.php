@@ -44,11 +44,11 @@ class EloquentCategoryFactory extends Factory
             'Подарки',
         ];
 
-        $name = $names[fake()->numberBetween(0, count($names) - 1)]
+        $name  = $names[fake()->numberBetween(0, count($names) - 1)]
             . ' '
             . (string) fake()->unique()->numberBetween(1, 999);
 
-        $slug = Str::slug($name);
+        $slug  = Str::slug($name);
 
         return [
             'parent_id'    => null,
@@ -73,8 +73,8 @@ class EloquentCategoryFactory extends Factory
     public function childOf(EloquentCategory $parent): static
     {
         return $this->state(function (array $attributes) use ($parent): array {
-            $name = $attributes['name'] ?? null;
-            $slug = $attributes['slug'] ?? null;
+            $name         = $attributes['name'] ?? null;
+            $slug         = $attributes['slug'] ?? null;
 
             $resolvedSlug = is_string($slug) && $slug !== ''
                 ? $slug

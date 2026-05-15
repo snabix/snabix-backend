@@ -9,25 +9,9 @@ use App\Auth\Application\UseCases\DeleteProfileAvatar\DeleteProfileAvatarInput;
 use App\Auth\Application\UseCases\Profile\ProfileHandler;
 use App\Auth\Application\UseCases\Profile\ProfileInput;
 use Illuminate\Http\Request;
-use OpenApi\Attributes as OA;
 
 class DeleteProfileAvatarController
 {
-    #[OA\Delete(
-        path: '/api/v1/auth/me/avatar',
-        operationId: 'authDeleteProfileAvatar',
-        summary: 'Delete current authenticated user avatar',
-        security: [['sanctumSession' => []]],
-        tags: ['Auth'],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Avatar successfully deleted',
-                content: new OA\JsonContent(ref: '#/components/schemas/AuthProfileResponse'),
-            ),
-            new OA\Response(response: 401, description: 'Unauthenticated'),
-        ],
-    )]
     public function __invoke(
         Request                    $request,
         DeleteProfileAvatarHandler $handler,

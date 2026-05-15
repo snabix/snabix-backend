@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Cache;
 
 class EmailVerificationCodeService
 {
-    private const int TTL_MINUTES = 60;
+    private const int TTL_MINUTES             = 60;
+
     private const int RESEND_COOLDOWN_SECONDS = 60;
 
     public function issue(string $userId, string $email): string
@@ -31,13 +32,13 @@ class EmailVerificationCodeService
 
     public function verify(string $userId, string $email, string $code): bool
     {
-        $payload = Cache::get($this->cacheKey($userId));
+        $payload     = Cache::get($this->cacheKey($userId));
 
         if (! is_array($payload)) {
             return false;
         }
 
-        $codeHash = $payload['codeHash'] ?? null;
+        $codeHash    = $payload['codeHash'] ?? null;
         $storedEmail = $payload['email'] ?? null;
 
         if (! is_string($codeHash) || ! is_string($storedEmail)) {
@@ -61,7 +62,7 @@ class EmailVerificationCodeService
 
     public function resendCooldownSeconds(string $userId): int
     {
-        $payload = Cache::get($this->cacheKey($userId));
+        $payload       = Cache::get($this->cacheKey($userId));
 
         if (! is_array($payload)) {
             return 0;

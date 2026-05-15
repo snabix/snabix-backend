@@ -33,7 +33,7 @@ class MediaAttachableModels
         if ($modelClass === EloquentUser::class) {
             $options = [];
 
-            $users = EloquentUser::query()
+            $users   = EloquentUser::query()
                 ->orderBy('email')
                 ->limit(100)
                 ->get(['id', 'first_name', 'last_name', 'email']);
@@ -48,7 +48,7 @@ class MediaAttachableModels
         if ($modelClass === EloquentAdmin::class) {
             $options = [];
 
-            $admins = EloquentAdmin::query()
+            $admins  = EloquentAdmin::query()
                 ->orderBy('email')
                 ->limit(100)
                 ->get(['id', 'email']);

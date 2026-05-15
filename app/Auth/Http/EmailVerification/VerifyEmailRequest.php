@@ -5,16 +5,7 @@ declare(strict_types=1);
 namespace App\Auth\Http\EmailVerification;
 
 use Illuminate\Foundation\Http\FormRequest;
-use OpenApi\Attributes as OA;
 
-#[OA\Schema(
-    schema: 'AuthVerifyEmailRequest',
-    required: ['code'],
-    properties: [
-        new OA\Property(property: 'code', type: 'string', example: '482913'),
-    ],
-    type: 'object',
-)]
 class VerifyEmailRequest extends FormRequest
 {
     /**
@@ -30,20 +21,5 @@ class VerifyEmailRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
-    }
-
-    public function authenticatedUserId(): string
-    {
-        $user = $this->user();
-
-        if (! is_object($user)) {
-            return '';
-        }
-
-        $identifier = $user->getAuthIdentifier();
-
-        return is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
     }
 }

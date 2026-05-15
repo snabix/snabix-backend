@@ -7,26 +7,10 @@ namespace App\Auth\Http\EmailVerification;
 use App\Auth\Application\UseCases\ResendEmailVerification\ResendEmailVerificationOutput;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use OpenApi\Attributes as OA;
 
 /**
  * @mixin ResendEmailVerificationOutput
  */
-#[OA\Schema(
-    schema: 'AuthResendEmailVerificationResponse',
-    properties: [
-        new OA\Property(
-            property: 'data',
-            properties: [
-                new OA\Property(property: 'sent', type: 'boolean', example: true),
-                new OA\Property(property: 'message', type: 'string', example: 'Код подтверждения отправлен повторно.'),
-                new OA\Property(property: 'cooldownSeconds', type: 'integer', example: 60),
-            ],
-            type: 'object',
-        ),
-    ],
-    type: 'object',
-)]
 class ResendEmailVerificationResponse extends JsonResource
 {
     /**

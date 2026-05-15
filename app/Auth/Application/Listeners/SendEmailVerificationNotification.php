@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Auth\Application\Listeners;
 
-use App\Auth\Application\Services\EmailVerificationCodeService;
 use App\Auth\Application\Jobs\SendEmailVerificationJob;
+use App\Auth\Application\Services\EmailVerificationCodeService;
 use App\Auth\Domain\Events\UserEmailVerificationRequested;
 use App\Auth\Domain\Events\UserRegistered;
 

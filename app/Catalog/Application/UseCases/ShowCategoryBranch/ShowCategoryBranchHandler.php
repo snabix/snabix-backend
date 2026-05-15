@@ -17,7 +17,7 @@ readonly class ShowCategoryBranchHandler
 
     public function execute(ShowCategoryBranchInput $input): ShowCategoryBranchOutput
     {
-        $rootCategory = $this->categoryRepository->findById($input->categoryId);
+        $rootCategory     = $this->categoryRepository->findById($input->categoryId);
 
         if ($rootCategory === null) {
             throw (new ModelNotFoundException())->setModel(EloquentCategory::class, [$input->categoryId]);
@@ -37,7 +37,7 @@ readonly class ShowCategoryBranchHandler
     }
 
     /**
-     * @param Collection<int, EloquentCategory> $branchCategories
+     * @param  Collection<int, EloquentCategory> $branchCategories
      * @return array<string, mixed>
      */
     private function mapCategory(
@@ -46,23 +46,23 @@ readonly class ShowCategoryBranchHandler
     ): array {
         $children = $branchCategories
             ->where('parent_id', $category->id)
-            ->map(fn (EloquentCategory $child): array => $this->mapCategory($child, $branchCategories))
+            ->map(fn(EloquentCategory $child): array => $this->mapCategory($child, $branchCategories))
             ->values()
             ->all();
 
         return [
-            'id'          => $category->id,
-            'catalogType' => $category->catalog_type->value,
+            'id'               => $category->id,
+            'catalogType'      => $category->catalog_type->value,
             'catalogTypeLabel' => $category->catalog_type->label(),
-            'parentId'    => $category->parent_id,
-            'name'        => $category->name,
-            'slug'        => $category->slug,
-            'description' => $category->description,
-            'sortOrder'   => $category->sort_order,
-            'isActive'    => $category->is_active,
-            'path'        => $category->path,
-            'depth'       => $category->depth,
-            'children'    => $children,
+            'parentId'         => $category->parent_id,
+            'name'             => $category->name,
+            'slug'             => $category->slug,
+            'description'      => $category->description,
+            'sortOrder'        => $category->sort_order,
+            'isActive'         => $category->is_active,
+            'path'             => $category->path,
+            'depth'            => $category->depth,
+            'children'         => $children,
         ];
     }
 }

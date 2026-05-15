@@ -49,7 +49,7 @@ class EloquentMedia extends Media
     protected static function booted(): void
     {
         static::saving(function (self $media): void {
-            $mediaType = $media->getAttribute('media_type');
+            $mediaType         = $media->getAttribute('media_type');
 
             if ($mediaType instanceof MediaType) {
                 return;

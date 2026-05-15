@@ -19,13 +19,31 @@ class SessionAuthenticatorService implements SessionAuthenticatorInterface
         }
 
         Auth::guard('web')->login($user);
-        request()->session()->regenerate();
+        $this->regenerateSession();
     }
 
     public function logout(): void
     {
         Auth::guard('web')->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+
+        $request = request();
+
+        if (! $request->hasSession()) {
+            return;
+        }
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+    }
+
+    private function regenerateSession(): void
+    {
+        $request = request();
+
+        if (! $request->hasSession()) {
+            return;
+        }
+
+        $request->session()->regenerate();
     }
 }
