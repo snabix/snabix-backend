@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
-class EloquentListingRepository implements ListingRepositoryInterface
+readonly class EloquentListingRepository implements ListingRepositoryInterface
 {
     public function __construct(
         private CategoryAttributeDefinitionRepositoryInterface $categoryAttributeDefinitionRepository,
@@ -104,8 +104,9 @@ class EloquentListingRepository implements ListingRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed>    $attributes
-     * @param array<array-key, mixed> $attributeValues
+     * @param  array<string, mixed>    $attributes
+     * @param  array<array-key, mixed> $attributeValues
+     * @throws Throwable
      */
     public function update(EloquentListing $listing, array $attributes, array $attributeValues = []): EloquentListing
     {
@@ -156,6 +157,9 @@ class EloquentListingRepository implements ListingRepositoryInterface
             ->first();
     }
 
+    /**
+     * @throws Throwable
+     */
     public function delete(EloquentListing $listing): void
     {
         DB::transaction(function () use ($listing): void {
@@ -337,8 +341,10 @@ class EloquentListingRepository implements ListingRepositoryInterface
         return $userId;
     }
 
-    private function resolveNullableString(mixed $value, int $limit = 255): ?string
-    {
+    private function resolveNullableString(
+        mixed $value,
+        int $limit = 255,
+    ): ?string {
         if (! is_string($value)) {
             return null;
         }
@@ -354,7 +360,7 @@ class EloquentListingRepository implements ListingRepositoryInterface
 
     private function resolveEmail(mixed $email): ?string
     {
-        $resolvedEmail = $this->resolveNullableString($email, 255);
+        $resolvedEmail = $this->resolveNullableString($email);
 
         if ($resolvedEmail === null) {
             return null;
@@ -384,8 +390,10 @@ class EloquentListingRepository implements ListingRepositoryInterface
         }
     }
 
-    private function generateUniqueSlug(string $title, ?string $ignoreId = null): string
-    {
+    private function generateUniqueSlug(
+        string $title,
+        ?string $ignoreId = null,
+    ): string {
         $baseSlug  = Str::slug($title);
 
         if ($baseSlug === '') {
@@ -413,34 +421,51 @@ class EloquentListingRepository implements ListingRepositoryInterface
     /**
      * @param array<array-key, mixed> $attributeValues
      */
-    private function syncAttributeValues(EloquentListing $listing, int $categoryId, array $attributeValues): void
-    {
-        if ($attributeValues === []) {
+    private function syncAttributeValues(
+        EloquentListing $listing,
+        int $categoryId,
+        array $attributeValues,
+    ): void {
+        $definitions     = $this->categoryAttributeDefinitionRepository
+            ->forCategory($categoryId)
+            ->keyBy('id');
+        $submittedValues = $this->normalizeSubmittedAttributeValues($attributeValues);
+        $definitionIds   = $definitions->keys()->map(static fn(mixed $definitionId): int => (int) $definitionId)->all();
+
+        if ($definitionIds === []) {
+            $listing->attributeValues()->delete();
+
             return;
         }
 
-        $definitions = $this->categoryAttributeDefinitionRepository
-            ->forCategory($categoryId)
-            ->keyBy('id');
+        foreach ($definitions as $definition) {
+            $definitionId    = $definition->id;
+            $hasValue        = array_key_exists($definitionId, $submittedValues);
 
-        foreach ($attributeValues as $attributeDefinitionId => $value) {
-            if (! is_numeric($attributeDefinitionId)) {
+            if (! $hasValue) {
+                if ($definition->is_required) {
+                    throw ValidationException::withMessages([
+                        'attributeValues.' . $definitionId => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
+                    ]);
+                }
+
+                $this->deleteAttributeValue($listing, $definitionId);
+
                 continue;
             }
 
-            $definitionId    = (int) $attributeDefinitionId;
-            $definition      = $definitions->get($definitionId);
+            $normalizedValue = $this->normalizeDefinitionValue($definition, $submittedValues[$definitionId]);
 
-            if ($definition === null) {
+            if ($normalizedValue === null) {
+                $this->deleteAttributeValue($listing, $definitionId);
+
                 continue;
             }
-
-            $normalizedValue = $this->normalizeDefinitionValue($definition, $value);
 
             EloquentListingAttributeValue::query()->updateOrCreate(
                 [
-                    'listing_id'               => $listing->id,
-                    'attribute_definition_id'  => $definitionId,
+                    'listing_id'              => $listing->id,
+                    'attribute_definition_id' => $definitionId,
                 ],
                 [
                     'value'         => $normalizedValue,
@@ -448,6 +473,38 @@ class EloquentListingRepository implements ListingRepositoryInterface
                 ],
             );
         }
+
+        $listing
+            ->attributeValues()
+            ->whereNotIn('attribute_definition_id', $definitionIds)
+            ->delete();
+    }
+
+    /**
+     * @param  array<array-key, mixed> $attributeValues
+     * @return array<int, mixed>
+     */
+    private function normalizeSubmittedAttributeValues(array $attributeValues): array
+    {
+        $normalizedValues = [];
+
+        foreach ($attributeValues as $attributeDefinitionId => $value) {
+            if (! is_numeric($attributeDefinitionId)) {
+                continue;
+            }
+
+            $normalizedValues[(int) $attributeDefinitionId] = $value;
+        }
+
+        return $normalizedValues;
+    }
+
+    private function deleteAttributeValue(EloquentListing $listing, int $definitionId): void
+    {
+        $listing
+            ->attributeValues()
+            ->where('attribute_definition_id', $definitionId)
+            ->delete();
     }
 
     private function normalizeDefinitionValue(
@@ -520,7 +577,7 @@ class EloquentListingRepository implements ListingRepositoryInterface
             return $value;
         }
 
-        if (is_int($value) && in_array($value, [0, 1], true)) {
+        if (in_array($value, [0, 1], true)) {
             return (bool) $value;
         }
 
@@ -583,6 +640,12 @@ class EloquentListingRepository implements ListingRepositoryInterface
             ->unique()
             ->values()
             ->all();
+
+        if ($normalizedValues === [] && $definition->is_required) {
+            throw ValidationException::withMessages([
+                'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
+            ]);
+        }
 
         foreach ($normalizedValues as $normalizedValue) {
             if (! in_array($normalizedValue, $options, true)) {

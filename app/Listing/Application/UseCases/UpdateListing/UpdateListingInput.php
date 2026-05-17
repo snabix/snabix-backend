@@ -16,7 +16,6 @@ class UpdateListingInput extends Input
         public readonly string $listingId,
         public readonly int $categoryId,
         public readonly int $type,
-        public readonly int $status,
         public readonly ?int $condition,
         public readonly string $title,
         public readonly string $description,
@@ -26,8 +25,6 @@ class UpdateListingInput extends Input
         public readonly ?string $contactName,
         public readonly ?string $contactPhone,
         public readonly ?string $contactEmail,
-        public readonly bool $isFeatured,
-        public readonly ?string $rejectionReason,
         public readonly array $attributeValues,
     ) {}
 }

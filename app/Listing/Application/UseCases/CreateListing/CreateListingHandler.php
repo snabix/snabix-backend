@@ -6,6 +6,7 @@ namespace App\Listing\Application\UseCases\CreateListing;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Enums\ListingStatus;
 
 readonly class CreateListingHandler
 {
@@ -21,7 +22,7 @@ readonly class CreateListingHandler
                 'user_id'          => $input->userId,
                 'category_id'      => $input->categoryId,
                 'type'             => $input->type,
-                'status'           => $input->status,
+                'status'           => ListingStatus::DRAFT,
                 'condition'        => $input->condition,
                 'title'            => $input->title,
                 'description'      => $input->description,
@@ -31,8 +32,6 @@ readonly class CreateListingHandler
                 'contact_name'     => $input->contactName,
                 'contact_phone'    => $input->contactPhone,
                 'contact_email'    => $input->contactEmail,
-                'is_featured'      => $input->isFeatured,
-                'rejection_reason' => $input->rejectionReason,
             ],
             attributeValues: $input->attributeValues,
         );

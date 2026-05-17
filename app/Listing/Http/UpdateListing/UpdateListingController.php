@@ -18,24 +18,16 @@ class UpdateListingController
         UpdateListingHandler $handler,
     ): UpdateListingResponse {
         $request->validated();
-        $user       = $request->user();
-        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
-        $userId     = is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
-        $listingId  = $request->route('listingId');
         $condition  = $request->input('condition');
         $price      = $request->input('price');
         $currency   = $request->input('currency');
-        $attributes = $request->input('attributeValues');
 
         $result     = $handler->execute(
             UpdateListingInput::from([
-                'userId'         => $userId,
-                'listingId'      => is_string($listingId) ? $listingId : '',
+                'userId'         => $request->userId(),
+                'listingId'      => $request->listingId(),
                 'categoryId'     => $request->integer('categoryId'),
                 'type'           => $request->integer('type'),
-                'status'         => $request->integer('status'),
                 'condition'      => is_int($condition) ? $condition : (is_numeric($condition) ? (int) $condition : null),
                 'title'          => $request->string('title')->toString(),
                 'description'    => $request->string('description')->toString(),
@@ -45,9 +37,7 @@ class UpdateListingController
                 'contactName'    => $request->filled('contactName') ? $request->string('contactName')->toString() : null,
                 'contactPhone'   => $request->filled('contactPhone') ? $request->string('contactPhone')->toString() : null,
                 'contactEmail'   => $request->filled('contactEmail') ? $request->string('contactEmail')->toString() : null,
-                'isFeatured'     => $request->boolean('isFeatured', false),
-                'rejectionReason'=> $request->filled('rejectionReason') ? $request->string('rejectionReason')->toString() : null,
-                'attributeValues'=> is_array($attributes) ? $attributes : [],
+                'attributeValues'=> $request->attributeValues(),
             ]),
         );
 

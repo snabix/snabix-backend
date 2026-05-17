@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listing\Application\UseCases\ListPublicListings;
 
-use App\Listing\Application\Support\ListingPayloadMapper;
+use App\Listing\Application\Support\PublicListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Infrastructure\Models\EloquentListing;
 
@@ -12,7 +12,7 @@ readonly class ListPublicListingsHandler
 {
     public function __construct(
         private ListingRepositoryInterface $listingRepository,
-        private ListingPayloadMapper $listingPayloadMapper,
+        private PublicListingPayloadMapper $listingPayloadMapper,
     ) {}
 
     public function execute(ListPublicListingsInput $input): ListPublicListingsOutput

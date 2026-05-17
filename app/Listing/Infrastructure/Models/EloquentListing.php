@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * @use HasFactory<EloquentListingFactory>
  * @property string           $id
  * @property string           $user_id
  * @property int              $category_id
@@ -42,7 +41,9 @@ use Illuminate\Support\Carbon;
  */
 class EloquentListing extends Model
 {
+    /** @use HasFactory<EloquentListingFactory> */
     use HasFactory;
+
     use HasUuids;
 
     public $incrementing = false;

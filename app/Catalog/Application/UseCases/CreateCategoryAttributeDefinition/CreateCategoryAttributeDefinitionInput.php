@@ -9,7 +9,8 @@ use App\Shared\Domain\DTO\Input;
 class CreateCategoryAttributeDefinitionInput extends Input
 {
     /**
-     * @param array<int, mixed>|null $options
+     * @param array<int|string, mixed>|null $defaultValue
+     * @param array<int, mixed>|null        $options
      */
     public function __construct(
         public readonly int $categoryId,

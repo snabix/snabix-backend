@@ -7,6 +7,7 @@ namespace Tests\Feature\Listing;
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Catalog\Domain\Contracts\CategoryAttributeDefinitionRepositoryInterface;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
+use App\Listing\Domain\Enums\ListingStatus;
 use Tests\Feature\FeatureTestCase;
 
 class CreateListingTest extends FeatureTestCase
@@ -67,5 +68,75 @@ class CreateListingTest extends FeatureTestCase
             ->assertJsonPath('data.category.id', $category->id)
             ->assertJsonPath('data.attributeValues.0.displayValue', 'Bosch')
             ->assertJsonPath('data.attributeValues.1.displayValue', 'Да');
+    }
+
+    public function test_user_cannot_set_moderation_fields_when_creating_listing(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Мониторы',
+            'slug'         => 'monitory',
+            'catalog_type' => 1,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/listings', [
+                'categoryId'      => $category->id,
+                'type'            => 1,
+                'status'          => ListingStatus::PUBLISHED->value,
+                'condition'       => 2,
+                'title'           => 'Игровой монитор',
+                'description'     => 'Монитор в хорошем состоянии.',
+                'price'           => 25000,
+                'currency'        => 'RUB',
+                'isFeatured'      => true,
+                'rejectionReason' => 'Не должно сохраниться',
+                'attributeValues' => [],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.status', ListingStatus::DRAFT->value)
+            ->assertJsonPath('data.isFeatured', false)
+            ->assertJsonPath('data.rejectionReason', null);
+    }
+
+    public function test_required_category_attribute_must_be_present(): void
+    {
+        $categoryRepository            = app(CategoryRepositoryInterface::class);
+        $attributeDefinitionRepository = app(CategoryAttributeDefinitionRepositoryInterface::class);
+        $user                          = EloquentUser::factory()->create();
+        $category                      = $categoryRepository->save([
+            'name'         => 'Принтеры',
+            'slug'         => 'printery',
+            'catalog_type' => 1,
+        ]);
+
+        $attribute                     = $attributeDefinitionRepository->save([
+            'category_id'         => $category->id,
+            'name'                => 'Производитель',
+            'slug'                => 'proizvoditel',
+            'type'                => 1,
+            'is_required'         => true,
+            'is_filterable'       => true,
+            'is_active'           => true,
+            'applies_to_children' => true,
+            'sort_order'          => 10,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/listings', [
+                'categoryId'      => $category->id,
+                'type'            => 1,
+                'condition'       => 2,
+                'title'           => 'Лазерный принтер',
+                'description'     => 'Рабочий офисный принтер.',
+                'price'           => 12000,
+                'currency'        => 'RUB',
+                'attributeValues' => [],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['attributeValues.' . $attribute->id]);
     }
 }

@@ -35,7 +35,7 @@ class ListingForm
                 Section::make('Основа объявления')
                     ->icon(Heroicon::OutlinedSparkles)
                     ->description('Каркас объявления: владелец, категория, статус и ключевая информация для публикации.')
-                    ->columns(2)
+                    ->columns()
                     ->schema([
                         Select::make('user_id')
                             ->label('Пользователь')
@@ -81,8 +81,8 @@ class ListingForm
                             ->options(ListingCondition::options())
                             ->default(ListingCondition::USED->value)
                             ->native(false)
-                            ->visible(fn(Get $get): bool => (int) $get('type') !== ListingType::SERVICE->value)
-                            ->required(fn(Get $get): bool => (int) $get('type') !== ListingType::SERVICE->value),
+                            ->visible(fn(Get $get): bool => self::nullableInt($get('type')) !== ListingType::SERVICE->value)
+                            ->required(fn(Get $get): bool => self::nullableInt($get('type')) !== ListingType::SERVICE->value),
 
                         TextInput::make('views_count')
                             ->label('Просмотры')
@@ -106,12 +106,12 @@ class ListingForm
                             ->label('Slug')
                             ->required()
                             ->maxLength(255)
-                            ->dehydrateStateUsing(fn(?string $state, Get $get): string => Str::slug($state ?: (string) $get('title'))),
+                            ->dehydrateStateUsing(fn(?string $state, Get $get): string => Str::slug($state ?: self::nullableString($get('title')) ?? '')),
                     ]),
 
                 Section::make('Контент и цена')
                     ->icon(Heroicon::OutlinedClipboardDocumentList)
-                    ->columns(2)
+                    ->columns()
                     ->schema([
                         Textarea::make('description')
                             ->label('Описание')
@@ -210,7 +210,7 @@ class ListingForm
                                 Textarea::make('value')
                                     ->label('Сырое значение (JSON)')
                                     ->rows(3)
-                                    ->formatStateUsing(fn(mixed $state): string => is_array($state) ? json_encode($state, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?: '' : (string) ($state ?? ''))
+                                    ->formatStateUsing(fn(mixed $state): string => is_array($state) ? json_encode($state, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?: '' : self::nullableString($state) ?? '')
                                     ->dehydrateStateUsing(function (?string $state): ?array {
                                         if ($state === null || trim($state) === '') {
                                             return null;
@@ -225,5 +225,23 @@ class ListingForm
                             ->defaultItems(0),
                     ]),
             ]);
+    }
+
+    private static function nullableInt(mixed $value): ?int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+
+        return is_string($value) && is_numeric($value) ? (int) $value : null;
+    }
+
+    private static function nullableString(mixed $value): ?string
+    {
+        if (! is_scalar($value)) {
+            return null;
+        }
+
+        return (string) $value;
     }
 }

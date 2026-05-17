@@ -29,7 +29,6 @@ readonly class UpdateListingHandler
             attributes: [
                 'category_id'      => $input->categoryId,
                 'type'             => $input->type,
-                'status'           => $input->status,
                 'condition'        => $input->condition,
                 'title'            => $input->title,
                 'description'      => $input->description,
@@ -39,8 +38,6 @@ readonly class UpdateListingHandler
                 'contact_name'     => $input->contactName,
                 'contact_phone'    => $input->contactPhone,
                 'contact_email'    => $input->contactEmail,
-                'is_featured'      => $input->isFeatured,
-                'rejection_reason' => $input->rejectionReason,
             ],
             attributeValues: $input->attributeValues,
         );
