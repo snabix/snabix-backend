@@ -27,7 +27,7 @@ class SignUpTest extends FeatureTestCase
         $response
             ->assertOk()
             ->assertJsonStructure([
-                'data' => ['token'],
+                'data' => ['userId'],
             ]);
 
         $this->assertDatabaseHas('users', [

@@ -19,9 +19,7 @@ class ProfileTest extends FeatureTestCase
             'is_active'    => true,
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        $this->withToken($token)
+        $this->actingAs($user)
             ->getJson('/api/v1/auth/me')
             ->assertOk()
             ->assertJsonPath('data.firstName', 'Imran')

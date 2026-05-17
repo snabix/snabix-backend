@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace App\Auth\Http\Profile;
 
 use Illuminate\Foundation\Http\FormRequest;
-use OpenApi\Attributes as OA;
 
-#[OA\Schema(
-    schema: 'AuthProfileRequest',
-    type: 'object',
-)]
 class ProfileRequest extends FormRequest
 {
     /**
@@ -24,20 +19,5 @@ class ProfileRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
-    }
-
-    public function authenticatedUserId(): string
-    {
-        $user = $this->user();
-
-        if (! is_object($user)) {
-            return '';
-        }
-
-        $identifier = $user->getAuthIdentifier();
-
-        return is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
     }
 }

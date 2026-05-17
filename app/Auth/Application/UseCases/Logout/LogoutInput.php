@@ -10,6 +10,5 @@ class LogoutInput extends Input
 {
     public function __construct(
         public readonly string $userId,
-        public readonly ?int $tokenId,
     ) {}
 }

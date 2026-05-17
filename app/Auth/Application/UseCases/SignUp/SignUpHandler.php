@@ -12,7 +12,6 @@ use App\Auth\Domain\ValueObjects\LastName;
 use App\Auth\Domain\ValueObjects\PhoneNumber;
 use App\Shared\Domain\Contracts\HasherInterface;
 use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
-use App\Shared\Domain\Contracts\TokenCreatorInterface;
 use App\Shared\Domain\ValueObjects\Email;
 use App\Shared\Domain\ValueObjects\Password;
 use App\Shared\Domain\ValueObjects\UUID;
@@ -26,7 +25,6 @@ readonly class SignUpHandler
         private UserRepositoryInterface $userRepository,
         private HasherInterface $hasherService,
         private SessionAuthenticatorInterface $sessionAuthenticator,
-        private TokenCreatorInterface $tokenCreator,
     ) {}
 
     /**
@@ -65,16 +63,12 @@ readonly class SignUpHandler
                     fn(): ?array => event(new UserRegistered($domainUser)),
                 );
 
-                $token = $this->tokenCreator->create(
-                    userId: $domainUser->id->value(),
-                    tokenName: 'web',
-                );
                 $this->sessionAuthenticator->login(
                     $domainUser->id->value(),
                 );
 
                 return SignUpOutput::from([
-                    'token' => $token,
+                    'userId' => $domainUser->id->value(),
                 ]);
             },
         );

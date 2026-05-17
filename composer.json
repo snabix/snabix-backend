@@ -9,7 +9,6 @@
         "ext-dom": "*",
         "php": "^8.3",
         "ans-group/laravel-health-check": "^3.0",
-        "darkaonline/l5-swagger": "^11.0",
         "filament/filament": "^5.0",
         "laravel-lang/lang": "^15.29",
         "laravel/framework": "^12.0",
@@ -22,6 +21,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.2",
+        "dedoc/scramble": "^0.13.22",
         "fakerphp/faker": "^1.23",
         "friendsofphp/php-cs-fixer": "^3.95",
         "larastan/larastan": "^3.0",
@@ -63,6 +63,11 @@
         ],
         "stan": [
             "@php vendor/bin/phpstan analyse --memory-limit=1G"
+        ],
+        "check": [
+            "@php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose",
+            "@php vendor/bin/phpstan analyse --memory-limit=1G",
+            "@php artisan scramble:analyze"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

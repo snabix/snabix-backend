@@ -87,12 +87,12 @@ class CategoryForm
 
                 Section::make(__('Child categories'))
                     ->description(__('Shows direct child categories of the current section.'))
-                    ->visible(fn (?EloquentCategory $record): bool => $record !== null)
+                    ->visible(fn(?EloquentCategory $record): bool => $record !== null)
                     ->schema([
                         Placeholder::make('child_categories_preview')
                             ->label('Child categories')
                             ->translateLabel()
-                            ->content(fn (?EloquentCategory $record): HtmlString => self::renderChildCategories($record)),
+                            ->content(fn(?EloquentCategory $record): HtmlString => self::renderChildCategories($record)),
                     ]),
             ]);
     }
@@ -109,8 +109,8 @@ class CategoryForm
             return new HtmlString('<span style="color:#6b7280;">' . e(__('This category has no children yet.')) . '</span>');
         }
 
-        $items = $children
-            ->map(fn (EloquentCategory $child): string => sprintf(
+        $items    = $children
+            ->map(fn(EloquentCategory $child): string => sprintf(
                 '<a href="%s" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e5e7eb;border-radius:16px;background:#ffffff;text-decoration:none;color:#111827;">
                     <span style="font-weight:700;">%s</span>
                     <span style="font-size:12px;color:#6b7280;">%s</span>

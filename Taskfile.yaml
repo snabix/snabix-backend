@@ -51,6 +51,24 @@ tasks:
     desc: Larastan / PHPStan — статический анализ backend на уровне 9
     cmd: composer stan
 
+  check:
+    desc: "Полная проверка backend: cs-fixer, larastan, scramble и тесты"
+    cmds:
+      - task "cs:dry"
+      - task stan
+      - task "docs:scramble"
+      - task test
+
+  docs:scramble:
+    desc: Scramble — открыть и проверить сгенерированную API-документацию
+    cmds:
+      - docker compose exec -T app php artisan scramble:analyze
+
+  docs:scramble-export:
+    desc: Scramble — экспортировать OpenAPI JSON
+    cmds:
+      - docker compose exec -T app php artisan scramble:export
+
   shell:
     desc: Зайти в контейнер
     cmds:
@@ -61,7 +79,7 @@ tasks:
     desc: Запустить RabbitMQ worker для очередей проекта
     cmds:
       - docker compose exec -T app php artisan app:rabbitmq-declare-topology
-      - docker compose exec -T app php artisan queue:work rabbitmq --queue=media,images,notifications,default --tries=3 --backoff=10 --timeout=120
+      - 'docker compose exec -T app sh -c ''php artisan queue:work rabbitmq --queue="${QUEUE_WORK_QUEUES:-notifications,media,images,default}" --tries=3 --backoff=10 --timeout=120'''
 
   queue:setup:
     desc: Объявить RabbitMQ exchange, очереди и bindings проекта
@@ -73,6 +91,31 @@ tasks:
     cmds:
       - docker compose exec -T app php artisan queue:failed
 
+  queue:prune-failed:
+    desc: Удалить устаревшие failed jobs
+    cmds:
+      - 'docker compose exec -T app sh -c ''php artisan queue:prune-failed --hours="${QUEUE_FAILED_RETENTION_HOURS:-168}"'''
+
+  queue:restart:
+    desc: Перезапустить queue workers после текущих jobs
+    cmds:
+      - docker compose exec -T app php artisan queue:restart
+
+  logs:cleanup:
+    desc: Удалить устаревшие системные логи
+    cmds:
+      - docker compose exec -T app php artisan shared:cleanup-system-logs
+
+  auth:clear-resets:
+    desc: Очистить устаревшие токены сброса пароля
+    cmds:
+      - docker compose exec -T app php artisan auth:clear-resets
+
+  queue:logs:
+    desc: Смотреть логи queue-worker в реальном времени
+    cmds:
+      - docker compose logs -f queue-worker
+
   rabbitmq:status:
     desc: Проверить состояние RabbitMQ
     cmds:
@@ -82,6 +125,16 @@ tasks:
     desc: Показать очереди RabbitMQ
     cmds:
       - docker compose exec -T rabbitmq rabbitmqctl list_queues name messages messages_ready messages_unacknowledged consumers
+
+  rabbitmq:watch:
+    desc: Смотреть состояние очередей RabbitMQ в реальном времени
+    cmds:
+      - sh -c 'while true; do clear; date; echo; docker compose exec -T rabbitmq rabbitmqctl list_queues name messages messages_ready messages_unacknowledged consumers; sleep 2; done'
+
+  rabbitmq:ui:
+    desc: Показать адрес RabbitMQ Management UI
+    cmds:
+      - 'echo "RabbitMQ Management UI: http://localhost:${RABBITMQ_MANAGEMENT_PORT:-15672}"'
 
   redis:cli:
     desc: Открыть Redis CLI

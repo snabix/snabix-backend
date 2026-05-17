@@ -8,30 +8,9 @@ use App\Auth\Application\UseCases\UpdateProfile\UpdateProfileHandler;
 use App\Auth\Application\UseCases\UpdateProfile\UpdateProfileInput;
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
 use Illuminate\Validation\ValidationException;
-use OpenApi\Attributes as OA;
 
 class UpdateProfileController
 {
-    #[OA\Patch(
-        path: '/api/v1/auth/me',
-        operationId: 'authUpdateProfile',
-        summary: 'Update current authenticated user profile',
-        security: [['sanctumBearer' => []]],
-        tags: ['Auth'],
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(ref: '#/components/schemas/AuthUpdateProfileRequest'),
-        ),
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Profile successfully updated',
-                content: new OA\JsonContent(ref: '#/components/schemas/AuthProfileResponse'),
-            ),
-            new OA\Response(response: 401, description: 'Unauthenticated'),
-            new OA\Response(response: 422, description: 'Validation error'),
-        ],
-    )]
     /**
      * @throws NotFoundException
      * @throws ValidationException
@@ -40,13 +19,22 @@ class UpdateProfileController
         UpdateProfileRequest $request,
         UpdateProfileHandler $handler,
     ): ProfileResponse {
-        $result = $handler->execute(
+        $request->validated();
+        $user       = $request->user();
+        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
+        $userId     = is_string($identifier) || is_int($identifier)
+            ? (string) $identifier
+            : '';
+
+        $result     = $handler->execute(
             UpdateProfileInput::from([
-                'userId'      => $request->authenticatedUserId(),
+                'userId'      => $userId,
                 'firstName'   => $request->string('firstName')->toString(),
                 'lastName'    => $request->string('lastName')->toString(),
                 'email'       => $request->string('email')->toString(),
-                'phoneNumber' => $request->input('phoneNumber'),
+                'phoneNumber' => $request->filled('phoneNumber')
+                    ? $request->string('phoneNumber')->toString()
+                    : null,
             ]),
         );
 

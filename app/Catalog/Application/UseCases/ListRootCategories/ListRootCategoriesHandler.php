@@ -21,7 +21,7 @@ readonly class ListRootCategoriesHandler
 
         return ListRootCategoriesOutput::from([
             'items' => $categories
-                ->map(fn (EloquentCategory $category): array => $this->mapCategory($category))
+                ->map(fn(EloquentCategory $category): array => $this->mapCategory($category))
                 ->values()
                 ->all(),
         ]);
@@ -33,16 +33,18 @@ readonly class ListRootCategoriesHandler
     private function mapCategory(EloquentCategory $category): array
     {
         return [
-            'id'          => $category->id,
-            'parentId'    => $category->parent_id,
-            'name'        => $category->name,
-            'slug'        => $category->slug,
-            'description' => $category->description,
-            'sortOrder'   => $category->sort_order,
-            'isActive'    => $category->is_active,
-            'path'        => $category->path,
-            'depth'       => $category->depth,
-            'children'    => [],
+            'id'               => $category->id,
+            'catalogType'      => $category->catalog_type->value,
+            'catalogTypeLabel' => $category->catalog_type->label(),
+            'parentId'         => $category->parent_id,
+            'name'             => $category->name,
+            'slug'             => $category->slug,
+            'description'      => $category->description,
+            'sortOrder'        => $category->sort_order,
+            'isActive'         => $category->is_active,
+            'path'             => $category->path,
+            'depth'            => $category->depth,
+            'children'         => [],
         ];
     }
 }

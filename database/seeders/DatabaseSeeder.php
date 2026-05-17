@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
-use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -20,9 +19,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // EloquentUser::factory(10)->create();
-        // EloquentCategory::factory()->count(20)->create();
-
         EloquentUser::query()->firstOrCreate(
             ['email' => 'test@example.com'],
             [
@@ -35,5 +31,10 @@ class DatabaseSeeder extends Seeder
                 'password'          => Hash::make('password'),
             ],
         );
+
+        $this->call([
+            CatalogDemoSeeder::class,
+            ListingsDemoSeeder::class,
+        ]);
     }
 }

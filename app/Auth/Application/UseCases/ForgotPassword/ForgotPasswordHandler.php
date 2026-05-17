@@ -20,7 +20,7 @@ readonly class ForgotPasswordHandler
     {
         $resetPasswordUrl = config('frontend.reset_password_url');
 
-        $user = EloquentUser::query()
+        $user             = EloquentUser::query()
             ->where('email', $data->email)
             ->first();
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Catalog\Infrastructure\Repositories;
 
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
+use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -102,7 +103,7 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
             return collect();
         }
 
-        $query = EloquentCategory::query()
+        $query        = EloquentCategory::query()
             ->where('path', 'like', $rootCategory->path . '/%')
             ->whereBetween('depth', [
                 $rootCategory->depth + 1,
@@ -126,12 +127,12 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
         array $attributes,
         ?int  $id = null,
     ): EloquentCategory {
-        $category = $id !== null
+        $category       = $id !== null
             ? EloquentCategory::query()->findOrFail($id)
             : new EloquentCategory();
 
-        $rawName  = $attributes['name'] ?? null;
-        $name     = is_string($rawName) ? trim($rawName) : '';
+        $rawName        = $attributes['name'] ?? null;
+        $name           = is_string($rawName) ? trim($rawName) : '';
 
         if ($name === '') {
             throw ValidationException::withMessages([
@@ -139,28 +140,29 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
             ]);
         }
 
-        $parentId = $attributes['parent_id'] ?? null;
-        $parentId = is_numeric($parentId) ? (int) $parentId : null;
+        $parentId       = $attributes['parent_id'] ?? null;
+        $parentId       = is_numeric($parentId) ? (int) $parentId : null;
 
         $this->assertParentIsValid($category, $parentId);
 
-        $rawSlug  = $attributes['slug'] ?? null;
+        $rawSlug        = $attributes['slug'] ?? null;
         $rawDescription = $attributes['description'] ?? null;
-        $rawSortOrder = $attributes['sort_order'] ?? 0;
+        $rawSortOrder   = $attributes['sort_order'] ?? 0;
 
-        $slug     = $this->generateUniqueSlug(
+        $slug           = $this->generateUniqueSlug(
             name: $name,
             slug: is_string($rawSlug) ? $rawSlug : null,
             ignoreId: $category->exists ? (int) $category->id : null,
         );
 
         $category->fill([
-            'parent_id'   => $parentId,
-            'name'        => $name,
-            'slug'        => $slug,
-            'description' => is_string($rawDescription) ? $rawDescription : null,
-            'sort_order'  => is_numeric($rawSortOrder) ? (int) $rawSortOrder : 0,
-            'is_active'   => (bool) ($attributes['is_active'] ?? true),
+            'parent_id'    => $parentId,
+            'catalog_type' => $this->resolveCatalogType($attributes['catalog_type'] ?? null),
+            'name'         => $name,
+            'slug'         => $slug,
+            'description'  => is_string($rawDescription) ? $rawDescription : null,
+            'sort_order'   => is_numeric($rawSortOrder) ? (int) $rawSortOrder : 0,
+            'is_active'    => (bool) ($attributes['is_active'] ?? true),
         ]);
         $category->save();
 
@@ -275,5 +277,22 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
     private function indentedName(EloquentCategory $category): string
     {
         return str_repeat('— ', max($category->depth, 0)) . $category->name;
+    }
+
+    private function resolveCatalogType(mixed $catalogType): CategoryCatalogType
+    {
+        if ($catalogType instanceof CategoryCatalogType) {
+            return $catalogType;
+        }
+
+        if (is_int($catalogType)) {
+            return CategoryCatalogType::tryFrom($catalogType) ?? CategoryCatalogType::PRODUCT;
+        }
+
+        if (is_string($catalogType) && is_numeric($catalogType)) {
+            return CategoryCatalogType::tryFrom((int) $catalogType) ?? CategoryCatalogType::PRODUCT;
+        }
+
+        return CategoryCatalogType::PRODUCT;
     }
 }

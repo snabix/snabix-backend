@@ -56,7 +56,7 @@ class CategoryInfolist
                         TextEntry::make('children_count')
                             ->label('Child categories count')
                             ->translateLabel()
-                            ->state(fn (EloquentCategory $record): int => $record->children()->count()),
+                            ->state(fn(EloquentCategory $record): int => $record->children()->count()),
 
                         TextEntry::make('description')
                             ->translateLabel()
@@ -70,7 +70,7 @@ class CategoryInfolist
                         TextEntry::make('child_categories')
                             ->label('Child categories')
                             ->translateLabel()
-                            ->state(fn (EloquentCategory $record): HtmlString => self::renderChildCategories($record))
+                            ->state(fn(EloquentCategory $record): HtmlString => self::renderChildCategories($record))
                             ->html(),
                     ]),
             ]);
@@ -84,8 +84,8 @@ class CategoryInfolist
             return new HtmlString('<span style="color:#6b7280;">' . e(__('This category has no children yet.')) . '</span>');
         }
 
-        $items = $children
-            ->map(fn (EloquentCategory $child): string => sprintf(
+        $items    = $children
+            ->map(fn(EloquentCategory $child): string => sprintf(
                 '<a href="%s" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e5e7eb;border-radius:16px;background:#ffffff;text-decoration:none;color:#111827;">
                     <span style="font-weight:700;">%s</span>
                     <span style="font-size:12px;color:#6b7280;">#%d</span>

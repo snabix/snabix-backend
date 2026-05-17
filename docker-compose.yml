@@ -46,6 +46,7 @@ services:
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-notifications}
       RABBITMQ_WORKER: ${RABBITMQ_WORKER:-default}
+      QUEUE_WORK_QUEUES: ${QUEUE_WORK_QUEUES:-notifications,media,images,default}
       MAIL_MAILER: ${MAIL_MAILER}
       MAIL_SCHEME: ${MAIL_SCHEME}
       MAIL_HOST: ${MAIL_HOST}
@@ -112,6 +113,7 @@ services:
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-notifications}
       RABBITMQ_WORKER: ${RABBITMQ_WORKER:-default}
+      QUEUE_WORK_QUEUES: ${QUEUE_WORK_QUEUES:-notifications,media,images,default}
       MAIL_MAILER: ${MAIL_MAILER}
       MAIL_SCHEME: ${MAIL_SCHEME}
       MAIL_HOST: ${MAIL_HOST}
@@ -130,7 +132,7 @@ services:
         condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: php artisan queue:work rabbitmq --queue=notifications --tries=3 --timeout=60 --sleep=1
+    command: sh -c 'php artisan queue:work rabbitmq --queue="$${QUEUE_WORK_QUEUES}" --tries=3 --backoff=10 --timeout=120 --sleep=1'
     restart: unless-stopped
 
   caddy:

@@ -153,4 +153,8 @@ return [
         'table'    => 'failed_jobs',
     ],
 
+    'maintenance' => [
+        'failed_retention_hours' => (int) env('QUEUE_FAILED_RETENTION_HOURS', 168),
+    ],
+
 ];

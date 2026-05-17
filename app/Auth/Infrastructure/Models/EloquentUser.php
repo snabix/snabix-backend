@@ -32,6 +32,7 @@ class EloquentUser extends Authenticatable
 
     /** @use HasFactory<EloquentUserFactory> */
     use HasFactory;
+
     use Notifiable;
 
     public $incrementing = false;

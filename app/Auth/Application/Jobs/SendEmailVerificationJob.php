@@ -7,27 +7,36 @@ namespace App\Auth\Application\Jobs;
 use App\Mail\Application\Contracts\MailSender;
 use App\Shared\Domain\ValueObjects\Email;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class SendEmailVerificationJob implements ShouldQueue
+class SendEmailVerificationJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable;
     use Queueable;
     use SerializesModels;
 
-    public int $tries   = 3;
+    public int $uniqueFor = 60;
 
-    public int $timeout = 30;
+    public int $tries     = 3;
+
+    public int $timeout   = 30;
 
     public function __construct(
         public string $userId,
         public string $email,
         public string $name,
-        public string $verificationUrl,
+        public string $verificationCode,
+        public int $expiresInMinutes,
     ) {
         $this->onQueue('notifications');
+    }
+
+    public function uniqueId(): string
+    {
+        return 'email-verification:' . $this->userId;
     }
 
     /**
@@ -46,8 +55,9 @@ class SendEmailVerificationJob implements ShouldQueue
             'Верификация почты',
             'emails.email-verification',
             [
-                'username'        => $this->name,
-                'verificationUrl' => $this->verificationUrl,
+                'expiresInMinutes' => $this->expiresInMinutes,
+                'username'         => $this->name,
+                'verificationCode' => $this->verificationCode,
             ],
         );
     }

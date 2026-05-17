@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Services;
 
 use App\Shared\Domain\Enums\SystemLogLevel;
 use App\Shared\Infrastructure\Models\EloquentSystemLog;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SystemLogManager
@@ -44,8 +45,13 @@ class SystemLogManager
                 'user_agent'  => $userAgent,
                 'user_id'     => $userId,
             ]);
-        } catch (Throwable) {
-            // Avoid recursive failures when logging itself breaks.
+        } catch (Throwable $exception) {
+            Log::channel('stderr')->error('System log persistence failed.', [
+                'category'         => $category,
+                'message'          => $message,
+                'action'           => $action,
+                'system_log_error' => $exception->getMessage(),
+            ]);
         }
     }
 
