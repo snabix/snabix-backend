@@ -12,6 +12,16 @@ class ViewCategoryAttributeDefinition extends ViewRecord
 {
     protected static string $resource = CategoryAttributeDefinitionResource::class;
 
+    public function getTitle(): string
+    {
+        return __('View category attribute');
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return __('View category attribute');
+    }
+
     protected function getHeaderActions(): array
     {
         return [

@@ -51,7 +51,6 @@ class CreateListingTest extends FeatureTestCase
             ->postJson('/api/v1/listings', [
                 'categoryId'      => $category->id,
                 'type'            => 1,
-                'status'          => 1,
                 'condition'       => 2,
                 'title'           => 'Редуктор Bosch',
                 'description'     => 'Оригинальная запасная часть в хорошем состоянии.',
@@ -65,6 +64,7 @@ class CreateListingTest extends FeatureTestCase
             ])
             ->assertCreated()
             ->assertJsonPath('data.title', 'Редуктор Bosch')
+            ->assertJsonPath('data.status', ListingStatus::PENDING_REVIEW->value)
             ->assertJsonPath('data.category.id', $category->id)
             ->assertJsonPath('data.attributeValues.0.displayValue', 'Bosch')
             ->assertJsonPath('data.attributeValues.1.displayValue', 'Да');
@@ -96,9 +96,50 @@ class CreateListingTest extends FeatureTestCase
                 'attributeValues' => [],
             ])
             ->assertCreated()
-            ->assertJsonPath('data.status', ListingStatus::DRAFT->value)
+            ->assertJsonPath('data.status', ListingStatus::PENDING_REVIEW->value)
             ->assertJsonPath('data.isFeatured', false)
             ->assertJsonPath('data.rejectionReason', null);
+    }
+
+    public function test_user_can_save_listing_as_draft_without_required_category_attributes(): void
+    {
+        $categoryRepository            = app(CategoryRepositoryInterface::class);
+        $attributeDefinitionRepository = app(CategoryAttributeDefinitionRepositoryInterface::class);
+        $user                          = EloquentUser::factory()->create();
+        $category                      = $categoryRepository->save([
+            'name'         => 'Ноутбуки',
+            'slug'         => 'noutbuki',
+            'catalog_type' => 1,
+        ]);
+
+        $attributeDefinitionRepository->save([
+            'category_id'         => $category->id,
+            'name'                => 'Производитель',
+            'slug'                => 'proizvoditel',
+            'type'                => 1,
+            'is_required'         => true,
+            'is_filterable'       => true,
+            'is_active'           => true,
+            'applies_to_children' => true,
+            'sort_order'          => 10,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/listings', [
+                'categoryId'      => $category->id,
+                'type'            => 1,
+                'condition'       => 2,
+                'title'           => 'Ноутбук для учебы',
+                'description'     => 'Описание будет дополнено позже.',
+                'price'           => 30000,
+                'currency'        => 'RUB',
+                'saveAsDraft'     => true,
+                'attributeValues' => [],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.status', ListingStatus::DRAFT->value)
+            ->assertJsonPath('data.attributeValues', []);
     }
 
     public function test_required_category_attribute_must_be_present(): void

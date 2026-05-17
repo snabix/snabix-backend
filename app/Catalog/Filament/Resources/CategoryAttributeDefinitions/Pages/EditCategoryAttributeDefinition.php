@@ -13,6 +13,16 @@ class EditCategoryAttributeDefinition extends EditRecord
 {
     protected static string $resource = CategoryAttributeDefinitionResource::class;
 
+    public function getTitle(): string
+    {
+        return __('Edit category attribute');
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return __('Edit category attribute');
+    }
+
     protected function getHeaderActions(): array
     {
         return [

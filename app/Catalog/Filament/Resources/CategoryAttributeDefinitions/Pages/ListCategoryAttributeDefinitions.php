@@ -12,11 +12,20 @@ class ListCategoryAttributeDefinitions extends ListRecords
 {
     protected static string $resource = CategoryAttributeDefinitionResource::class;
 
+    public function getTitle(): string
+    {
+        return __('Category attributes');
+    }
+
+    public function getBreadcrumb(): ?string
+    {
+        return __('Category attributes');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
             CreateAction::make()
-                ->label('New category attribute')
                 ->translateLabel(),
         ];
     }

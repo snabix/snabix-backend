@@ -22,7 +22,7 @@ readonly class CreateListingHandler
                 'user_id'          => $input->userId,
                 'category_id'      => $input->categoryId,
                 'type'             => $input->type,
-                'status'           => ListingStatus::DRAFT,
+                'status'           => $input->saveAsDraft ? ListingStatus::DRAFT : ListingStatus::PENDING_REVIEW,
                 'condition'        => $input->condition,
                 'title'            => $input->title,
                 'description'      => $input->description,

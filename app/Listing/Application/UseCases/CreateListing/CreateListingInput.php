@@ -24,6 +24,7 @@ class CreateListingInput extends Input
         public readonly ?string $contactName,
         public readonly ?string $contactPhone,
         public readonly ?string $contactEmail,
+        public readonly bool $saveAsDraft,
         public readonly array $attributeValues,
     ) {}
 }

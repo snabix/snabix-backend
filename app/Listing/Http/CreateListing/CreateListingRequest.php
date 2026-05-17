@@ -28,6 +28,7 @@ class CreateListingRequest extends FormRequest
             'contactName'      => ['nullable', 'string', 'max:120'],
             'contactPhone'     => ['nullable', 'string', 'max:32'],
             'contactEmail'     => ['nullable', 'email', 'max:255'],
+            'saveAsDraft'      => ['nullable', 'boolean'],
             'attributeValues'  => ['nullable', 'array'],
         ];
     }
@@ -50,6 +51,11 @@ class CreateListingRequest extends FormRequest
         return is_string($identifier) || is_int($identifier)
             ? (string) $identifier
             : '';
+    }
+
+    public function saveAsDraft(): bool
+    {
+        return $this->boolean('saveAsDraft', false);
     }
 
     public function authorize(): bool

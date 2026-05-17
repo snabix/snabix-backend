@@ -37,6 +37,7 @@ class CreateListingController
                 'contactName'    => $request->filled('contactName') ? $request->string('contactName')->toString() : null,
                 'contactPhone'   => $request->filled('contactPhone') ? $request->string('contactPhone')->toString() : null,
                 'contactEmail'   => $request->filled('contactEmail') ? $request->string('contactEmail')->toString() : null,
+                'saveAsDraft'    => $request->saveAsDraft(),
                 'attributeValues'=> $request->attributeValues(),
             ]),
         );

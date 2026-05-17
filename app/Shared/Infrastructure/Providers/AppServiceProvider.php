@@ -12,6 +12,7 @@ use App\Shared\Domain\Contracts\HasherInterface;
 use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
 use App\Shared\Infrastructure\Services\HasherService;
 use App\Shared\Infrastructure\Services\SessionAuthenticatorService;
+use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -47,6 +48,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        CreateRecord::disableCreateAnother();
     }
 }

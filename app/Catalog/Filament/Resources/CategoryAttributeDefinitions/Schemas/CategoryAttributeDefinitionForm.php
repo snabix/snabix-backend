@@ -14,7 +14,6 @@ use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -33,36 +32,37 @@ class CategoryAttributeDefinitionForm
             ->components([
                 Section::make(__('Category attribute basics'))
                     ->icon(Heroicon::OutlinedSparkles)
-                    ->description(__('Define a reusable ready-made field that users will fill in when creating an ad in a selected category.'))
+                    ->description('Создайте готовое поле, которое пользователь будет заполнять при создании объявления в выбранной категории.')
                     ->columns(2)
                     ->schema([
                         Select::make('category_id')
                             ->label('Category')
                             ->translateLabel()
-                            ->placeholder(__('Choose a category'))
+                            ->placeholder('Выберите категорию')
                             ->options(self::categoryOptions(...))
                             ->searchable()
                             ->preload()
                             ->required()
                             ->native(false)
-                            ->helperText(__('Pick the exact category whose form should receive this prepared field.')),
+                            ->helperText('Выберите конкретную категорию, в форме которой должна появиться эта характеристика.'),
 
-                        ToggleButtons::make('type')
+                        Select::make('type')
                             ->label('Attribute type')
                             ->translateLabel()
                             ->options(CategoryAttributeType::options())
-                            ->inline()
-                            ->grouped()
+                            ->native(false)
+                            ->searchable()
+                            ->live()
                             ->default(CategoryAttributeType::TEXT->value)
                             ->required()
-                            ->helperText(__('The field type controls how the value will be validated in listing forms.')),
+                            ->helperText('Тип характеристики определяет, как значение будет проверяться в форме объявления.'),
 
                         TextInput::make('name')
                             ->label('Attribute name')
                             ->translateLabel()
-                            ->placeholder(__('For example, Brand or Material'))
+                            ->placeholder('Например, Бренд или Материал')
                             ->prefixIcon(Heroicon::OutlinedQueueList)
-                            ->hint(__('Visible to the user in the listing form'))
+                            ->hint('Будет видно пользователю в форме объявления')
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
                                 if (blank($get('slug'))) {
@@ -75,9 +75,9 @@ class CategoryAttributeDefinitionForm
                         TextInput::make('slug')
                             ->label('Attribute code')
                             ->translateLabel()
-                            ->placeholder(__('Will be generated from the name'))
+                            ->placeholder('Будет создан из названия')
                             ->prefixIcon(Heroicon::OutlinedLink)
-                            ->hint(__('Technical identifier for API and saved values'))
+                            ->hint('Технический идентификатор для API и сохраненных значений')
                             ->dehydrateStateUsing(function (?string $state, Get $get): string {
                                 $name = $get('name');
 
@@ -90,17 +90,17 @@ class CategoryAttributeDefinitionForm
 
                         TextInput::make('unit')
                             ->translateLabel()
-                            ->placeholder(__('For example, cm, kg, kW'))
+                            ->placeholder('Например, см, кг, кВт')
                             ->prefixIcon(Heroicon::OutlinedScale)
-                            ->helperText(__('Optional, only when the value should be displayed with a measurement unit.'))
+                            ->helperText('Необязательно. Используйте только если значение нужно показывать с единицей измерения.')
                             ->maxLength(32),
 
                         TextInput::make('group_name')
                             ->label('Attribute group')
                             ->translateLabel()
-                            ->placeholder(__('For example, Main or Dimensions'))
+                            ->placeholder('Например, Основное или Размеры')
                             ->prefixIcon(Heroicon::OutlinedRectangleGroup)
-                            ->helperText(__('Helps group related prepared fields inside the listing form.'))
+                            ->helperText('Помогает группировать связанные характеристики внутри формы объявления.')
                             ->maxLength(120),
 
                         TextInput::make('sort_order')
@@ -114,7 +114,7 @@ class CategoryAttributeDefinitionForm
 
                 Section::make(__('Behavior in listing forms'))
                     ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
-                    ->description(__('These settings determine how the field behaves for users when they fill out a ready-made ad form.'))
+                    ->description('Эти настройки определяют поведение характеристики в пользовательской форме объявления.')
                     ->columns(2)
                     ->schema([
                         Toggle::make('is_required')
@@ -150,21 +150,21 @@ class CategoryAttributeDefinitionForm
 
                 Section::make(__('Options and description'))
                     ->icon(Heroicon::OutlinedListBullet)
-                    ->description(__('Options are needed only for fields with a fixed set of values, such as a brand, size, or condition.'))
+                    ->description('Варианты нужны только для характеристик с фиксированным набором значений, например бренд, размер или состояние.')
                     ->schema([
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('placeholder')
                                     ->label('Field placeholder')
                                     ->translateLabel()
-                                    ->placeholder(__('For example, Enter the exact brand'))
-                                    ->helperText(__('Short hint inside the user input field.'))
+                                    ->placeholder('Например, укажите точный бренд')
+                                    ->helperText('Короткая подсказка внутри поля ввода для пользователя.')
                                     ->maxLength(255),
 
                                 TagsInput::make('options')
                                     ->label('Attribute options')
                                     ->translateLabel()
-                                    ->placeholder(__('Add each allowed value separately'))
+                                    ->placeholder('Добавляйте каждое допустимое значение отдельно')
                                     ->visible(function (Get $get): bool {
                                         $type      = $get('type');
 
@@ -174,7 +174,7 @@ class CategoryAttributeDefinitionForm
 
                                         return in_array($typeValue, [CategoryAttributeType::SELECT->value, CategoryAttributeType::MULTISELECT->value], true);
                                     })
-                                    ->helperText(__('These values will become ready-made choices for the user.'))
+                                    ->helperText('Эти значения станут готовыми вариантами выбора для пользователя.')
                                     ->reorderable()
                                     ->splitKeys(['Tab', 'Enter'])
                                     ->nestedRecursiveRules(['string', 'max:255']),
@@ -182,29 +182,29 @@ class CategoryAttributeDefinitionForm
                                 KeyValue::make('default_value')
                                     ->label('Default value')
                                     ->translateLabel()
-                                    ->helperText(__('Optional prepared value or payload for the future listing form.'))
+                                    ->helperText('Необязательное значение по умолчанию для будущей формы объявления.')
                                     ->columnSpanFull(),
 
                                 Textarea::make('help_text')
                                     ->label('Field help text')
                                     ->translateLabel()
-                                    ->placeholder(__('Explain what exactly the user should enter here.'))
+                                    ->placeholder('Объясните, что именно пользователь должен указать здесь.')
                                     ->rows(3)
-                                    ->helperText(__('Additional explanation that can be shown right under the field in the listing form.'))
+                                    ->helperText('Дополнительная подсказка, которую можно показать под полем в форме объявления.')
                                     ->maxLength(2000),
 
                                 Textarea::make('description')
                                     ->translateLabel()
-                                    ->placeholder(__('Explain what exactly the user should enter in this field.'))
+                                    ->placeholder('Опишите назначение этой характеристики для команды.')
                                     ->rows(4)
-                                    ->helperText(__('Short guidance that can be shown to the team and later reused in listing forms.'))
+                                    ->helperText('Внутреннее описание, которое позже можно переиспользовать в формах объявления.')
                                     ->maxLength(2000),
                             ]),
                     ]),
 
                 Section::make(__('Preview for the team'))
                     ->icon(Heroicon::OutlinedEye)
-                    ->description(__('Helps immediately understand how this attribute will be used when a user creates an ad from their account.'))
+                    ->description('Помогает быстро понять, как характеристика будет выглядеть в форме объявления.')
                     ->visible(fn(?EloquentCategoryAttributeDefinition $record): bool => $record !== null)
                     ->schema([
                         Placeholder::make('attribute_preview')

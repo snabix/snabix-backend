@@ -95,7 +95,12 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 'expires_at'       => null,
             ]);
 
-            $this->syncAttributeValues($listing, $category->id, $attributeValues);
+            $this->syncAttributeValues(
+                listing: $listing,
+                categoryId: $category->id,
+                attributeValues: $attributeValues,
+                validateRequiredAttributes: $status !== ListingStatus::DRAFT,
+            );
 
             return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
         });
@@ -140,7 +145,12 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ]);
             $listing->save();
 
-            $this->syncAttributeValues($listing, $category->id, $attributeValues);
+            $this->syncAttributeValues(
+                listing: $listing,
+                categoryId: $category->id,
+                attributeValues: $attributeValues,
+                validateRequiredAttributes: $status !== ListingStatus::DRAFT,
+            );
 
             return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
         });
@@ -425,6 +435,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         EloquentListing $listing,
         int $categoryId,
         array $attributeValues,
+        bool $validateRequiredAttributes = true,
     ): void {
         $definitions     = $this->categoryAttributeDefinitionRepository
             ->forCategory($categoryId)
@@ -443,7 +454,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             $hasValue        = array_key_exists($definitionId, $submittedValues);
 
             if (! $hasValue) {
-                if ($definition->is_required) {
+                if ($validateRequiredAttributes && $definition->is_required) {
                     throw ValidationException::withMessages([
                         'attributeValues.' . $definitionId => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
                     ]);
@@ -454,7 +465,11 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 continue;
             }
 
-            $normalizedValue = $this->normalizeDefinitionValue($definition, $submittedValues[$definitionId]);
+            $normalizedValue = $this->normalizeDefinitionValue(
+                definition: $definition,
+                value: $submittedValues[$definitionId],
+                validateRequired: $validateRequiredAttributes,
+            );
 
             if ($normalizedValue === null) {
                 $this->deleteAttributeValue($listing, $definitionId);
@@ -510,9 +525,20 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     private function normalizeDefinitionValue(
         EloquentCategoryAttributeDefinition $definition,
         mixed $value,
+        bool $validateRequired = true,
     ): mixed {
         if ($value === null || $value === '') {
-            if ($definition->is_required) {
+            if ($validateRequired && $definition->is_required) {
+                throw ValidationException::withMessages([
+                    'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
+                ]);
+            }
+
+            return null;
+        }
+
+        if ($value === []) {
+            if ($validateRequired && $definition->is_required) {
                 throw ValidationException::withMessages([
                     'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
                 ]);
