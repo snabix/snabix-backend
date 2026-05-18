@@ -5,6 +5,18 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.7] - 2026-05-18
+
+### Added
+- Добавлена пагинация для публичного списка объявлений `GET /api/v1/public/listings`
+- Добавлена пагинация для списка собственных объявлений `GET /api/v1/listings`
+- Добавлены фильтры собственных объявлений по `status`, `type` и `categoryId`
+- Добавлены feature-тесты пагинации публичного и личного списка объявлений
+
+### Changed
+- Ответы списков объявлений теперь возвращают `items` и `meta` внутри `data`
+- Backend audit обновлен: задачи по пагинации public/owned listings отмечены выполненными
+
 ## [0.6.6] - 2026-05-18
 
 ### Added

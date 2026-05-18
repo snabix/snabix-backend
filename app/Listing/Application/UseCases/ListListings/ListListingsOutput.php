@@ -10,8 +10,10 @@ class ListListingsOutput extends Output
 {
     /**
      * @param array<int, array<string, mixed>> $items
+     * @param array<string, int>               $meta
      */
     public function __construct(
         public readonly array $items,
+        public readonly array $meta,
     ) {}
 }

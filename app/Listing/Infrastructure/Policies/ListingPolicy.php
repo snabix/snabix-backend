@@ -12,9 +12,8 @@ class ListingPolicy
 {
     public function view(
         EloquentUser $user,
-        EloquentListing $listing
-    ): Response
-    {
+        EloquentListing $listing,
+    ): Response {
         return $this->ownsListing($user, $listing)
             ? Response::allow()
             : Response::denyAsNotFound();
@@ -22,9 +21,8 @@ class ListingPolicy
 
     public function update(
         EloquentUser $user,
-        EloquentListing $listing
-    ): Response
-    {
+        EloquentListing $listing,
+    ): Response {
         return $this->ownsListing($user, $listing)
             ? Response::allow()
             : Response::denyAsNotFound();
@@ -32,9 +30,8 @@ class ListingPolicy
 
     public function delete(
         EloquentUser $user,
-        EloquentListing $listing
-    ): Response
-    {
+        EloquentListing $listing,
+    ): Response {
         return $this->ownsListing($user, $listing)
             ? Response::allow()
             : Response::denyAsNotFound();
@@ -42,9 +39,8 @@ class ListingPolicy
 
     public function submitForReview(
         EloquentUser $user,
-        EloquentListing $listing
-    ): Response
-    {
+        EloquentListing $listing,
+    ): Response {
         return $this->ownsListing($user, $listing)
             ? Response::allow()
             : Response::denyAsNotFound();

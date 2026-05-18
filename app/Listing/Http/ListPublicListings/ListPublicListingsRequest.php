@@ -14,7 +14,8 @@ class ListPublicListingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'limit' => ['nullable', 'integer', 'min:1', 'max:48'],
+            'page'    => ['nullable', 'integer', 'min:1'],
+            'perPage' => ['nullable', 'integer', 'min:1', 'max:48'],
         ];
     }
 

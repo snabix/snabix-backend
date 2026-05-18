@@ -13,7 +13,7 @@ use App\Listing\Domain\Enums\ListingType;
 use App\Listing\Domain\Services\ListingStatusTransitionPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Services\ListingAttributeValueSynchronizer;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -27,30 +27,48 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     ) {}
 
     /**
-     * @return Collection<int, EloquentListing>
+     * @return LengthAwarePaginator<int, EloquentListing>
      */
-    public function listOwnedByUser(string $userId): Collection
-    {
+    public function listOwnedByUser(
+        string $userId,
+        int $page = 1,
+        int $perPage = 12,
+        ?ListingStatus $status = null,
+        ?int $type = null,
+        ?int $categoryId = null,
+    ): LengthAwarePaginator {
         return EloquentListing::query()
             ->with(['category', 'attributeValues.attributeDefinition'])
             ->where('user_id', $userId)
+            ->when($status !== null, fn($query) => $query->where('status', $status))
+            ->when($type !== null, fn($query) => $query->where('type', $type))
+            ->when($categoryId !== null, fn($query) => $query->where('category_id', $categoryId))
             ->latest('updated_at')
-            ->get();
+            ->paginate(
+                perPage: $perPage,
+                pageName: 'page',
+                page: $page,
+            );
     }
 
     /**
-     * @return Collection<int, EloquentListing>
+     * @return LengthAwarePaginator<int, EloquentListing>
      */
-    public function listPublicPublished(int $limit = 24): Collection
-    {
+    public function listPublicPublished(
+        int $page = 1,
+        int $perPage = 24,
+    ): LengthAwarePaginator {
         return EloquentListing::query()
             ->with(['category', 'attributeValues.attributeDefinition'])
             ->where('status', ListingStatus::PUBLISHED)
             ->orderByDesc('is_featured')
             ->orderByDesc('published_at')
             ->latest('created_at')
-            ->limit(max($limit, 1))
-            ->get();
+            ->paginate(
+                perPage: $perPage,
+                pageName: 'page',
+                page: $page,
+            );
     }
 
     /**

@@ -6,19 +6,29 @@ namespace App\Listing\Domain\Contracts;
 
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Infrastructure\Models\EloquentListing;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ListingRepositoryInterface
 {
     /**
-     * @return Collection<int, EloquentListing>
+     * @return LengthAwarePaginator<int, EloquentListing>
      */
-    public function listOwnedByUser(string $userId): Collection;
+    public function listOwnedByUser(
+        string $userId,
+        int $page = 1,
+        int $perPage = 12,
+        ?ListingStatus $status = null,
+        ?int $type = null,
+        ?int $categoryId = null,
+    ): LengthAwarePaginator;
 
     /**
-     * @return Collection<int, EloquentListing>
+     * @return LengthAwarePaginator<int, EloquentListing>
      */
-    public function listPublicPublished(int $limit = 24): Collection;
+    public function listPublicPublished(
+        int $page = 1,
+        int $perPage = 24,
+    ): LengthAwarePaginator;
 
     /**
      * @param array<string, mixed>    $attributes

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listing\Infrastructure\Providers;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
+use App\Listing\Application\Support\PaginationPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Policies\ListingPolicy;
@@ -21,6 +22,7 @@ class ListingServiceProvider extends ServiceProvider
             EloquentListingRepository::class,
         );
         $this->app->singleton(ListingPayloadMapper::class);
+        $this->app->singleton(PaginationPayloadMapper::class);
     }
 
     public function boot(): void

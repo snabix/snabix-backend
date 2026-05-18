@@ -14,10 +14,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ListPublicListingsResponse extends JsonResource
 {
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return $this->items;
+        return [
+            'items' => $this->items,
+            'meta'  => $this->meta,
+        ];
     }
 }

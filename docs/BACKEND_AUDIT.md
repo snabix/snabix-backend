@@ -25,6 +25,8 @@
 - [x] Ранее создание объявления разделено на `pending_review` и `draft` через `saveAsDraft`.
 - [x] Добавлен отдельный endpoint `submit-for-review` для отправки черновика объявления на проверку.
 - [x] Добавлена `ListingPolicy` для централизованной авторизации действий над объявлениями.
+- [x] Добавлена пагинация для публичного и личного списка объявлений.
+- [x] Добавлены простые фильтры личных объявлений по статусу, типу и категории.
 
 ## Архитектура
 
@@ -54,8 +56,8 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] `syncAttributeValues()` вынесен из repository в `ListingAttributeValueSynchronizer`.
 - [x] В listing update пока нет явного action `submitForReview`. Сейчас update сохраняет текущий статус, но для UX “опубликовать черновик” понадобится отдельный endpoint.
 - [x] Переходы статусов объявления централизованы в `ListingStatusTransitionPolicy`.
-- [ ] Public listing API пока без пагинации.
-- [ ] List owned listings API тоже без пагинации и фильтров.
+- [x] Public listing API пока без пагинации.
+- [x] List owned listings API тоже без пагинации и фильтров.
 - [x] Нет отдельной политики авторизации на уровне Policy/Gate для listing actions.
 - [ ] Admin category attribute API защищен `auth:admin`, но нужно проверить CSRF/session-guard сценарий отдельно для SPA/admin.
 - [ ] Валидация request классов проверяет базовые типы, но category-specific required attributes проверяются в repository. Лучше поднять это в application service.
@@ -96,7 +98,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] Переходы статусов централизованы через `ListingStatusTransitionPolicy`.
 - [ ] Нужны media attachments для объявлений.
 - [ ] Нужны search/filter/sort endpoints.
-- [ ] Нужна пагинация и cursor/offset strategy.
+- [x] Нужна пагинация и cursor/offset strategy.
 - [ ] Нужны индексы под будущий поиск по category/status/price/published_at.
 
 ## Media
@@ -137,7 +139,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 
 - [x] Тест `submit-for-review`, когда endpoint появится.
 - [ ] Тесты status transition policy.
-- [ ] Тесты пагинации public/owned listings.
+- [x] Тесты пагинации public/owned listings.
 - [ ] Тесты media attachments для listings.
 - [ ] Тесты удаления category attribute при наличии listing values.
 - [x] Тесты authorization policies для чужих объявлений на update/delete.
@@ -149,7 +151,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 3. [x] Добавить endpoint отправки черновика на проверку.
 4. [ ] Добавить moderation actions в admin API/Filament.
 5. [ ] Добавить media attachments для listings.
-6. [ ] Добавить пагинацию и фильтры.
+6. [x] Добавить пагинацию и фильтры.
 7. [ ] Зафиксировать OpenAPI/Scramble examples для frontend DTO.
 
 ## Ответ На Архитектурный Вопрос По Категорийным Формам

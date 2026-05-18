@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Listing\Application\UseCases\ListListings;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
+use App\Listing\Application\Support\PaginationPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Infrastructure\Models\EloquentListing;
 
 readonly class ListListingsHandler
@@ -13,16 +15,27 @@ readonly class ListListingsHandler
     public function __construct(
         private ListingRepositoryInterface $listingRepository,
         private ListingPayloadMapper $listingPayloadMapper,
+        private PaginationPayloadMapper $paginationPayloadMapper,
     ) {}
 
     public function execute(ListListingsInput $input): ListListingsOutput
     {
+        $paginator = $this->listingRepository->listOwnedByUser(
+            userId: $input->userId,
+            page: $input->page,
+            perPage: $input->perPage,
+            status: $input->status !== null ? ListingStatus::tryFrom($input->status) : null,
+            type: $input->type,
+            categoryId: $input->categoryId,
+        );
+
         return ListListingsOutput::from([
-            'items' => $this->listingRepository
-                ->listOwnedByUser($input->userId)
+            'items' => $paginator
+                ->getCollection()
                 ->map(fn(EloquentListing $listing): array => $this->listingPayloadMapper->map($listing))
                 ->values()
                 ->all(),
+            'meta'  => $this->paginationPayloadMapper->map($paginator),
         ]);
     }
 }
