@@ -10,6 +10,7 @@ use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Listing\Domain\Services\ListingStatusTransitionPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Services\ListingAttributeValueSynchronizer;
 use Illuminate\Support\Collection;
@@ -22,6 +23,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
 {
     public function __construct(
         private ListingAttributeValueSynchronizer $listingAttributeValueSynchronizer,
+        private ListingStatusTransitionPolicy $listingStatusTransitionPolicy,
     ) {}
 
     /**
@@ -128,6 +130,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             $title     = $this->resolveTitle($attributes['title'] ?? $listing->title);
 
             $this->assertTypeMatchesCategory($type, $category);
+            $this->listingStatusTransitionPolicy->assertCanTransition($listing->status, $status);
 
             $listing->fill([
                 'category_id'      => $category->id,

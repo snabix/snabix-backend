@@ -51,7 +51,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] `EloquentListingRepository` содержит много бизнес-валидации характеристик. Правила публикации/черновика вынесены в `ListingPublicationPolicy`.
 - [x] `syncAttributeValues()` вынесен из repository в `ListingAttributeValueSynchronizer`.
 - [ ] В listing update пока нет явного action `submitForReview`. Сейчас update сохраняет текущий статус, но для UX “опубликовать черновик” понадобится отдельный endpoint.
-- [ ] Нет state machine для статусов объявления. Сейчас enum есть, но переходы статусов не централизованы.
+- [x] Переходы статусов объявления централизованы в `ListingStatusTransitionPolicy`.
 - [ ] Public listing API пока без пагинации.
 - [ ] List owned listings API тоже без пагинации и фильтров.
 - [ ] Нет отдельной политики авторизации на уровне Policy/Gate для listing actions.
@@ -91,7 +91,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] Черновик создается только через `saveAsDraft`.
 - [ ] Нужен endpoint `POST /api/v1/listings/{id}/submit-for-review`.
 - [ ] Нужен admin moderation flow: publish/reject/archive.
-- [ ] Нужны политики переходов статусов.
+- [x] Переходы статусов централизованы через `ListingStatusTransitionPolicy`.
 - [ ] Нужны media attachments для объявлений.
 - [ ] Нужны search/filter/sort endpoints.
 - [ ] Нужна пагинация и cursor/offset strategy.
@@ -143,7 +143,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 ## Рекомендованный План
 
 1. [x] Вынести синхронизацию характеристик объявления из repository в отдельный synchronizer.
-2. [ ] Добавить state machine/policy для статусов объявления.
+2. [x] Добавить state machine/policy для статусов объявления.
 3. [ ] Добавить endpoint отправки черновика на проверку.
 4. [ ] Добавить moderation actions в admin API/Filament.
 5. [ ] Добавить media attachments для listings.

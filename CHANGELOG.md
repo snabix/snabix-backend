@@ -5,6 +5,17 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.4] - 2026-05-18
+
+### Added
+- Добавлена `ListingStatusTransitionPolicy` для централизованной проверки переходов статусов объявления
+- Добавлен доменный exception для недопустимых переходов статуса объявления
+- Добавлены unit-тесты на разрешенные и запрещенные переходы статусов
+
+### Changed
+- `EloquentListingRepository` теперь проверяет смену статуса через `ListingStatusTransitionPolicy`
+- Backend audit обновлен: задача по state machine статусов отмечена выполненной
+
 ## [0.6.3] - 2026-05-18
 
 ### Changed
