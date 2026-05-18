@@ -48,8 +48,8 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 
 ### Что Нарушено Или Рисково
 
-- [ ] `EloquentListingRepository` содержит много бизнес-валидации характеристик. Часть допустима как persistence normalization, но правила публикации/черновика лучше постепенно вынести в domain/application service.
-- [ ] `syncAttributeValues()` уже вырос в сложный метод. Его стоит вынести в `ListingAttributeValueSynchronizer`.
+- [x] `EloquentListingRepository` содержит много бизнес-валидации характеристик. Правила публикации/черновика вынесены в `ListingPublicationPolicy`.
+- [x] `syncAttributeValues()` вынесен из repository в `ListingAttributeValueSynchronizer`.
 - [ ] В listing update пока нет явного action `submitForReview`. Сейчас update сохраняет текущий статус, но для UX “опубликовать черновик” понадобится отдельный endpoint.
 - [ ] Нет state machine для статусов объявления. Сейчас enum есть, но переходы статусов не централизованы.
 - [ ] Public listing API пока без пагинации.
@@ -142,7 +142,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 
 ## Рекомендованный План
 
-1. [ ] Вынести синхронизацию характеристик объявления из repository в application service.
+1. [x] Вынести синхронизацию характеристик объявления из repository в отдельный synchronizer.
 2. [ ] Добавить state machine/policy для статусов объявления.
 3. [ ] Добавить endpoint отправки черновика на проверку.
 4. [ ] Добавить moderation actions в admin API/Filament.

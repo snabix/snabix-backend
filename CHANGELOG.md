@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-05-18
+
+### Changed
+- Синхронизация характеристик объявления вынесена из `EloquentListingRepository` в `ListingAttributeValueSynchronizer`
+- Репозиторий объявлений стал компактнее и больше не содержит длинный метод `syncAttributeValues()`
+
 ## [0.6.2] - 2026-05-18
 
 ### Changed
