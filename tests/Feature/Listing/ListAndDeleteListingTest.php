@@ -68,6 +68,12 @@ class ListAndDeleteListingTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonPath('data.deleted', true);
 
+        $this->assertDatabaseHas('system_logs', [
+            'category' => 'listing',
+            'action'   => 'listing.delete',
+            'user_id'  => $user->id,
+        ]);
+
         $this->assertDatabaseMissing('listings', [
             'id' => $listing->id,
         ]);

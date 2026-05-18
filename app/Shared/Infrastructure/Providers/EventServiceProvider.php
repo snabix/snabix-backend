@@ -16,6 +16,9 @@ use App\Auth\Domain\Events\UserLoggedOut;
 use App\Auth\Domain\Events\UserProfileUpdated;
 use App\Auth\Domain\Events\UserRegistered;
 use App\Auth\Domain\Events\UserSignedIn;
+use App\Listing\Domain\Events\ListingCreated;
+use App\Listing\Domain\Events\ListingDeleted;
+use App\Listing\Domain\Events\ListingSubmittedForReview;
 use App\Shared\Infrastructure\Listeners\PersistLoggableEventListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -54,6 +57,15 @@ class EventServiceProvider extends ServiceProvider
             PersistLoggableEventListener::class,
         ],
         UserAvatarDeleted::class              => [
+            PersistLoggableEventListener::class,
+        ],
+        ListingCreated::class                 => [
+            PersistLoggableEventListener::class,
+        ],
+        ListingSubmittedForReview::class      => [
+            PersistLoggableEventListener::class,
+        ],
+        ListingDeleted::class                 => [
             PersistLoggableEventListener::class,
         ],
     ];

@@ -57,6 +57,12 @@ class SubmitListingForReviewTest extends FeatureTestCase
             'id'     => $listing->id,
             'status' => ListingStatus::PENDING_REVIEW->value,
         ]);
+
+        $this->assertDatabaseHas('system_logs', [
+            'category' => 'listing',
+            'action'   => 'listing.submit-for-review',
+            'user_id'  => $user->id,
+        ]);
     }
 
     public function test_user_cannot_submit_draft_listing_without_required_attributes(): void

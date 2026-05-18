@@ -68,6 +68,12 @@ class CreateListingTest extends FeatureTestCase
             ->assertJsonPath('data.category.id', $category->id)
             ->assertJsonPath('data.attributeValues.0.displayValue', 'Bosch')
             ->assertJsonPath('data.attributeValues.1.displayValue', 'Да');
+
+        $this->assertDatabaseHas('system_logs', [
+            'category' => 'listing',
+            'action'   => 'listing.create',
+            'user_id'  => $user->id,
+        ]);
     }
 
     public function test_user_cannot_set_moderation_fields_when_creating_listing(): void

@@ -5,6 +5,19 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.8] - 2026-05-18
+
+### Added
+- Добавлены события аудита для ключевых пользовательских действий с объявлениями
+  - `ListingCreated`
+  - `ListingSubmittedForReview`
+  - `ListingDeleted`
+- События объявлений подключены к существующему `PersistLoggableEventListener`
+- Добавлены feature-проверки записей `system_logs` для создания, отправки на проверку и удаления объявления
+
+### Changed
+- Backend audit обновлен: задача по audit trail для объявлений отмечена выполненной
+
 ## [0.6.7] - 2026-05-18
 
 ### Added

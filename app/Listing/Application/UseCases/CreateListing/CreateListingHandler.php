@@ -6,6 +6,7 @@ namespace App\Listing\Application\UseCases\CreateListing;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Events\ListingCreated;
 use App\Listing\Domain\Services\ListingPublicationPolicy;
 
 readonly class CreateListingHandler
@@ -39,6 +40,8 @@ readonly class CreateListingHandler
             attributeValues: $input->attributeValues,
             validateRequiredAttributes: $this->listingPublicationPolicy->shouldValidateRequiredAttributes($status),
         );
+
+        event(new ListingCreated($listing));
 
         return CreateListingOutput::from([
             'item' => $this->listingPayloadMapper->map($listing),
