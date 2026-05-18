@@ -12,6 +12,7 @@ use App\Listing\Domain\Services\ListingStatusTransitionPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Services\ListingAttributeValueSynchronizer;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 readonly class SubmitListingForReviewHandler
@@ -25,11 +26,13 @@ readonly class SubmitListingForReviewHandler
 
     public function execute(SubmitListingForReviewInput $input): SubmitListingForReviewOutput
     {
-        $listing = $this->listingRepository->findOwnedByUser($input->listingId, $input->userId);
+        $listing = $this->listingRepository->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
         }
+
+        Gate::authorize('submitForReview', $listing);
 
         try {
             $this->listingStatusTransitionPolicy->assertCanTransition(

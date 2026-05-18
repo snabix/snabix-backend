@@ -7,6 +7,7 @@ namespace App\Listing\Application\UseCases\DeleteListing;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Gate;
 
 readonly class DeleteListingHandler
 {
@@ -16,11 +17,13 @@ readonly class DeleteListingHandler
 
     public function execute(DeleteListingInput $input): DeleteListingOutput
     {
-        $listing = $this->listingRepository->findOwnedByUser($input->listingId, $input->userId);
+        $listing = $this->listingRepository->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
         }
+
+        Gate::authorize('delete', $listing);
 
         $this->listingRepository->delete($listing);
 

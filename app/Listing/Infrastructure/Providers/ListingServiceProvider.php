@@ -6,7 +6,10 @@ namespace App\Listing\Infrastructure\Providers;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Infrastructure\Models\EloquentListing;
+use App\Listing\Infrastructure\Policies\ListingPolicy;
 use App\Listing\Infrastructure\Repositories\EloquentListingRepository;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class ListingServiceProvider extends ServiceProvider
@@ -18,5 +21,10 @@ class ListingServiceProvider extends ServiceProvider
             EloquentListingRepository::class,
         );
         $this->app->singleton(ListingPayloadMapper::class);
+    }
+
+    public function boot(): void
+    {
+        Gate::policy(EloquentListing::class, ListingPolicy::class);
     }
 }

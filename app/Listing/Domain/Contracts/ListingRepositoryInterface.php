@@ -43,6 +43,8 @@ interface ListingRepositoryInterface
 
     public function findOwnedByUser(string $listingId, string $userId): ?EloquentListing;
 
+    public function findById(string $listingId): ?EloquentListing;
+
     public function transitionStatus(EloquentListing $listing, ListingStatus $status): EloquentListing;
 
     public function delete(EloquentListing $listing): void;

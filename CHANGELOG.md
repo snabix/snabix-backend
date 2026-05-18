@@ -5,6 +5,17 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.6] - 2026-05-18
+
+### Added
+- Добавлена `ListingPolicy` для централизованной авторизации действий над объявлениями
+- Добавлены unit-тесты политики доступа к объявлениям
+
+### Changed
+- `show`, `update`, `delete` и `submit-for-review` теперь используют `Gate` вместо ручной owner-проверки внутри use case
+- Для чужих объявлений policy возвращает `denyAsNotFound`, чтобы не раскрывать существование записи
+- Backend audit обновлен: задача по Policy/Gate для listing actions отмечена выполненной
+
 ## [0.6.5] - 2026-05-18
 
 ### Added

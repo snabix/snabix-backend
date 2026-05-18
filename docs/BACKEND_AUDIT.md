@@ -24,6 +24,7 @@
 - [x] Ранее добавлен `CatalogDemoSeeder` и тест идемпотентности.
 - [x] Ранее создание объявления разделено на `pending_review` и `draft` через `saveAsDraft`.
 - [x] Добавлен отдельный endpoint `submit-for-review` для отправки черновика объявления на проверку.
+- [x] Добавлена `ListingPolicy` для централизованной авторизации действий над объявлениями.
 
 ## Архитектура
 
@@ -55,7 +56,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] Переходы статусов объявления централизованы в `ListingStatusTransitionPolicy`.
 - [ ] Public listing API пока без пагинации.
 - [ ] List owned listings API тоже без пагинации и фильтров.
-- [ ] Нет отдельной политики авторизации на уровне Policy/Gate для listing actions.
+- [x] Нет отдельной политики авторизации на уровне Policy/Gate для listing actions.
 - [ ] Admin category attribute API защищен `auth:admin`, но нужно проверить CSRF/session-guard сценарий отдельно для SPA/admin.
 - [ ] Валидация request классов проверяет базовые типы, но category-specific required attributes проверяются в repository. Лучше поднять это в application service.
 - [ ] Нет audit trail для ключевых действий с объявлениями: создание, отправка на проверку, публикация, отклонение, удаление.
@@ -139,7 +140,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [ ] Тесты пагинации public/owned listings.
 - [ ] Тесты media attachments для listings.
 - [ ] Тесты удаления category attribute при наличии listing values.
-- [ ] Тесты authorization policies для чужих объявлений на update/delete.
+- [x] Тесты authorization policies для чужих объявлений на update/delete.
 
 ## Рекомендованный План
 

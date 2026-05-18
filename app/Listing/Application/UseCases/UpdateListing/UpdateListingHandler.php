@@ -9,6 +9,7 @@ use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Domain\Services\ListingPublicationPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Gate;
 
 readonly class UpdateListingHandler
 {
@@ -20,11 +21,13 @@ readonly class UpdateListingHandler
 
     public function execute(UpdateListingInput $input): UpdateListingOutput
     {
-        $listing = $this->listingRepository->findOwnedByUser($input->listingId, $input->userId);
+        $listing = $this->listingRepository->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
         }
+
+        Gate::authorize('update', $listing);
 
         $listing = $this->listingRepository->update(
             $listing,

@@ -174,6 +174,14 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ->first();
     }
 
+    public function findById(string $listingId): ?EloquentListing
+    {
+        return EloquentListing::query()
+            ->with(['category', 'attributeValues.attributeDefinition'])
+            ->whereKey($listingId)
+            ->first();
+    }
+
     /**
      * @throws Throwable
      */
