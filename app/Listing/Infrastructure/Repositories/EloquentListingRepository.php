@@ -59,10 +59,13 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
      * @param  array<array-key, mixed> $attributeValues
      * @throws Throwable
      */
-    public function create(array $attributes, array $attributeValues = []): EloquentListing
-    {
+    public function create(
+        array $attributes,
+        array $attributeValues = [],
+        bool $validateRequiredAttributes = true,
+    ): EloquentListing {
         /** @var EloquentListing $listing */
-        $listing = DB::transaction(function () use ($attributes, $attributeValues): EloquentListing {
+        $listing = DB::transaction(function () use ($attributes, $attributeValues, $validateRequiredAttributes): EloquentListing {
             $category   = $this->resolveCategory($attributes['category_id'] ?? null);
             $type       = $this->resolveType($attributes['type'] ?? null);
             $condition  = $this->resolveCondition($attributes['condition'] ?? null, $type);
@@ -99,7 +102,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 listing: $listing,
                 categoryId: $category->id,
                 attributeValues: $attributeValues,
-                validateRequiredAttributes: $status !== ListingStatus::DRAFT,
+                validateRequiredAttributes: $validateRequiredAttributes,
             );
 
             return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
@@ -113,10 +116,14 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
      * @param  array<array-key, mixed> $attributeValues
      * @throws Throwable
      */
-    public function update(EloquentListing $listing, array $attributes, array $attributeValues = []): EloquentListing
-    {
+    public function update(
+        EloquentListing $listing,
+        array $attributes,
+        array $attributeValues = [],
+        bool $validateRequiredAttributes = true,
+    ): EloquentListing {
         /** @var EloquentListing $updatedListing */
-        $updatedListing = DB::transaction(function () use ($listing, $attributes, $attributeValues): EloquentListing {
+        $updatedListing = DB::transaction(function () use ($listing, $attributes, $attributeValues, $validateRequiredAttributes): EloquentListing {
             $category  = $this->resolveCategory($attributes['category_id'] ?? $listing->category_id);
             $type      = $this->resolveType($attributes['type'] ?? $listing->type);
             $condition = $this->resolveCondition($attributes['condition'] ?? $listing->condition, $type);
@@ -149,7 +156,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 listing: $listing,
                 categoryId: $category->id,
                 attributeValues: $attributeValues,
-                validateRequiredAttributes: $status !== ListingStatus::DRAFT,
+                validateRequiredAttributes: $validateRequiredAttributes,
             );
 
             return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;

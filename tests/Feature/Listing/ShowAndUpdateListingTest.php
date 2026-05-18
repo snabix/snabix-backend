@@ -118,6 +118,58 @@ class ShowAndUpdateListingTest extends FeatureTestCase
             ->assertJsonPath('data.rejectionReason', null);
     }
 
+    public function test_required_category_attribute_must_be_present_when_updating_non_draft_listing(): void
+    {
+        $categoryRepository            = app(CategoryRepositoryInterface::class);
+        $attributeDefinitionRepository = app(CategoryAttributeDefinitionRepositoryInterface::class);
+        $user                          = EloquentUser::factory()->create();
+        $category                      = $categoryRepository->save([
+            'name'         => 'Телевизоры',
+            'slug'         => 'televizory',
+            'catalog_type' => 1,
+        ]);
+        $attribute                     = $attributeDefinitionRepository->save([
+            'category_id'         => $category->id,
+            'name'                => 'Диагональ',
+            'slug'                => 'diagonal',
+            'type'                => 1,
+            'is_required'         => true,
+            'is_filterable'       => true,
+            'is_active'           => true,
+            'applies_to_children' => true,
+            'sort_order'          => 10,
+        ]);
+        $listing                       = EloquentListing::query()->create([
+            'user_id'       => $user->id,
+            'category_id'   => $category->id,
+            'type'          => ListingType::PRODUCT,
+            'status'        => ListingStatus::PENDING_REVIEW,
+            'condition'     => ListingCondition::USED,
+            'title'         => 'Телевизор Samsung',
+            'slug'          => 'televizor-samsung',
+            'description'   => 'Телевизор в хорошем состоянии.',
+            'price'         => 30000,
+            'currency'      => 'RUB',
+            'is_negotiable' => true,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->patchJson('/api/v1/listings/' . $listing->id, [
+                'categoryId'      => $category->id,
+                'type'            => ListingType::PRODUCT->value,
+                'condition'       => ListingCondition::USED->value,
+                'title'           => 'Телевизор Samsung',
+                'description'     => 'Телевизор в хорошем состоянии.',
+                'price'           => 30000,
+                'currency'        => 'RUB',
+                'isNegotiable'    => true,
+                'attributeValues' => [],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['attributeValues.' . $attribute->id]);
+    }
+
     public function test_update_removes_cleared_or_no_longer_applicable_attribute_values(): void
     {
         $categoryRepository            = app(CategoryRepositoryInterface::class);

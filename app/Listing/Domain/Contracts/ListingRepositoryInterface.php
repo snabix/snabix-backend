@@ -23,13 +23,22 @@ interface ListingRepositoryInterface
      * @param array<string, mixed>    $attributes
      * @param array<array-key, mixed> $attributeValues
      */
-    public function create(array $attributes, array $attributeValues = []): EloquentListing;
+    public function create(
+        array $attributes,
+        array $attributeValues = [],
+        bool $validateRequiredAttributes = true,
+    ): EloquentListing;
 
     /**
      * @param array<string, mixed>    $attributes
      * @param array<array-key, mixed> $attributeValues
      */
-    public function update(EloquentListing $listing, array $attributes, array $attributeValues = []): EloquentListing;
+    public function update(
+        EloquentListing $listing,
+        array $attributes,
+        array $attributeValues = [],
+        bool $validateRequiredAttributes = true,
+    ): EloquentListing;
 
     public function findOwnedByUser(string $listingId, string $userId): ?EloquentListing;
 

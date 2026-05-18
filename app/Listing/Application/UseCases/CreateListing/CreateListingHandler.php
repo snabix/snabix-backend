@@ -6,23 +6,26 @@ namespace App\Listing\Application\UseCases\CreateListing;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
-use App\Listing\Domain\Enums\ListingStatus;
+use App\Listing\Domain\Services\ListingPublicationPolicy;
 
 readonly class CreateListingHandler
 {
     public function __construct(
         private ListingRepositoryInterface $listingRepository,
         private ListingPayloadMapper $listingPayloadMapper,
+        private ListingPublicationPolicy $listingPublicationPolicy,
     ) {}
 
     public function execute(CreateListingInput $input): CreateListingOutput
     {
+        $status  = $this->listingPublicationPolicy->statusForUserCreate($input->saveAsDraft);
+
         $listing = $this->listingRepository->create(
             attributes: [
                 'user_id'          => $input->userId,
                 'category_id'      => $input->categoryId,
                 'type'             => $input->type,
-                'status'           => $input->saveAsDraft ? ListingStatus::DRAFT : ListingStatus::PENDING_REVIEW,
+                'status'           => $status,
                 'condition'        => $input->condition,
                 'title'            => $input->title,
                 'description'      => $input->description,
@@ -34,6 +37,7 @@ readonly class CreateListingHandler
                 'contact_email'    => $input->contactEmail,
             ],
             attributeValues: $input->attributeValues,
+            validateRequiredAttributes: $this->listingPublicationPolicy->shouldValidateRequiredAttributes($status),
         );
 
         return CreateListingOutput::from([
