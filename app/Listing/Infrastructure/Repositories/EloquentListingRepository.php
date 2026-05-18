@@ -177,6 +177,31 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     /**
      * @throws Throwable
      */
+    public function transitionStatus(
+        EloquentListing $listing,
+        ListingStatus $status,
+    ): EloquentListing {
+        /** @var EloquentListing $updatedListing */
+        $updatedListing = DB::transaction(function () use ($listing, $status): EloquentListing {
+            $this->listingStatusTransitionPolicy->assertCanTransition($listing->status, $status);
+
+            $listing->forceFill([
+                'status'           => $status,
+                'rejection_reason' => $status === ListingStatus::PENDING_REVIEW
+                    ? null
+                    : $listing->rejection_reason,
+            ]);
+            $listing->save();
+
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
+        });
+
+        return $updatedListing;
+    }
+
+    /**
+     * @throws Throwable
+     */
     public function delete(EloquentListing $listing): void
     {
         DB::transaction(function () use ($listing): void {

@@ -5,6 +5,18 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.5] - 2026-05-18
+
+### Added
+- Добавлен отдельный endpoint `POST /api/v1/listings/{listingId}/submit-for-review` для отправки черновика объявления на проверку
+- Добавлен use case `SubmitListingForReview` с отдельными `Input`, `Handler`, `Output`, `Request` и `Response`
+- Добавлены feature-тесты для отправки черновика на проверку, отсутствующих required-характеристик, неверного статуса и чужого объявления
+
+### Changed
+- Отправка объявления на проверку вынесена из обычного `update` в явное пользовательское действие
+- `ListingAttributeValueSynchronizer` получил проверку уже сохраненных required-характеристик без пересинхронизации значений
+- Backend audit обновлен: выполненный `submit-for-review` отмечен в задачах и выполненных исправлениях
+
 ## [0.6.4] - 2026-05-18
 
 ### Added

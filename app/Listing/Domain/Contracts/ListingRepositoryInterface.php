@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listing\Domain\Contracts;
 
+use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Illuminate\Support\Collection;
 
@@ -41,6 +42,8 @@ interface ListingRepositoryInterface
     ): EloquentListing;
 
     public function findOwnedByUser(string $listingId, string $userId): ?EloquentListing;
+
+    public function transitionStatus(EloquentListing $listing, ListingStatus $status): EloquentListing;
 
     public function delete(EloquentListing $listing): void;
 }

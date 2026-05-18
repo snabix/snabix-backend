@@ -84,6 +84,32 @@ readonly class ListingAttributeValueSynchronizer
             ->delete();
     }
 
+    public function ensureRequiredValuesPresent(
+        EloquentListing $listing,
+        int $categoryId,
+    ): void {
+        $requiredDefinitions = $this->categoryAttributeDefinitionRepository
+            ->forCategory($categoryId)
+            ->filter(static fn(EloquentCategoryAttributeDefinition $definition): bool => (bool) $definition->is_required);
+
+        if ($requiredDefinitions->isEmpty()) {
+            return;
+        }
+
+        $listing->loadMissing('attributeValues');
+        $storedValues        = $listing->attributeValues->keyBy('attribute_definition_id');
+
+        foreach ($requiredDefinitions as $definition) {
+            $storedValue = $storedValues->get($definition->id);
+
+            if ($storedValue === null || ! $this->isFilledValue($storedValue->value)) {
+                throw ValidationException::withMessages([
+                    'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
+                ]);
+            }
+        }
+    }
+
     /**
      * @param  array<array-key, mixed> $attributeValues
      * @return array<int, mixed>
@@ -111,6 +137,15 @@ readonly class ListingAttributeValueSynchronizer
             ->attributeValues()
             ->where('attribute_definition_id', $definitionId)
             ->delete();
+    }
+
+    private function isFilledValue(mixed $value): bool
+    {
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        return ! (is_array($value) && $value === []);
     }
 
     private function normalizeDefinitionValue(

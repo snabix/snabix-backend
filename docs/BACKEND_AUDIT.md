@@ -23,6 +23,7 @@
 - [x] Добавлен feature-тест, который фиксирует этот контракт.
 - [x] Ранее добавлен `CatalogDemoSeeder` и тест идемпотентности.
 - [x] Ранее создание объявления разделено на `pending_review` и `draft` через `saveAsDraft`.
+- [x] Добавлен отдельный endpoint `submit-for-review` для отправки черновика объявления на проверку.
 
 ## Архитектура
 
@@ -50,7 +51,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 
 - [x] `EloquentListingRepository` содержит много бизнес-валидации характеристик. Правила публикации/черновика вынесены в `ListingPublicationPolicy`.
 - [x] `syncAttributeValues()` вынесен из repository в `ListingAttributeValueSynchronizer`.
-- [ ] В listing update пока нет явного action `submitForReview`. Сейчас update сохраняет текущий статус, но для UX “опубликовать черновик” понадобится отдельный endpoint.
+- [x] В listing update пока нет явного action `submitForReview`. Сейчас update сохраняет текущий статус, но для UX “опубликовать черновик” понадобится отдельный endpoint.
 - [x] Переходы статусов объявления централизованы в `ListingStatusTransitionPolicy`.
 - [ ] Public listing API пока без пагинации.
 - [ ] List owned listings API тоже без пагинации и фильтров.
@@ -89,7 +90,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] Create listing больше не принимает модерационные поля от пользователя.
 - [x] Обычное создание переводит объявление в `pending_review`.
 - [x] Черновик создается только через `saveAsDraft`.
-- [ ] Нужен endpoint `POST /api/v1/listings/{id}/submit-for-review`.
+- [x] Нужен endpoint `POST /api/v1/listings/{id}/submit-for-review`.
 - [ ] Нужен admin moderation flow: publish/reject/archive.
 - [x] Переходы статусов централизованы через `ListingStatusTransitionPolicy`.
 - [ ] Нужны media attachments для объявлений.
@@ -133,7 +134,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 
 Что добавить:
 
-- [ ] Тест `submit-for-review`, когда endpoint появится.
+- [x] Тест `submit-for-review`, когда endpoint появится.
 - [ ] Тесты status transition policy.
 - [ ] Тесты пагинации public/owned listings.
 - [ ] Тесты media attachments для listings.
@@ -144,7 +145,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 
 1. [x] Вынести синхронизацию характеристик объявления из repository в отдельный synchronizer.
 2. [x] Добавить state machine/policy для статусов объявления.
-3. [ ] Добавить endpoint отправки черновика на проверку.
+3. [x] Добавить endpoint отправки черновика на проверку.
 4. [ ] Добавить moderation actions в admin API/Filament.
 5. [ ] Добавить media attachments для listings.
 6. [ ] Добавить пагинацию и фильтры.
