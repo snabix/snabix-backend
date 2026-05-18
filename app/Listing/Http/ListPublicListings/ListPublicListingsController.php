@@ -17,7 +17,8 @@ class ListPublicListingsController
 
         $result    = $handler->execute(
             ListPublicListingsInput::from([
-                'limit' => $request->integer('limit', 24),
+                'page'    => $request->integer('page', 1),
+                'perPage' => $request->integer('perPage', 24),
             ]),
         );
 

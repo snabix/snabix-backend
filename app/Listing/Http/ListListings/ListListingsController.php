@@ -13,15 +13,16 @@ class ListListingsController
         ListListingsRequest $request,
         ListListingsHandler $handler,
     ): ListListingsResponse {
-        $user       = $request->user();
-        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
-        $userId     = is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
+        $request->validated();
 
         $result     = $handler->execute(
             ListListingsInput::from([
-                'userId' => $userId,
+                'userId'     => $request->userId(),
+                'page'       => $request->integer('page', 1),
+                'perPage'    => $request->integer('perPage', 12),
+                'status'     => $request->nullableIntegerInput('status'),
+                'type'       => $request->nullableIntegerInput('type'),
+                'categoryId' => $request->nullableIntegerInput('categoryId'),
             ]),
         );
 

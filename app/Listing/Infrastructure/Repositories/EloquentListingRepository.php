@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace App\Listing\Infrastructure\Repositories;
 
-use App\Catalog\Domain\Contracts\CategoryAttributeDefinitionRepositoryInterface;
-use App\Catalog\Domain\Enums\CategoryAttributeType;
 use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
-use App\Catalog\Infrastructure\Models\EloquentCategoryAttributeDefinition;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Listing\Domain\Services\ListingStatusTransitionPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
-use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
-use Illuminate\Support\Collection;
+use App\Listing\Infrastructure\Services\ListingAttributeValueSynchronizer;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -24,34 +22,53 @@ use Throwable;
 readonly class EloquentListingRepository implements ListingRepositoryInterface
 {
     public function __construct(
-        private CategoryAttributeDefinitionRepositoryInterface $categoryAttributeDefinitionRepository,
+        private ListingAttributeValueSynchronizer $listingAttributeValueSynchronizer,
+        private ListingStatusTransitionPolicy $listingStatusTransitionPolicy,
     ) {}
 
     /**
-     * @return Collection<int, EloquentListing>
+     * @return LengthAwarePaginator<int, EloquentListing>
      */
-    public function listOwnedByUser(string $userId): Collection
-    {
+    public function listOwnedByUser(
+        string $userId,
+        int $page = 1,
+        int $perPage = 12,
+        ?ListingStatus $status = null,
+        ?int $type = null,
+        ?int $categoryId = null,
+    ): LengthAwarePaginator {
         return EloquentListing::query()
             ->with(['category', 'attributeValues.attributeDefinition'])
             ->where('user_id', $userId)
+            ->when($status !== null, fn($query) => $query->where('status', $status))
+            ->when($type !== null, fn($query) => $query->where('type', $type))
+            ->when($categoryId !== null, fn($query) => $query->where('category_id', $categoryId))
             ->latest('updated_at')
-            ->get();
+            ->paginate(
+                perPage: $perPage,
+                pageName: 'page',
+                page: $page,
+            );
     }
 
     /**
-     * @return Collection<int, EloquentListing>
+     * @return LengthAwarePaginator<int, EloquentListing>
      */
-    public function listPublicPublished(int $limit = 24): Collection
-    {
+    public function listPublicPublished(
+        int $page = 1,
+        int $perPage = 24,
+    ): LengthAwarePaginator {
         return EloquentListing::query()
             ->with(['category', 'attributeValues.attributeDefinition'])
             ->where('status', ListingStatus::PUBLISHED)
             ->orderByDesc('is_featured')
             ->orderByDesc('published_at')
             ->latest('created_at')
-            ->limit(max($limit, 1))
-            ->get();
+            ->paginate(
+                perPage: $perPage,
+                pageName: 'page',
+                page: $page,
+            );
     }
 
     /**
@@ -59,10 +76,13 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
      * @param  array<array-key, mixed> $attributeValues
      * @throws Throwable
      */
-    public function create(array $attributes, array $attributeValues = []): EloquentListing
-    {
+    public function create(
+        array $attributes,
+        array $attributeValues = [],
+        bool $validateRequiredAttributes = true,
+    ): EloquentListing {
         /** @var EloquentListing $listing */
-        $listing = DB::transaction(function () use ($attributes, $attributeValues): EloquentListing {
+        $listing = DB::transaction(function () use ($attributes, $attributeValues, $validateRequiredAttributes): EloquentListing {
             $category   = $this->resolveCategory($attributes['category_id'] ?? null);
             $type       = $this->resolveType($attributes['type'] ?? null);
             $condition  = $this->resolveCondition($attributes['condition'] ?? null, $type);
@@ -95,11 +115,11 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 'expires_at'       => null,
             ]);
 
-            $this->syncAttributeValues(
+            $this->listingAttributeValueSynchronizer->sync(
                 listing: $listing,
                 categoryId: $category->id,
                 attributeValues: $attributeValues,
-                validateRequiredAttributes: $status !== ListingStatus::DRAFT,
+                validateRequiredAttributes: $validateRequiredAttributes,
             );
 
             return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
@@ -113,10 +133,14 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
      * @param  array<array-key, mixed> $attributeValues
      * @throws Throwable
      */
-    public function update(EloquentListing $listing, array $attributes, array $attributeValues = []): EloquentListing
-    {
+    public function update(
+        EloquentListing $listing,
+        array $attributes,
+        array $attributeValues = [],
+        bool $validateRequiredAttributes = true,
+    ): EloquentListing {
         /** @var EloquentListing $updatedListing */
-        $updatedListing = DB::transaction(function () use ($listing, $attributes, $attributeValues): EloquentListing {
+        $updatedListing = DB::transaction(function () use ($listing, $attributes, $attributeValues, $validateRequiredAttributes): EloquentListing {
             $category  = $this->resolveCategory($attributes['category_id'] ?? $listing->category_id);
             $type      = $this->resolveType($attributes['type'] ?? $listing->type);
             $condition = $this->resolveCondition($attributes['condition'] ?? $listing->condition, $type);
@@ -124,6 +148,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             $title     = $this->resolveTitle($attributes['title'] ?? $listing->title);
 
             $this->assertTypeMatchesCategory($type, $category);
+            $this->listingStatusTransitionPolicy->assertCanTransition($listing->status, $status);
 
             $listing->fill([
                 'category_id'      => $category->id,
@@ -145,11 +170,11 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ]);
             $listing->save();
 
-            $this->syncAttributeValues(
+            $this->listingAttributeValueSynchronizer->sync(
                 listing: $listing,
                 categoryId: $category->id,
                 attributeValues: $attributeValues,
-                validateRequiredAttributes: $status !== ListingStatus::DRAFT,
+                validateRequiredAttributes: $validateRequiredAttributes,
             );
 
             return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
@@ -165,6 +190,39 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ->whereKey($listingId)
             ->where('user_id', $userId)
             ->first();
+    }
+
+    public function findById(string $listingId): ?EloquentListing
+    {
+        return EloquentListing::query()
+            ->with(['category', 'attributeValues.attributeDefinition'])
+            ->whereKey($listingId)
+            ->first();
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function transitionStatus(
+        EloquentListing $listing,
+        ListingStatus $status,
+    ): EloquentListing {
+        /** @var EloquentListing $updatedListing */
+        $updatedListing = DB::transaction(function () use ($listing, $status): EloquentListing {
+            $this->listingStatusTransitionPolicy->assertCanTransition($listing->status, $status);
+
+            $listing->forceFill([
+                'status'           => $status,
+                'rejection_reason' => $status === ListingStatus::PENDING_REVIEW
+                    ? null
+                    : $listing->rejection_reason,
+            ]);
+            $listing->save();
+
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
+        });
+
+        return $updatedListing;
     }
 
     /**
@@ -426,324 +484,5 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         }
 
         return $candidate;
-    }
-
-    /**
-     * @param array<array-key, mixed> $attributeValues
-     */
-    private function syncAttributeValues(
-        EloquentListing $listing,
-        int $categoryId,
-        array $attributeValues,
-        bool $validateRequiredAttributes = true,
-    ): void {
-        $definitions     = $this->categoryAttributeDefinitionRepository
-            ->forCategory($categoryId)
-            ->keyBy('id');
-        $submittedValues = $this->normalizeSubmittedAttributeValues($attributeValues);
-        $definitionIds   = $definitions->keys()->map(static fn(mixed $definitionId): int => (int) $definitionId)->all();
-
-        if ($definitionIds === []) {
-            $listing->attributeValues()->delete();
-
-            return;
-        }
-
-        foreach ($definitions as $definition) {
-            $definitionId    = $definition->id;
-            $hasValue        = array_key_exists($definitionId, $submittedValues);
-
-            if (! $hasValue) {
-                if ($validateRequiredAttributes && $definition->is_required) {
-                    throw ValidationException::withMessages([
-                        'attributeValues.' . $definitionId => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-                    ]);
-                }
-
-                $this->deleteAttributeValue($listing, $definitionId);
-
-                continue;
-            }
-
-            $normalizedValue = $this->normalizeDefinitionValue(
-                definition: $definition,
-                value: $submittedValues[$definitionId],
-                validateRequired: $validateRequiredAttributes,
-            );
-
-            if ($normalizedValue === null) {
-                $this->deleteAttributeValue($listing, $definitionId);
-
-                continue;
-            }
-
-            EloquentListingAttributeValue::query()->updateOrCreate(
-                [
-                    'listing_id'              => $listing->id,
-                    'attribute_definition_id' => $definitionId,
-                ],
-                [
-                    'value'         => $normalizedValue,
-                    'display_value' => $this->displayAttributeValue($normalizedValue),
-                ],
-            );
-        }
-
-        $listing
-            ->attributeValues()
-            ->whereNotIn('attribute_definition_id', $definitionIds)
-            ->delete();
-    }
-
-    /**
-     * @param  array<array-key, mixed> $attributeValues
-     * @return array<int, mixed>
-     */
-    private function normalizeSubmittedAttributeValues(array $attributeValues): array
-    {
-        $normalizedValues = [];
-
-        foreach ($attributeValues as $attributeDefinitionId => $value) {
-            if (! is_numeric($attributeDefinitionId)) {
-                continue;
-            }
-
-            $normalizedValues[(int) $attributeDefinitionId] = $value;
-        }
-
-        return $normalizedValues;
-    }
-
-    private function deleteAttributeValue(EloquentListing $listing, int $definitionId): void
-    {
-        $listing
-            ->attributeValues()
-            ->where('attribute_definition_id', $definitionId)
-            ->delete();
-    }
-
-    private function normalizeDefinitionValue(
-        EloquentCategoryAttributeDefinition $definition,
-        mixed $value,
-        bool $validateRequired = true,
-    ): mixed {
-        if ($value === null || $value === '') {
-            if ($validateRequired && $definition->is_required) {
-                throw ValidationException::withMessages([
-                    'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-                ]);
-            }
-
-            return null;
-        }
-
-        if ($value === []) {
-            if ($validateRequired && $definition->is_required) {
-                throw ValidationException::withMessages([
-                    'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-                ]);
-            }
-
-            return null;
-        }
-
-        return match ($definition->type) {
-            CategoryAttributeType::TEXT        => $this->normalizeTextAttributeValue($definition, $value),
-            CategoryAttributeType::NUMBER      => $this->normalizeNumberAttributeValue($definition, $value),
-            CategoryAttributeType::BOOLEAN     => $this->normalizeBooleanAttributeValue($definition, $value),
-            CategoryAttributeType::SELECT      => $this->normalizeSelectAttributeValue($definition, $value),
-            CategoryAttributeType::MULTISELECT => $this->normalizeMultiselectAttributeValue($definition, $value),
-            CategoryAttributeType::DATE        => $this->normalizeDateAttributeValue($definition, $value),
-        };
-    }
-
-    private function normalizeTextAttributeValue(
-        EloquentCategoryAttributeDefinition $definition,
-        mixed $value,
-    ): string {
-        if (! is_scalar($value)) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" должно быть текстом.', $definition->name)],
-            ]);
-        }
-
-        $resolvedValue = trim((string) $value);
-
-        if ($resolvedValue === '' && $definition->is_required) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-            ]);
-        }
-
-        return $resolvedValue;
-    }
-
-    private function normalizeNumberAttributeValue(
-        EloquentCategoryAttributeDefinition $definition,
-        mixed $value,
-    ): float | int {
-        if (! is_numeric($value)) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" должно быть числом.', $definition->name)],
-            ]);
-        }
-
-        $resolvedValue = (float) $value;
-
-        return floor($resolvedValue) === $resolvedValue
-            ? (int) $resolvedValue
-            : round($resolvedValue, 2);
-    }
-
-    private function normalizeBooleanAttributeValue(
-        EloquentCategoryAttributeDefinition $definition,
-        mixed $value,
-    ): bool {
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if (in_array($value, [0, 1], true)) {
-            return (bool) $value;
-        }
-
-        if (is_string($value)) {
-            $normalizedValue = mb_strtolower(trim($value));
-
-            if (in_array($normalizedValue, ['1', 'true', 'yes', 'да'], true)) {
-                return true;
-            }
-
-            if (in_array($normalizedValue, ['0', 'false', 'no', 'нет'], true)) {
-                return false;
-            }
-        }
-
-        throw ValidationException::withMessages([
-            'attributeValues.' . $definition->id => [sprintf('Поле "%s" должно иметь значение Да или Нет.', $definition->name)],
-        ]);
-    }
-
-    private function normalizeSelectAttributeValue(
-        EloquentCategoryAttributeDefinition $definition,
-        mixed $value,
-    ): string {
-        if (! is_scalar($value)) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Для поля "%s" нужно выбрать одно значение.', $definition->name)],
-            ]);
-        }
-
-        $resolvedValue = trim((string) $value);
-        $options       = $this->normalizedDefinitionOptions($definition);
-
-        if (! in_array($resolvedValue, $options, true)) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Для поля "%s" выбрано недопустимое значение.', $definition->name)],
-            ]);
-        }
-
-        return $resolvedValue;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function normalizeMultiselectAttributeValue(
-        EloquentCategoryAttributeDefinition $definition,
-        mixed $value,
-    ): array {
-        if (! is_array($value)) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Для поля "%s" нужно выбрать несколько значений списком.', $definition->name)],
-            ]);
-        }
-
-        $options           = $this->normalizedDefinitionOptions($definition);
-        $normalizedValues  = collect($value)
-            ->map(static fn(mixed $item): ?string => is_scalar($item) ? trim((string) $item) : null)
-            ->filter(static fn(?string $item): bool => $item !== null && $item !== '')
-            ->unique()
-            ->values()
-            ->all();
-
-        if ($normalizedValues === [] && $definition->is_required) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-            ]);
-        }
-
-        foreach ($normalizedValues as $normalizedValue) {
-            if (! in_array($normalizedValue, $options, true)) {
-                throw ValidationException::withMessages([
-                    'attributeValues.' . $definition->id => [sprintf('Для поля "%s" передано недопустимое значение.', $definition->name)],
-                ]);
-            }
-        }
-
-        return $normalizedValues;
-    }
-
-    private function normalizeDateAttributeValue(
-        EloquentCategoryAttributeDefinition $definition,
-        mixed $value,
-    ): string {
-        if (! is_string($value)) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" должно быть датой в формате YYYY-MM-DD.', $definition->name)],
-            ]);
-        }
-
-        $resolvedValue = trim($value);
-
-        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $resolvedValue)) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" должно быть датой в формате YYYY-MM-DD.', $definition->name)],
-            ]);
-        }
-
-        return $resolvedValue;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function normalizedDefinitionOptions(EloquentCategoryAttributeDefinition $definition): array
-    {
-        $options = $definition->options;
-
-        if (! is_array($options)) {
-            return [];
-        }
-
-        return collect($options)
-            ->map(static fn(mixed $option): ?string => is_scalar($option) ? trim((string) $option) : null)
-            ->filter(static fn(?string $option): bool => $option !== null && $option !== '')
-            ->values()
-            ->all();
-    }
-
-    private function displayAttributeValue(mixed $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        if (is_array($value)) {
-            $normalizedValues = array_map(
-                static fn(mixed $item): string => is_scalar($item)
-                    ? (string) $item
-                    : (json_encode($item, JSON_UNESCAPED_UNICODE) ?: ''),
-                $value,
-            );
-
-            return implode(', ', array_filter($normalizedValues, static fn(string $item): bool => $item !== ''));
-        }
-
-        if (is_bool($value)) {
-            return $value ? 'Да' : 'Нет';
-        }
-
-        return is_scalar($value) ? (string) $value : null;
     }
 }

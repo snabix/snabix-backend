@@ -45,11 +45,69 @@ class ListPublicListingsTest extends FeatureTestCase
         $this
             ->getJson('/api/v1/public/listings')
             ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.title', 'Горный велосипед')
-            ->assertJsonMissingPath('data.0.userId')
-            ->assertJsonMissingPath('data.0.contactName')
-            ->assertJsonMissingPath('data.0.contactPhone')
-            ->assertJsonMissingPath('data.0.contactEmail');
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.title', 'Горный велосипед')
+            ->assertJsonPath('data.meta.currentPage', 1)
+            ->assertJsonPath('data.meta.perPage', 24)
+            ->assertJsonPath('data.meta.total', 1)
+            ->assertJsonMissingPath('data.items.0.userId')
+            ->assertJsonMissingPath('data.items.0.contactName')
+            ->assertJsonMissingPath('data.items.0.contactPhone')
+            ->assertJsonMissingPath('data.items.0.contactEmail');
+    }
+
+    public function test_public_listings_are_paginated(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Самокаты',
+            'slug'         => 'samokaty',
+            'catalog_type' => 1,
+        ]);
+
+        $firstListing       = $this->createPublishedListing($user->id, $category->id, 'Первый самокат', 'pervyj-samokat', now()->subDay());
+        $secondListing      = $this->createPublishedListing($user->id, $category->id, 'Второй самокат', 'vtoroj-samokat', now());
+
+        $this
+            ->getJson('/api/v1/public/listings?perPage=1&page=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $secondListing->id)
+            ->assertJsonPath('data.meta.currentPage', 1)
+            ->assertJsonPath('data.meta.perPage', 1)
+            ->assertJsonPath('data.meta.total', 2);
+
+        $this
+            ->getJson('/api/v1/public/listings?perPage=1&page=2')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $firstListing->id)
+            ->assertJsonPath('data.meta.currentPage', 2)
+            ->assertJsonPath('data.meta.perPage', 1)
+            ->assertJsonPath('data.meta.total', 2);
+    }
+
+    private function createPublishedListing(
+        string $userId,
+        int $categoryId,
+        string $title,
+        string $slug,
+        mixed $publishedAt,
+    ): EloquentListing {
+        return EloquentListing::query()->create([
+            'user_id'       => $userId,
+            'category_id'   => $categoryId,
+            'type'          => ListingType::PRODUCT,
+            'status'        => ListingStatus::PUBLISHED,
+            'condition'     => ListingCondition::USED,
+            'title'         => $title,
+            'slug'          => $slug,
+            'description'   => 'Публичное объявление.',
+            'price'         => 30000,
+            'currency'      => 'RUB',
+            'is_negotiable' => true,
+            'published_at'  => $publishedAt,
+        ]);
     }
 }

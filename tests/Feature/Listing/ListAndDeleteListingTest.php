@@ -55,9 +55,12 @@ class ListAndDeleteListingTest extends FeatureTestCase
             ->actingAs($user)
             ->getJson('/api/v1/listings')
             ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.id', $listing->id)
-            ->assertJsonPath('data.0.title', 'Шкаф купе');
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $listing->id)
+            ->assertJsonPath('data.items.0.title', 'Шкаф купе')
+            ->assertJsonPath('data.meta.currentPage', 1)
+            ->assertJsonPath('data.meta.perPage', 12)
+            ->assertJsonPath('data.meta.total', 1);
 
         $this
             ->actingAs($user)
@@ -65,8 +68,86 @@ class ListAndDeleteListingTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonPath('data.deleted', true);
 
+        $this->assertDatabaseHas('system_logs', [
+            'category' => 'listing',
+            'action'   => 'listing.delete',
+            'user_id'  => $user->id,
+        ]);
+
         $this->assertDatabaseMissing('listings', [
             'id' => $listing->id,
+        ]);
+    }
+
+    public function test_user_can_paginate_and_filter_own_listings(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Стулья',
+            'slug'         => 'stulya',
+            'catalog_type' => 1,
+        ]);
+
+        $draftListing       = $this->createListing(
+            userId: $user->id,
+            categoryId: $category->id,
+            status: ListingStatus::DRAFT,
+            title: 'Черновик стула',
+            slug: 'chernovik-stula',
+        );
+        $publishedListing   = $this->createListing(
+            userId: $user->id,
+            categoryId: $category->id,
+            status: ListingStatus::PUBLISHED,
+            title: 'Опубликованный стул',
+            slug: 'opublikovannyj-stul',
+        );
+
+        $this
+            ->actingAs($user)
+            ->getJson('/api/v1/listings?status=' . ListingStatus::DRAFT->value . '&perPage=1&page=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $draftListing->id)
+            ->assertJsonPath('data.meta.currentPage', 1)
+            ->assertJsonPath('data.meta.perPage', 1)
+            ->assertJsonPath('data.meta.total', 1);
+
+        $secondPageResponse = $this
+            ->actingAs($user)
+            ->getJson('/api/v1/listings?perPage=1&page=2')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.meta.currentPage', 2)
+            ->assertJsonPath('data.meta.perPage', 1)
+            ->assertJsonPath('data.meta.total', 2);
+
+        $this->assertContains(
+            $secondPageResponse->json('data.items.0.id'),
+            [$draftListing->id, $publishedListing->id],
+        );
+    }
+
+    private function createListing(
+        string $userId,
+        int $categoryId,
+        ListingStatus $status,
+        string $title,
+        string $slug,
+    ): EloquentListing {
+        return EloquentListing::query()->create([
+            'user_id'       => $userId,
+            'category_id'   => $categoryId,
+            'type'          => ListingType::PRODUCT,
+            'status'        => $status,
+            'condition'     => ListingCondition::USED,
+            'title'         => $title,
+            'slug'          => $slug,
+            'description'   => 'Описание объявления.',
+            'price'         => 18000,
+            'currency'      => 'RUB',
+            'is_negotiable' => true,
         ]);
     }
 }

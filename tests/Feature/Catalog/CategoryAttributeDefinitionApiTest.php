@@ -85,4 +85,47 @@ class CategoryAttributeDefinitionApiTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonPath('data.deleted', true);
     }
+
+    public function test_category_attributes_endpoint_returns_form_metadata(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $category           = $categoryRepository->save([
+            'name' => 'Ноутбуки',
+            'slug' => 'noutbuki-api',
+        ]);
+        $admin              = EloquentAdmin::query()->create([
+            'name'     => 'Catalog Metadata Admin',
+            'email'    => 'catalog-metadata-admin@example.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $this
+            ->actingAs($admin, 'admin')
+            ->postJson('/api/v1/admin/category-attribute-definitions', [
+                'categoryId'        => $category->id,
+                'name'              => 'Производитель',
+                'slug'              => 'proizvoditel',
+                'type'              => 4,
+                'options'           => ['Apple', 'ASUS'],
+                'placeholder'       => 'Выберите производителя',
+                'helpText'          => 'Укажите бренд устройства.',
+                'defaultValue'      => null,
+                'groupName'         => 'Основные',
+                'isRequired'        => true,
+                'isFilterable'      => true,
+                'showInCard'        => true,
+                'isActive'          => true,
+                'appliesToChildren' => true,
+                'sortOrder'         => 10,
+            ])
+            ->assertOk();
+
+        $this
+            ->getJson('/api/v1/categories/' . $category->id . '/attributes')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.placeholder', 'Выберите производителя')
+            ->assertJsonPath('data.items.0.helpText', 'Укажите бренд устройства.')
+            ->assertJsonPath('data.items.0.groupName', 'Основные')
+            ->assertJsonPath('data.items.0.showInCard', true);
+    }
 }

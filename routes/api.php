@@ -26,6 +26,7 @@ use App\Listing\Http\DeleteListing\DeleteListingController;
 use App\Listing\Http\ListListings\ListListingsController;
 use App\Listing\Http\ListPublicListings\ListPublicListingsController;
 use App\Listing\Http\ShowListing\ShowListingController;
+use App\Listing\Http\SubmitListingForReview\SubmitListingForReviewController;
 use App\Listing\Http\UpdateListing\UpdateListingController;
 use Illuminate\Support\Facades\Route;
 
@@ -70,6 +71,7 @@ Route::prefix('v1')->group(function () {
     Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
         Route::get('/', ListListingsController::class);
         Route::post('/', CreateListingController::class);
+        Route::post('/{listingId}/submit-for-review', SubmitListingForReviewController::class);
         Route::get('/{listingId}', ShowListingController::class);
         Route::patch('/{listingId}', UpdateListingController::class);
         Route::delete('/{listingId}', DeleteListingController::class);

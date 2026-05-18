@@ -9,6 +9,7 @@ use App\Shared\Domain\DTO\Input;
 class ListPublicListingsInput extends Input
 {
     public function __construct(
-        public readonly int $limit = 24,
+        public readonly int $page = 1,
+        public readonly int $perPage = 24,
     ) {}
 }
