@@ -5,6 +5,18 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.12] - 2026-05-19
+
+### Added
+- Добавлен единый JSON-контракт истекшей/потерянной API-сессии:
+  - `401 auth.unauthenticated`;
+  - `419 auth.csrf-token-mismatch`.
+- Добавлен feature-тест unauthenticated API response для `auth:sanctum` маршрутов.
+
+### Changed
+- Backend audit обновлен: политика refresh/session expiration отмечена выполненной.
+- Frontend теперь обрабатывает `401` и `419` как истечение сессии: очищает локальное состояние, показывает уведомление и оставляет redirect target на текущую закрытую страницу.
+
 ## [0.6.11] - 2026-05-19
 
 ### Added

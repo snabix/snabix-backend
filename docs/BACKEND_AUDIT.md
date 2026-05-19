@@ -34,6 +34,7 @@
 - [x] Добавлен endpoint смены пароля авторизованного пользователя.
 - [x] Application cooldown повторной отправки email verification зафиксирован тестами.
 - [x] Auth-события дополнены логами для смены пароля и повторного запроса email verification.
+- [x] API-контракт истекшей сессии стандартизирован для `401` и `419`.
 
 ## Архитектура
 
@@ -75,7 +76,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] Реализованы sign-up/sign-in/logout/profile/verify/reset flows.
 - [x] Email verification и password reset покрыты тестами.
 - [x] RabbitMQ queue используется для email jobs.
-- [ ] Нужна политика refresh/session expiration на frontend/backend уровне.
+- [x] Нужна политика refresh/session expiration на frontend/backend уровне.
 - [x] Нужна защита от частых resend verification не только throttle, но и cooldown в доменной логике.
 - [x] Нужен endpoint смены пароля авторизованного пользователя.
 - [x] Нужны события и логи для критичных auth-действий в едином формате.
