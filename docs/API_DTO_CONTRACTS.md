@@ -248,6 +248,13 @@ Frontend должен учитывать `placeholder`, `helpText`, `defaultValu
       "placeholder": "Выберите объем памяти",
       "helpText": "Укажите фактический объем памяти товара.",
       "defaultValue": null,
+      "dependencyRules": [
+        {
+          "attributeSlug": "brand",
+          "operator": "equals",
+          "value": "Apple"
+        }
+      ],
       "groupName": "Характеристики устройства",
       "options": [
         "64 GB",
@@ -260,6 +267,7 @@ Frontend должен учитывать `placeholder`, `helpText`, `defaultValu
       "showInCard": true,
       "isActive": true,
       "appliesToChildren": true,
+      "schemaVersion": 1,
       "sortOrder": 10
     }
   ]

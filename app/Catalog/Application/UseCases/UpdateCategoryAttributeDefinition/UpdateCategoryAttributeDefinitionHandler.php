@@ -34,6 +34,7 @@ readonly class UpdateCategoryAttributeDefinitionHandler
             'placeholder'         => $input->placeholder,
             'help_text'           => $input->helpText,
             'default_value'       => $input->defaultValue,
+            'dependency_rules'    => $input->dependencyRules,
             'group_name'          => $input->groupName,
             'options'             => $input->options,
             'is_required'         => $input->isRequired,

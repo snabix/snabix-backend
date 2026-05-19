@@ -5,6 +5,22 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.14] - 2026-05-19
+
+### Added
+- Добавлены `dependency_rules` для характеристик категорий, чтобы frontend мог строить условную видимость полей формы объявления.
+- Добавлен `schema_version` для характеристик категорий.
+- Значения характеристик объявлений теперь сохраняют `attribute_schema_version` и `attribute_snapshot`, чтобы старые объявления не зависели только от текущей версии формы категории.
+- Добавлены admin endpoints для bulk import/export характеристик категорий:
+  - `GET /api/v1/admin/category-attribute-definitions/export`;
+  - `POST /api/v1/admin/category-attribute-definitions/import`.
+- Добавлены feature-тесты для dependency rules, schema snapshot, delete guard и bulk import/export.
+
+### Changed
+- Удаление характеристики категории теперь запрещено, если по ней уже есть значения в объявлениях.
+- Backend audit обновлен: задачи каталога по slug policy, dependency rules, schema version, delete guard и bulk import/export отмечены выполненными.
+- DTO contracts обновлены полями `dependencyRules` и `schemaVersion`.
+
 ## [0.6.13] - 2026-05-19
 
 ### Added

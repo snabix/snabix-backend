@@ -64,8 +64,10 @@ readonly class ListingAttributeValueSynchronizer
                     'attribute_definition_id' => $definitionId,
                 ],
                 [
-                    'value'         => $normalizedValue,
-                    'display_value' => $this->displayAttributeValue($normalizedValue),
+                    'attribute_schema_version' => $definition->schema_version,
+                    'attribute_snapshot'       => $this->makeAttributeSnapshot($definition),
+                    'value'                    => $normalizedValue,
+                    'display_value'            => $this->displayAttributeValue($normalizedValue),
                 ],
             );
         }
@@ -303,5 +305,22 @@ readonly class ListingAttributeValueSynchronizer
         }
 
         return is_scalar($value) ? (string) $value : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function makeAttributeSnapshot(EloquentCategoryAttributeDefinition $definition): array
+    {
+        return [
+            'id'              => $definition->id,
+            'name'            => $definition->name,
+            'slug'            => $definition->slug,
+            'type'            => $definition->type->value,
+            'typeLabel'       => $definition->type->label(),
+            'unit'            => $definition->unit,
+            'schemaVersion'   => $definition->schema_version,
+            'dependencyRules' => $definition->dependency_rules,
+        ];
     }
 }

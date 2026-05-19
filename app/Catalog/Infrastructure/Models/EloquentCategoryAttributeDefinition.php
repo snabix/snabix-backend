@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null                                 $placeholder
  * @property string|null                                 $help_text
  * @property array<int, mixed>|array<string, mixed>|null $default_value
+ * @property array<int, mixed>|array<string, mixed>|null $dependency_rules
  * @property string|null                                 $group_name
  * @property array<int, mixed>|null                      $options
  * @property bool                                        $is_required
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool                                        $show_in_card
  * @property bool                                        $is_active
  * @property bool                                        $applies_to_children
+ * @property int                                         $schema_version
  * @property int                                         $sort_order
  */
 class EloquentCategoryAttributeDefinition extends Model
@@ -45,6 +47,7 @@ class EloquentCategoryAttributeDefinition extends Model
         'placeholder',
         'help_text',
         'default_value',
+        'dependency_rules',
         'group_name',
         'options',
         'is_required',
@@ -52,6 +55,7 @@ class EloquentCategoryAttributeDefinition extends Model
         'show_in_card',
         'is_active',
         'applies_to_children',
+        'schema_version',
         'sort_order',
     ];
 
@@ -79,12 +83,14 @@ class EloquentCategoryAttributeDefinition extends Model
         return [
             'type'               => CategoryAttributeType::class,
             'default_value'      => 'array',
+            'dependency_rules'   => 'array',
             'options'            => 'array',
             'is_required'        => 'boolean',
             'is_filterable'      => 'boolean',
             'show_in_card'       => 'boolean',
             'is_active'          => 'boolean',
             'applies_to_children'=> 'boolean',
+            'schema_version'     => 'integer',
             'sort_order'         => 'integer',
             'created_at'         => 'datetime',
             'updated_at'         => 'datetime',

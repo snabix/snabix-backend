@@ -41,6 +41,9 @@ class CategoryAttributeDefinitionInfolist
                         TextEntry::make('sort_order')
                             ->label('Sort order')
                             ->translateLabel(),
+                        TextEntry::make('schema_version')
+                            ->label('Schema version')
+                            ->translateLabel(),
                     ]),
 
                 Section::make(__('Behavior in listing forms'))
@@ -99,6 +102,9 @@ class CategoryAttributeDefinitionInfolist
                             }),
                         KeyValueEntry::make('default_value')
                             ->label('Default value')
+                            ->translateLabel(),
+                        KeyValueEntry::make('dependency_rules')
+                            ->label('Dependency rules')
                             ->translateLabel(),
                     ]),
             ]);

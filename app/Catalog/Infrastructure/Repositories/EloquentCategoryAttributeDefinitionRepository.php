@@ -82,20 +82,34 @@ class EloquentCategoryAttributeDefinitionRepository implements CategoryAttribute
      */
     public function save(array $attributes, ?int $id = null): EloquentCategoryAttributeDefinition
     {
-        $definition  = $id !== null
+        $definition      = $id !== null
             ? EloquentCategoryAttributeDefinition::query()->findOrFail($id)
             : new EloquentCategoryAttributeDefinition();
 
-        $category    = $this->resolveCategory($attributes['category_id'] ?? null);
-        $name        = $this->resolveName($attributes['name'] ?? null);
-        $slug        = $this->generateUniqueSlug(
+        $category        = $this->resolveCategory($attributes['category_id'] ?? null);
+        $name            = $this->resolveName($attributes['name'] ?? null);
+        $slug            = $this->generateUniqueSlug(
             categoryId: (int) $category->id,
             name: $name,
             slug: $attributes['slug'] ?? null,
             ignoreId: $definition->exists ? (int) $definition->id : null,
         );
-        $type        = $this->resolveType($attributes['type'] ?? null);
-        $options     = $this->resolveOptions($attributes['options'] ?? null, $type);
+        $type            = $this->resolveType($attributes['type'] ?? null);
+        $options         = $this->resolveOptions($attributes['options'] ?? null, $type);
+        $defaultValue    = $this->resolveDefaultValue($attributes['default_value'] ?? null);
+        $dependencyRules = $this->resolveDependencyRules($attributes['dependency_rules'] ?? null);
+        $schemaVersion   = $this->resolveSchemaVersion(
+            definition: $definition,
+            attributes: [
+                'type'             => $type->value,
+                'options'          => $options,
+                'default_value'    => $defaultValue,
+                'dependency_rules' => $dependencyRules,
+                'is_required'      => (bool) ($attributes['is_required'] ?? false),
+                'is_filterable'    => (bool) ($attributes['is_filterable'] ?? false),
+                'show_in_card'     => (bool) ($attributes['show_in_card'] ?? false),
+            ],
+        );
 
         $definition->fill([
             'category_id'         => $category->id,
@@ -106,7 +120,8 @@ class EloquentCategoryAttributeDefinitionRepository implements CategoryAttribute
             'description'         => $this->resolveNullableString($attributes['description'] ?? null),
             'placeholder'         => $this->resolveNullableString($attributes['placeholder'] ?? null, 255),
             'help_text'           => $this->resolveNullableString($attributes['help_text'] ?? null),
-            'default_value'       => $this->resolveDefaultValue($attributes['default_value'] ?? null),
+            'default_value'       => $defaultValue,
+            'dependency_rules'    => $dependencyRules,
             'group_name'          => $this->resolveNullableString($attributes['group_name'] ?? null, 120),
             'options'             => $options,
             'is_required'         => (bool) ($attributes['is_required'] ?? false),
@@ -114,6 +129,7 @@ class EloquentCategoryAttributeDefinitionRepository implements CategoryAttribute
             'show_in_card'        => (bool) ($attributes['show_in_card'] ?? false),
             'is_active'           => (bool) ($attributes['is_active'] ?? true),
             'applies_to_children' => (bool) ($attributes['applies_to_children'] ?? true),
+            'schema_version'      => $schemaVersion,
             'sort_order'          => $this->resolveSortOrder($attributes['sort_order'] ?? 0),
         ]);
         $definition->save();
@@ -128,8 +144,23 @@ class EloquentCategoryAttributeDefinitionRepository implements CategoryAttribute
             ->find($id);
     }
 
+    public function findByCategoryAndSlug(int $categoryId, string $slug): ?EloquentCategoryAttributeDefinition
+    {
+        return EloquentCategoryAttributeDefinition::query()
+            ->with('category')
+            ->where('category_id', $categoryId)
+            ->where('slug', $slug)
+            ->first();
+    }
+
     public function delete(EloquentCategoryAttributeDefinition $definition): void
     {
+        if ($definition->listingValues()->exists()) {
+            throw ValidationException::withMessages([
+                'attributeDefinitionId' => ['Нельзя удалить характеристику, по которой уже есть значения в объявлениях. Отключите ее вместо удаления.'],
+            ]);
+        }
+
         $definition->delete();
     }
 
@@ -263,6 +294,100 @@ class EloquentCategoryAttributeDefinitionRepository implements CategoryAttribute
         return is_array($defaultValue)
             ? $defaultValue
             : null;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>|null
+     */
+    private function resolveDependencyRules(mixed $dependencyRules): ?array
+    {
+        if ($dependencyRules === null) {
+            return null;
+        }
+
+        if (! is_array($dependencyRules)) {
+            throw ValidationException::withMessages([
+                'dependencyRules' => ['Правила зависимости должны быть массивом.'],
+            ]);
+        }
+
+        $normalizedRules = [];
+
+        foreach (array_values($dependencyRules) as $index => $rule) {
+            if (! is_array($rule)) {
+                throw ValidationException::withMessages([
+                    'dependencyRules.' . $index => ['Каждое правило зависимости должно быть объектом.'],
+                ]);
+            }
+
+            $operator              = is_string($rule['operator'] ?? null)
+                ? trim($rule['operator'])
+                : 'equals';
+
+            if (! in_array($operator, ['equals', 'not_equals', 'in', 'not_in', 'filled', 'empty'], true)) {
+                throw ValidationException::withMessages([
+                    'dependencyRules.' . $index . '.operator' => ['Укажите корректный оператор зависимости.'],
+                ]);
+            }
+
+            $attributeDefinitionId = $rule['attributeDefinitionId'] ?? $rule['attribute_definition_id'] ?? null;
+            $rawAttributeSlug      = $rule['attributeSlug'] ?? $rule['attribute_slug'] ?? null;
+            $attributeSlug         = is_string($rawAttributeSlug)
+                ? trim($rawAttributeSlug)
+                : null;
+
+            if (! is_numeric($attributeDefinitionId) && ($attributeSlug === null || $attributeSlug === '')) {
+                throw ValidationException::withMessages([
+                    'dependencyRules.' . $index => ['Укажите attributeDefinitionId или attributeSlug для правила зависимости.'],
+                ]);
+            }
+
+            $normalizedRule        = [
+                'operator' => $operator,
+            ];
+
+            if (is_numeric($attributeDefinitionId)) {
+                $normalizedRule['attributeDefinitionId'] = (int) $attributeDefinitionId;
+            }
+
+            if ($attributeSlug !== null && $attributeSlug !== '') {
+                $normalizedRule['attributeSlug'] = Str::limit($attributeSlug, 255, '');
+            }
+
+            if (array_key_exists('value', $rule)) {
+                $normalizedRule['value'] = $rule['value'];
+            }
+
+            $normalizedRules[]     = $normalizedRule;
+        }
+
+        return $normalizedRules !== [] ? $normalizedRules : null;
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    private function resolveSchemaVersion(
+        EloquentCategoryAttributeDefinition $definition,
+        array $attributes,
+    ): int {
+        if (! $definition->exists) {
+            return 1;
+        }
+
+        foreach ($attributes as $key => $value) {
+            $currentValue = $definition->{$key};
+
+            if ($currentValue instanceof CategoryAttributeType) {
+                $currentValue = $currentValue->value;
+            }
+
+            if ($currentValue != $value) {
+                return max((int) $definition->schema_version, 1) + 1;
+            }
+        }
+
+        return max((int) $definition->schema_version, 1);
     }
 
     private function generateUniqueSlug(

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int                                   $id
  * @property string                                $listing_id
  * @property int                                   $attribute_definition_id
+ * @property int                                   $attribute_schema_version
+ * @property array<string, mixed>|list<mixed>|null $attribute_snapshot
  * @property array<string, mixed>|list<mixed>|null $value
  * @property string|null                           $display_value
  */
@@ -23,6 +25,8 @@ class EloquentListingAttributeValue extends Model
     protected $fillable = [
         'listing_id',
         'attribute_definition_id',
+        'attribute_schema_version',
+        'attribute_snapshot',
         'value',
         'display_value',
     ];
@@ -49,9 +53,11 @@ class EloquentListingAttributeValue extends Model
     protected function casts(): array
     {
         return [
-            'value'      => 'array',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+            'attribute_schema_version' => 'integer',
+            'attribute_snapshot'       => 'array',
+            'value'                    => 'array',
+            'created_at'               => 'datetime',
+            'updated_at'               => 'datetime',
         ];
     }
 }
