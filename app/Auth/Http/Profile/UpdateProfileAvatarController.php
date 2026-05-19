@@ -16,16 +16,9 @@ class UpdateProfileAvatarController
         UpdateProfileAvatarHandler $handler,
         ProfileHandler $profileHandler,
     ): ProfileResponse {
-        $user       = $request->user();
-        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
-        $userId     = is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
+        $userId = $request->userId();
 
-        $handler->execute(UpdateProfileAvatarInput::from([
-            'userId' => $userId,
-            'avatar' => $request->file('avatar'),
-        ]));
+        $handler->execute(UpdateProfileAvatarInput::from($request->inputData()));
 
         return ProfileResponse::make(
             $profileHandler->execute(ProfileInput::from(['userId' => $userId])),

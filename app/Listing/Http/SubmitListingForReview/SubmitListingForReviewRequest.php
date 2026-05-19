@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Listing\Http\SubmitListingForReview;
 
+use App\Shared\Http\Requests\ResolvesAuthenticatedUserId;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SubmitListingForReviewRequest extends FormRequest
 {
+    use ResolvesAuthenticatedUserId;
+
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -21,16 +24,6 @@ class SubmitListingForReviewRequest extends FormRequest
         $listingId = $this->route('listingId');
 
         return is_string($listingId) ? $listingId : '';
-    }
-
-    public function userId(): string
-    {
-        $user       = $this->user();
-        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
-
-        return is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
     }
 
     public function authorize(): bool

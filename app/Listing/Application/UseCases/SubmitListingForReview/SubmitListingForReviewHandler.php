@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listing\Application\UseCases\SubmitListingForReview;
 
+use App\Listing\Application\Services\ListingRequiredAttributeValidator;
 use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Domain\Enums\ListingStatus;
@@ -11,7 +12,6 @@ use App\Listing\Domain\Events\ListingSubmittedForReview;
 use App\Listing\Domain\Exceptions\InvalidListingStatusTransitionException;
 use App\Listing\Domain\Services\ListingStatusTransitionPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
-use App\Listing\Infrastructure\Services\ListingAttributeValueSynchronizer;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -21,7 +21,7 @@ readonly class SubmitListingForReviewHandler
     public function __construct(
         private ListingRepositoryInterface $listingRepository,
         private ListingPayloadMapper $listingPayloadMapper,
-        private ListingAttributeValueSynchronizer $listingAttributeValueSynchronizer,
+        private ListingRequiredAttributeValidator $listingRequiredAttributeValidator,
         private ListingStatusTransitionPolicy $listingStatusTransitionPolicy,
     ) {}
 
@@ -46,7 +46,7 @@ readonly class SubmitListingForReviewHandler
             ]);
         }
 
-        $this->listingAttributeValueSynchronizer->ensureRequiredValuesPresent(
+        $this->listingRequiredAttributeValidator->validateStoredValues(
             listing: $listing,
             categoryId: $listing->category_id,
         );

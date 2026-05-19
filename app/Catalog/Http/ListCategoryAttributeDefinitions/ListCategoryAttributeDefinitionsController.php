@@ -13,13 +13,7 @@ class ListCategoryAttributeDefinitionsController
         ListCategoryAttributeDefinitionsRequest $request,
         ListCategoryAttributeDefinitionsHandler $handler,
     ): ListCategoryAttributeDefinitionsResponse {
-        $validated = $request->validated();
-
-        $result    = $handler->execute(
-            ListCategoryAttributeDefinitionsInput::from([
-                'onlyActive' => (bool) ($validated['only_active'] ?? false),
-            ]),
-        );
+        $result = $handler->execute(ListCategoryAttributeDefinitionsInput::from($request->inputData()));
 
         return ListCategoryAttributeDefinitionsResponse::make($result);
     }

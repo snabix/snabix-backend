@@ -35,8 +35,55 @@ class UpdateCategoryAttributeDefinitionRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function inputData(): array
+    {
+        return [
+            'attributeDefinitionId' => $this->attributeDefinitionId(),
+            'categoryId'            => $this->integer('categoryId'),
+            'name'                  => $this->string('name')->toString(),
+            'slug'                  => $this->nullableStringInput('slug'),
+            'type'                  => $this->integer('type'),
+            'unit'                  => $this->nullableStringInput('unit'),
+            'description'           => $this->nullableStringInput('description'),
+            'placeholder'           => $this->nullableStringInput('placeholder'),
+            'helpText'              => $this->nullableStringInput('helpText'),
+            'defaultValue'          => $this->arrayInputOrNull('defaultValue'),
+            'groupName'             => $this->nullableStringInput('groupName'),
+            'options'               => $this->arrayInputOrNull('options'),
+            'isRequired'            => $this->boolean('isRequired', false),
+            'isFilterable'          => $this->boolean('isFilterable', false),
+            'showInCard'            => $this->boolean('showInCard', false),
+            'isActive'              => $this->boolean('isActive', true),
+            'appliesToChildren'     => $this->boolean('appliesToChildren', true),
+            'sortOrder'             => $this->integer('sortOrder'),
+        ];
+    }
+
+    public function attributeDefinitionId(): int
+    {
+        return (int) $this->route('attributeDefinitionId');
+    }
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    private function nullableStringInput(string $key): ?string
+    {
+        return $this->filled($key) ? $this->string($key)->toString() : null;
+    }
+
+    /**
+     * @return array<int|string, mixed>|null
+     */
+    private function arrayInputOrNull(string $key): ?array
+    {
+        $value = $this->input($key);
+
+        return is_array($value) ? array_values($value) : null;
     }
 }

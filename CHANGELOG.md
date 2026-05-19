@@ -5,6 +5,18 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.10] - 2026-05-19
+
+### Added
+- Добавлен `ListingRequiredAttributeValidator` в application слой для проверки обязательных характеристик категории при создании, обновлении и отправке объявления на модерацию.
+- Добавлен общий request helper для получения authenticated `userId`.
+- В request-классы вынесены вычисляемые входные данные: route identifiers, nullable integer/string normalization, uppercase currency и payload сборка для use case input.
+
+### Changed
+- `ListingAttributeValueSynchronizer` теперь отвечает за нормализацию и синхронизацию значений характеристик, но не принимает решение о required-правилах публикации.
+- Контроллеры Auth/Catalog/Listing стали тоньше: логика получения `userId`, `listingId`, `attributeDefinitionId` и сборки input payload перенесена в request-классы.
+- Backend audit обновлен: задача переноса category-specific required validation в application service отмечена выполненной.
+
 ## [0.6.9] - 2026-05-19
 
 ### Added

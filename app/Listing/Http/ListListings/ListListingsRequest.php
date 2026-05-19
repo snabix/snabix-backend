@@ -6,11 +6,14 @@ namespace App\Listing\Http\ListListings;
 
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Shared\Http\Requests\ResolvesAuthenticatedUserId;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ListListingsRequest extends FormRequest
 {
+    use ResolvesAuthenticatedUserId;
+
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -25,14 +28,19 @@ class ListListingsRequest extends FormRequest
         ];
     }
 
-    public function userId(): string
+    /**
+     * @return array<string, mixed>
+     */
+    public function inputData(): array
     {
-        $user       = $this->user();
-        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
-
-        return is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
+        return [
+            'userId'     => $this->userId(),
+            'page'       => $this->integer('page', 1),
+            'perPage'    => $this->integer('perPage', 12),
+            'status'     => $this->nullableIntegerInput('status'),
+            'type'       => $this->nullableIntegerInput('type'),
+            'categoryId' => $this->nullableIntegerInput('categoryId'),
+        ];
     }
 
     public function nullableIntegerInput(string $key): ?int

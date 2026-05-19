@@ -18,6 +18,16 @@ class ListRootCategoriesRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, bool>
+     */
+    public function inputData(): array
+    {
+        return [
+            'onlyActive' => $this->boolean('only_active', true),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;

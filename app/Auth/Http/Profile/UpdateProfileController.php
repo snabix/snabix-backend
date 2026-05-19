@@ -19,24 +19,7 @@ class UpdateProfileController
         UpdateProfileRequest $request,
         UpdateProfileHandler $handler,
     ): ProfileResponse {
-        $request->validated();
-        $user       = $request->user();
-        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
-        $userId     = is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
-
-        $result     = $handler->execute(
-            UpdateProfileInput::from([
-                'userId'      => $userId,
-                'firstName'   => $request->string('firstName')->toString(),
-                'lastName'    => $request->string('lastName')->toString(),
-                'email'       => $request->string('email')->toString(),
-                'phoneNumber' => $request->filled('phoneNumber')
-                    ? $request->string('phoneNumber')->toString()
-                    : null,
-            ]),
-        );
+        $result = $handler->execute(UpdateProfileInput::from($request->inputData()));
 
         return ProfileResponse::make($result);
     }

@@ -15,7 +15,7 @@ class DeleteCategoryAttributeDefinitionController
     ): DeleteCategoryAttributeDefinitionResponse {
         $result = $handler->execute(
             DeleteCategoryAttributeDefinitionInput::from([
-                'attributeDefinitionId' => (int) $request->route('attributeDefinitionId'),
+                'attributeDefinitionId' => $request->attributeDefinitionId(),
             ]),
         );
 

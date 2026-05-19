@@ -13,14 +13,7 @@ class GetCategoryAttributesController
         GetCategoryAttributesRequest $request,
         GetCategoryAttributesHandler $handler,
     ): GetCategoryAttributesResponse {
-        $validated = $request->validated();
-
-        $result    = $handler->execute(
-            GetCategoryAttributesInput::from([
-                'categoryId' => (int) $request->route('categoryId'),
-                'onlyActive' => (bool) ($validated['only_active'] ?? true),
-            ]),
-        );
+        $result = $handler->execute(GetCategoryAttributesInput::from($request->inputData()));
 
         return GetCategoryAttributesResponse::make($result);
     }

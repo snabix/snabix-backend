@@ -19,6 +19,17 @@ class ListPublicListingsRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, int>
+     */
+    public function inputData(): array
+    {
+        return [
+            'page'    => $this->integer('page', 1),
+            'perPage' => $this->integer('perPage', 24),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;

@@ -8,19 +8,15 @@ use App\Auth\Application\UseCases\DeleteProfileAvatar\DeleteProfileAvatarHandler
 use App\Auth\Application\UseCases\DeleteProfileAvatar\DeleteProfileAvatarInput;
 use App\Auth\Application\UseCases\Profile\ProfileHandler;
 use App\Auth\Application\UseCases\Profile\ProfileInput;
-use Illuminate\Http\Request;
 
 class DeleteProfileAvatarController
 {
     public function __invoke(
-        Request                    $request,
+        DeleteProfileAvatarRequest $request,
         DeleteProfileAvatarHandler $handler,
-        ProfileHandler             $profileHandler,
+        ProfileHandler $profileHandler,
     ): ProfileResponse {
-        $user     = $request->user();
-        $userId   = is_object($user) && (is_string($user->getAuthIdentifier()) || is_int($user->getAuthIdentifier()))
-            ? (string) $user->getAuthIdentifier()
-            : '';
+        $userId   = $request->userId();
 
         $handler->execute(
             DeleteProfileAvatarInput::from([
