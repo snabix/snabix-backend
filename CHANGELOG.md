@@ -5,6 +5,22 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.13] - 2026-05-19
+
+### Added
+- Добавлен `docs/API_DTO_CONTRACTS.md` с response examples для сложных frontend DTO:
+  - private listing DTO;
+  - private listing collection DTO;
+  - public listing DTO;
+  - category attribute DTO;
+  - pagination meta DTO;
+  - expired session error DTO.
+- Явно зафиксированы enum values и label-поля для `ListingType`, `ListingStatus`, `ListingCondition`, `CategoryCatalogType` и `CategoryAttributeType`.
+- Добавлен feature-тест, который фиксирует наличие DTO examples, enum values/labels и границы public/private listing DTO.
+
+### Changed
+- Backend audit обновлен: задачи по response examples, enum labels и public/private listing DTO отмечены выполненными.
+
 ## [0.6.12] - 2026-05-19
 
 ### Added

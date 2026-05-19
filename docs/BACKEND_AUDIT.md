@@ -35,6 +35,7 @@
 - [x] Application cooldown повторной отправки email verification зафиксирован тестами.
 - [x] Auth-события дополнены логами для смены пароля и повторного запроса email verification.
 - [x] API-контракт истекшей сессии стандартизирован для `401` и `419`.
+- [x] Добавлен документ `docs/API_DTO_CONTRACTS.md` с response examples для сложных frontend DTO, enum values/labels и границами public/private listing DTO.
 
 ## Архитектура
 
@@ -131,9 +132,9 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 ## API Документация
 
 - [x] Scramble проходит анализ.
-- [ ] Нужно добавить больше response examples для сложных DTO.
-- [ ] Нужно явно описать enum values и label-поля для frontend.
-- [ ] Нужно зафиксировать public vs private listing DTO.
+- [x] Нужно добавить больше response examples для сложных DTO.
+- [x] Нужно явно описать enum values и label-поля для frontend.
+- [x] Нужно зафиксировать public vs private listing DTO.
 
 ## Тестирование
 
@@ -160,7 +161,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 4. [ ] Добавить moderation actions в admin API/Filament.
 5. [ ] Добавить media attachments для listings.
 6. [x] Добавить пагинацию и фильтры.
-7. [ ] Зафиксировать OpenAPI/Scramble examples для frontend DTO.
+7. [x] Зафиксировать OpenAPI/Scramble examples для frontend DTO.
 
 ## Ответ На Архитектурный Вопрос По Категорийным Формам
 
