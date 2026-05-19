@@ -5,6 +5,19 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.9] - 2026-05-19
+
+### Added
+- Добавлены feature-тесты для admin API характеристик категорий:
+  - guest-запросы не проходят в `auth:admin`;
+  - обычная user-session не проходит в admin guard;
+  - `admin` guard проверяется как session guard;
+  - Sanctum stateful API проверяется на наличие CSRF middleware;
+  - admin session + CSRF token успешно создает характеристику категории.
+
+### Changed
+- Backend audit обновлен: задача проверки CSRF/session-guard сценария для admin category attribute API отмечена выполненной.
+
 ## [0.6.8] - 2026-05-18
 
 ### Added

@@ -5,12 +5,92 @@ declare(strict_types=1);
 namespace Tests\Feature\Catalog;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
+use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
+use App\Catalog\Infrastructure\Models\EloquentCategoryAttributeDefinition;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Hash;
 use Tests\Feature\FeatureTestCase;
 
 class CategoryAttributeDefinitionApiTest extends FeatureTestCase
 {
+    public function test_admin_category_attribute_definition_api_requires_admin_session_guard(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $category           = $categoryRepository->save([
+            'name' => 'Двери',
+            'slug' => 'dveri',
+        ]);
+        $user               = EloquentUser::factory()->create();
+
+        $payload            = [
+            'categoryId'        => $category->id,
+            'name'              => 'Материал',
+            'slug'              => 'material',
+            'type'              => 4,
+            'options'           => ['Дерево', 'Металл'],
+            'isRequired'        => true,
+            'isFilterable'      => true,
+            'isActive'          => true,
+            'appliesToChildren' => true,
+            'sortOrder'         => 10,
+        ];
+
+        $this
+            ->postJson('/api/v1/admin/category-attribute-definitions', $payload)
+            ->assertUnauthorized();
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/admin/category-attribute-definitions', $payload)
+            ->assertUnauthorized();
+
+        $this->assertFalse(
+            EloquentCategoryAttributeDefinition::query()
+                ->where('slug', 'material')
+                ->exists(),
+        );
+    }
+
+    public function test_admin_session_guard_can_manage_category_attribute_definitions_from_spa_request(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $category           = $categoryRepository->save([
+            'name' => 'Кресла',
+            'slug' => 'kresla',
+        ]);
+        $admin              = EloquentAdmin::query()->create([
+            'name'     => 'SPA Catalog Admin',
+            'email'    => 'spa-catalog-admin@example.com',
+            'password' => Hash::make('password'),
+        ]);
+        $payload            = [
+            'categoryId'        => $category->id,
+            'name'              => 'Цвет',
+            'slug'              => 'cvet',
+            'type'              => 4,
+            'options'           => ['Белый', 'Черный'],
+            'isRequired'        => false,
+            'isFilterable'      => true,
+            'isActive'          => true,
+            'appliesToChildren' => true,
+            'sortOrder'         => 10,
+        ];
+        $csrfToken          = 'admin-spa-csrf-token';
+
+        $this->assertSame('session', config('auth.guards.admin.driver'));
+        $this->assertSame(ValidateCsrfToken::class, config('sanctum.middleware.validate_csrf_token'));
+
+        $this
+            ->withHeader('Origin', 'http://localhost:3000')
+            ->withHeader('X-CSRF-TOKEN', $csrfToken)
+            ->withSession(['_token' => $csrfToken])
+            ->actingAs($admin, 'admin')
+            ->postJson('/api/v1/admin/category-attribute-definitions', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.slug', 'cvet');
+    }
+
     public function test_admin_can_manage_category_attribute_definitions_via_api(): void
     {
         $categoryRepository    = app(CategoryRepositoryInterface::class);

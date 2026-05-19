@@ -28,6 +28,7 @@
 - [x] Добавлена пагинация для публичного и личного списка объявлений.
 - [x] Добавлены простые фильтры личных объявлений по статусу, типу и категории.
 - [x] Добавлен audit trail для создания, отправки на проверку и удаления объявлений.
+- [x] Добавлены проверки `auth:admin`, user-session изоляции и CSRF для SPA-сценария API характеристик категорий.
 
 ## Архитектура
 
@@ -60,7 +61,7 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] Public listing API пока без пагинации.
 - [x] List owned listings API тоже без пагинации и фильтров.
 - [x] Нет отдельной политики авторизации на уровне Policy/Gate для listing actions.
-- [ ] Admin category attribute API защищен `auth:admin`, но нужно проверить CSRF/session-guard сценарий отдельно для SPA/admin.
+- [x] Admin category attribute API защищен `auth:admin`, но нужно проверить CSRF/session-guard сценарий отдельно для SPA/admin.
 - [ ] Валидация request классов проверяет базовые типы, но category-specific required attributes проверяются в repository. Лучше поднять это в application service.
 - [x] Нет audit trail для ключевых действий с объявлениями: создание, отправка на проверку, публикация, отклонение, удаление.
 
