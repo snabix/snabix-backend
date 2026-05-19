@@ -13,6 +13,7 @@ use App\Auth\Domain\Events\UserAvatarUpdated;
 use App\Auth\Domain\Events\UserEmailVerificationRequested;
 use App\Auth\Domain\Events\UserEmailVerified;
 use App\Auth\Domain\Events\UserLoggedOut;
+use App\Auth\Domain\Events\UserPasswordChanged;
 use App\Auth\Domain\Events\UserProfileUpdated;
 use App\Auth\Domain\Events\UserRegistered;
 use App\Auth\Domain\Events\UserSignedIn;
@@ -31,6 +32,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserEmailVerificationRequested::class => [
             SendEmailVerificationNotification::class,
+            PersistLoggableEventListener::class,
         ],
         UserSignedIn::class                   => [
             PersistLoggableEventListener::class,
@@ -48,6 +50,9 @@ class EventServiceProvider extends ServiceProvider
             PersistLoggableEventListener::class,
         ],
         PasswordResetCompleted::class         => [
+            PersistLoggableEventListener::class,
+        ],
+        UserPasswordChanged::class            => [
             PersistLoggableEventListener::class,
         ],
         UserProfileUpdated::class             => [

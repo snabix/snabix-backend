@@ -8,7 +8,7 @@ use App\Auth\Domain\Entities\User;
 use App\Shared\Domain\Contracts\LoggableEvent;
 use App\Shared\Domain\Enums\SystemLogLevel;
 
-readonly class UserEmailVerificationRequested implements LoggableEvent
+readonly class UserPasswordChanged implements LoggableEvent
 {
     public function __construct(
         public User $user,
@@ -26,12 +26,12 @@ readonly class UserEmailVerificationRequested implements LoggableEvent
 
     public function logMessage(): string
     {
-        return 'Пользователь запросил повторную отправку кода подтверждения email.';
+        return 'Пользователь сменил пароль.';
     }
 
     public function logAction(): ?string
     {
-        return 'auth.email-verification.requested';
+        return 'auth.change-password';
     }
 
     /**

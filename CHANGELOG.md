@@ -5,6 +5,19 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.11] - 2026-05-19
+
+### Added
+- Добавлен endpoint `POST /api/v1/auth/change-password` для смены пароля авторизованного пользователя.
+- Добавлен use case `ChangePassword` с проверкой текущего пароля и сохранением нового hash.
+- Добавлено событие `UserPasswordChanged` и логирование действия `auth.change-password`.
+- `UserEmailVerificationRequested` теперь реализует `LoggableEvent` и пишет действие `auth.email-verification.requested`.
+- Добавлены feature-тесты смены пароля, неверного текущего пароля, resend verification cooldown и auth-логов.
+
+### Changed
+- Backend audit обновлен: cooldown resend verification, endpoint смены пароля и auth audit trail отмечены выполненными.
+- Frontend audit дополнен будущими задачами по подключению `change-password` и политике истечения сессии.
+
 ## [0.6.10] - 2026-05-19
 
 ### Added

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Auth\Http\ChangePassword\ChangePasswordController;
 use App\Auth\Http\EmailVerification\ResendEmailVerificationController;
 use App\Auth\Http\EmailVerification\VerifyEmailController;
 use App\Auth\Http\ForgotPassword\ForgotPasswordController;
@@ -47,6 +48,8 @@ Route::prefix('v1')->group(function () {
         Route::get('me', ProfileController::class)
             ->middleware('auth:sanctum');
         Route::patch('me', UpdateProfileController::class)
+            ->middleware('auth:sanctum');
+        Route::post('change-password', ChangePasswordController::class)
             ->middleware('auth:sanctum');
         Route::post('me/avatar', UpdateProfileAvatarController::class)
             ->middleware('auth:sanctum');

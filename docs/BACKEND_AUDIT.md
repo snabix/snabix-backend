@@ -31,6 +31,9 @@
 - [x] Добавлены проверки `auth:admin`, user-session изоляции и CSRF для SPA-сценария API характеристик категорий.
 - [x] Required-характеристики объявлений проверяются в application service, а не внутри persistence-синхронизации.
 - [x] Request-классы получили методы для вычисляемых входных данных, чтобы разгрузить контроллеры.
+- [x] Добавлен endpoint смены пароля авторизованного пользователя.
+- [x] Application cooldown повторной отправки email verification зафиксирован тестами.
+- [x] Auth-события дополнены логами для смены пароля и повторного запроса email verification.
 
 ## Архитектура
 
@@ -73,9 +76,9 @@ Backend сейчас построен вокруг DDD-подхода с Laravel
 - [x] Email verification и password reset покрыты тестами.
 - [x] RabbitMQ queue используется для email jobs.
 - [ ] Нужна политика refresh/session expiration на frontend/backend уровне.
-- [ ] Нужна защита от частых resend verification не только throttle, но и cooldown в доменной логике.
-- [ ] Нужен endpoint смены пароля авторизованного пользователя.
-- [ ] Нужны события и логи для критичных auth-действий в едином формате.
+- [x] Нужна защита от частых resend verification не только throttle, но и cooldown в доменной логике.
+- [x] Нужен endpoint смены пароля авторизованного пользователя.
+- [x] Нужны события и логи для критичных auth-действий в едином формате.
 
 ## Catalog
 
