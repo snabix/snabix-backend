@@ -25,6 +25,9 @@ class MakeAdminUserCommandTest extends FeatureTestCase
             'name'  => 'admin',
         ]);
 
-        $this->assertTrue(EloquentAdmin::query()->where('email', 'created-admin@admin.com')->exists());
+        $admin    = EloquentAdmin::query()->where('email', 'created-admin@admin.com')->first();
+
+        $this->assertInstanceOf(EloquentAdmin::class, $admin);
+        $this->assertTrue($admin->hasRole('super_admin'));
     }
 }

@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Providers\Filament;
 
 use App\Shared\Filament\Widgets\SystemHealthChecksWidget;
 use App\Shared\Filament\Widgets\SystemHealthOverviewWidget;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -37,6 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path(), for: 'App')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverPages(in: app_path('Auth/Filament/Pages'), for: 'App\Auth\Filament\Pages')
+            ->discoverPages(in: app_path('Listing/Filament/Pages'), for: 'App\Listing\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])
@@ -46,6 +48,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->discoverWidgets(in: app_path('Auth/Filament/Widgets'), for: 'App\Auth\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Listing/Filament/Widgets'), for: 'App\Listing\Filament\Widgets')
+            ->plugins([
+                FilamentShieldPlugin::make(),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -5,6 +5,20 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.15] - 2026-05-19
+
+### Added
+- Подключен `bezhansalleh/filament-shield` вместе со `spatie/laravel-permission` для управления ролями и permissions в Filament.
+- Добавлены таблицы ролей/permissions и подключение `HasRoles` к admin-модели.
+- Добавлена отдельная Filament-страница `Модерация объявлений` со статистикой статусов и очередью объявлений на проверке.
+- `app:make-admin` теперь назначает созданному администратору роль `super_admin`.
+- Добавлены feature-тесты для super-admin доступа и ограничения admin без permissions.
+
+### Changed
+- Filament admin panel подключает Shield plugin и discover для страниц/виджетов модуля Listing.
+- Таблицы объявлений, медиафайлов и характеристик категорий получили расширенные фильтры по ключевым полям.
+- Backend audit обновлен: задачи по roles/permissions, dashboard модерации и фильтрам отмечены выполненными.
+
 ## [0.6.14] - 2026-05-19
 
 ### Added

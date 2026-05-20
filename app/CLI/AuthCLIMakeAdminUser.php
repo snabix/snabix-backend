@@ -6,6 +6,7 @@ namespace App\CLI;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
 use Filament\Commands\MakeUserCommand;
+use Spatie\Permission\Models\Role;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'app:make-admin', aliases: ['auth:make-admin'])]
@@ -26,7 +27,13 @@ class AuthCLIMakeAdminUser extends MakeUserCommand
             $this->input->setOption('panel', 'admin');
         }
 
-        return parent::handle();
+        $exitCode = parent::handle();
+
+        if ($exitCode === self::SUCCESS) {
+            $this->assignSuperAdminRole();
+        }
+
+        return $exitCode;
     }
 
     /**
@@ -35,5 +42,26 @@ class AuthCLIMakeAdminUser extends MakeUserCommand
     protected function getUserModel(): string
     {
         return EloquentAdmin::class;
+    }
+
+    private function assignSuperAdminRole(): void
+    {
+        $email = $this->option('email');
+
+        if (! is_string($email) || trim($email) === '') {
+            return;
+        }
+
+        $admin = EloquentAdmin::query()
+            ->where('email', $email)
+            ->first();
+
+        if (! $admin instanceof EloquentAdmin) {
+            return;
+        }
+
+        $role  = Role::findOrCreate('super_admin', 'admin');
+
+        $admin->assignRole($role);
     }
 }
