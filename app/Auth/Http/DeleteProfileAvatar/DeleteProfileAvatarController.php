@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\Profile;
+namespace App\Auth\Http\DeleteProfileAvatar;
 
 use App\Auth\Application\UseCases\DeleteProfileAvatar\DeleteProfileAvatarHandler;
 use App\Auth\Application\UseCases\DeleteProfileAvatar\DeleteProfileAvatarInput;
@@ -15,7 +15,7 @@ class DeleteProfileAvatarController
         DeleteProfileAvatarRequest $request,
         DeleteProfileAvatarHandler $handler,
         ProfileHandler $profileHandler,
-    ): ProfileResponse {
+    ): DeleteProfileAvatarResponse {
         $userId   = $request->userId();
 
         $handler->execute(
@@ -28,6 +28,6 @@ class DeleteProfileAvatarController
             ProfileInput::from(['userId' => $userId]),
         );
 
-        return ProfileResponse::make($response);
+        return DeleteProfileAvatarResponse::make($response);
     }
 }

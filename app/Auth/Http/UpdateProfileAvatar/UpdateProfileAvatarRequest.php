@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\EmailVerification;
+namespace App\Auth\Http\UpdateProfileAvatar;
 
 use App\Shared\Http\Requests\ResolvesAuthenticatedUserId;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 
-class VerifyEmailRequest extends FormRequest
+class UpdateProfileAvatarRequest extends FormRequest
 {
     use ResolvesAuthenticatedUserId;
 
@@ -17,18 +18,23 @@ class VerifyEmailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'digits:6'],
+            'avatar' => [
+                'required',
+                'file',
+                'max:3072',
+                'mimetypes:image/jpeg,image/png,image/webp,image/svg+xml',
+            ],
         ];
     }
 
     /**
-     * @return array<string, string>
+     * @return array{userId: string, avatar: UploadedFile|null}
      */
     public function inputData(): array
     {
         return [
             'userId' => $this->userId(),
-            'code'   => $this->string('code')->toString(),
+            'avatar' => $this->file('avatar'),
         ];
     }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\EmailVerification;
+namespace App\Auth\Http\VerifyEmail;
 
 use App\Auth\Application\UseCases\EmailVerification\VerifyEmailOutput;
 use Illuminate\Http\Request;

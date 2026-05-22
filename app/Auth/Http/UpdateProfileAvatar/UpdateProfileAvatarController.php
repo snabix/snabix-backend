@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\Profile;
+namespace App\Auth\Http\UpdateProfileAvatar;
 
 use App\Auth\Application\UseCases\Profile\ProfileHandler;
 use App\Auth\Application\UseCases\Profile\ProfileInput;
@@ -15,12 +15,12 @@ class UpdateProfileAvatarController
         UpdateProfileAvatarRequest $request,
         UpdateProfileAvatarHandler $handler,
         ProfileHandler $profileHandler,
-    ): ProfileResponse {
+    ): UpdateProfileAvatarResponse {
         $userId = $request->userId();
 
         $handler->execute(UpdateProfileAvatarInput::from($request->inputData()));
 
-        return ProfileResponse::make(
+        return UpdateProfileAvatarResponse::make(
             $profileHandler->execute(ProfileInput::from(['userId' => $userId])),
         );
     }

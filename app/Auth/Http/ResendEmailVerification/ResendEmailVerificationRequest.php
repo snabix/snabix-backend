@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\Profile;
+namespace App\Auth\Http\ResendEmailVerification;
 
 use App\Shared\Http\Requests\ResolvesAuthenticatedUserId;
 use Illuminate\Foundation\Http\FormRequest;
 
-class DeleteProfileAvatarRequest extends FormRequest
+class ResendEmailVerificationRequest extends FormRequest
 {
     use ResolvesAuthenticatedUserId;
 

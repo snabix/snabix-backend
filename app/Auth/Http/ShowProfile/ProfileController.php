@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\Profile;
+namespace App\Auth\Http\ShowProfile;
 
 use App\Auth\Application\UseCases\Profile\ProfileHandler;
 use App\Auth\Application\UseCases\Profile\ProfileInput;

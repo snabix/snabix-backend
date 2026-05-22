@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\EmailVerification;
+namespace App\Auth\Http\ResendEmailVerification;
 
 use App\Auth\Application\UseCases\ResendEmailVerification\ResendEmailVerificationHandler;
 use App\Auth\Application\UseCases\ResendEmailVerification\ResendEmailVerificationInput;

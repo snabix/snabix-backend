@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\Profile;
+namespace App\Auth\Http\UpdateProfile;
 
-use App\Auth\Application\UseCases\Profile\ProfileOutput;
+use App\Auth\Application\UseCases\UpdateProfile\UpdateProfileOutput;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin ProfileOutput
+ * @mixin UpdateProfileOutput
  */
-class ProfileResponse extends JsonResource
+class UpdateProfileResponse extends JsonResource
 {
     /**
      * @return array{
@@ -22,7 +22,8 @@ class ProfileResponse extends JsonResource
      *     phoneNumber: ?string,
      *     isActive: bool,
      *     emailVerifiedAt: ?string,
-     *     avatar: array<string, mixed>|null
+     *     avatar: array<string, mixed>|null,
+     *     addresses: list<array<string, mixed>>
      * }
      */
     public function toArray(Request $request): array
@@ -36,6 +37,7 @@ class ProfileResponse extends JsonResource
             'isActive'        => $this->isActive,
             'emailVerifiedAt' => $this->emailVerifiedAt,
             'avatar'          => $this->avatar,
+            'addresses'       => $this->addresses,
         ];
     }
 }

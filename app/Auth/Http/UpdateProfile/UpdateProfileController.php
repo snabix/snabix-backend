@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\Profile;
+namespace App\Auth\Http\UpdateProfile;
 
 use App\Auth\Application\UseCases\UpdateProfile\UpdateProfileHandler;
 use App\Auth\Application\UseCases\UpdateProfile\UpdateProfileInput;
@@ -18,9 +18,9 @@ class UpdateProfileController
     public function __invoke(
         UpdateProfileRequest $request,
         UpdateProfileHandler $handler,
-    ): ProfileResponse {
+    ): UpdateProfileResponse {
         $result = $handler->execute(UpdateProfileInput::from($request->inputData()));
 
-        return ProfileResponse::make($result);
+        return UpdateProfileResponse::make($result);
     }
 }

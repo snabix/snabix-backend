@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Http\EmailVerification;
+namespace App\Auth\Http\VerifyEmail;
 
 use App\Auth\Application\UseCases\EmailVerification\VerifyEmailHandler;
 use App\Auth\Application\UseCases\EmailVerification\VerifyEmailInput;
@@ -19,7 +19,11 @@ class VerifyEmailController
         VerifyEmailRequest $request,
         VerifyEmailHandler $handler,
     ): VerifyEmailResponse {
-        $result = $handler->execute(VerifyEmailInput::from($request->inputData()));
+        $result = $handler->execute(
+            VerifyEmailInput::from(
+                $request->inputData(),
+            ),
+        );
 
         return VerifyEmailResponse::make($result);
     }
