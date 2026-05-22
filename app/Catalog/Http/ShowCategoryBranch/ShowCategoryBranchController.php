@@ -13,14 +13,7 @@ class ShowCategoryBranchController
         ShowCategoryBranchRequest $request,
         ShowCategoryBranchHandler $handler,
     ): ShowCategoryBranchResponse {
-        $validated = $request->validated();
-
-        $result    = $handler->execute(
-            ShowCategoryBranchInput::from([
-                'categoryId' => (int) $request->route('categoryId'),
-                'onlyActive' => (bool) ($validated['only_active'] ?? true),
-            ]),
-        );
+        $result = $handler->execute(ShowCategoryBranchInput::from($request->inputData()));
 
         return ShowCategoryBranchResponse::make($result);
     }

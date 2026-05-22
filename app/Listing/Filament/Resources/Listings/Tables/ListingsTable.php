@@ -12,8 +12,11 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -81,6 +84,47 @@ class ListingsTable
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->options(ListingStatus::options()),
+                SelectFilter::make('category_id')
+                    ->label('Категория')
+                    ->relationship('category', 'name')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('is_featured')
+                    ->label('Продвижение')
+                    ->options([
+                        '1' => 'Только топ',
+                        '0' => 'Без продвижения',
+                    ]),
+                Filter::make('price_range')
+                    ->label('Цена')
+                    ->schema([
+                        TextInput::make('price_from')
+                            ->label('Цена от')
+                            ->numeric()
+                            ->minValue(0),
+                        TextInput::make('price_to')
+                            ->label('Цена до')
+                            ->numeric()
+                            ->minValue(0),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(filled($data['price_from'] ?? null), fn(Builder $query): Builder => $query->where('price', '>=', (int) $data['price_from']))
+                            ->when(filled($data['price_to'] ?? null), fn(Builder $query): Builder => $query->where('price', '<=', (int) $data['price_to']));
+                    }),
+                Filter::make('created_between')
+                    ->label('Дата создания')
+                    ->schema([
+                        DatePicker::make('created_from')
+                            ->label('Создано от'),
+                        DatePicker::make('created_until')
+                            ->label('Создано до'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(filled($data['created_from'] ?? null), fn(Builder $query): Builder => $query->whereDate('created_at', '>=', $data['created_from']))
+                            ->when(filled($data['created_until'] ?? null), fn(Builder $query): Builder => $query->whereDate('created_at', '<=', $data['created_until']));
+                    }),
             ])
             ->recordActions([
                 ActionGroup::make([

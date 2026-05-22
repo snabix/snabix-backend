@@ -51,10 +51,11 @@ class PublicListingPayloadMapper
                 ->map(
                     fn(EloquentListingAttributeValue $attributeValue): array => [
                         'attributeDefinitionId' => $attributeValue->attribute_definition_id,
-                        'name'                  => $attributeValue->attributeDefinition?->name,
-                        'slug'                  => $attributeValue->attributeDefinition?->slug,
-                        'type'                  => $attributeValue->attributeDefinition?->type?->value,
-                        'typeLabel'             => $attributeValue->attributeDefinition?->type?->label(),
+                        'schemaVersion'         => $attributeValue->attribute_schema_version,
+                        'name'                  => $this->attributeSnapshotValue($attributeValue, 'name', $attributeValue->attributeDefinition?->name),
+                        'slug'                  => $this->attributeSnapshotValue($attributeValue, 'slug', $attributeValue->attributeDefinition?->slug),
+                        'type'                  => $this->attributeSnapshotValue($attributeValue, 'type', $attributeValue->attributeDefinition?->type?->value),
+                        'typeLabel'             => $this->attributeSnapshotValue($attributeValue, 'typeLabel', $attributeValue->attributeDefinition?->type?->label()),
                         'value'                 => $attributeValue->value,
                         'displayValue'          => $attributeValue->display_value,
                     ],
@@ -62,5 +63,17 @@ class PublicListingPayloadMapper
                 ->values()
                 ->all(),
         ];
+    }
+
+    private function attributeSnapshotValue(
+        EloquentListingAttributeValue $attributeValue,
+        string $key,
+        mixed $fallback,
+    ): mixed {
+        $snapshot = $attributeValue->attribute_snapshot;
+
+        return is_array($snapshot) && array_key_exists($key, $snapshot)
+            ? $snapshot[$key]
+            : $fallback;
     }
 }

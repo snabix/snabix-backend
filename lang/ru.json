@@ -161,6 +161,8 @@
     ,"Field placeholder": "Подсказка в поле"
     ,"Field help text": "Текст помощи для поля"
     ,"Default value": "Значение по умолчанию"
+    ,"Dependency rules": "Правила зависимости"
+    ,"Schema version": "Версия схемы"
     ,"Description and options": "Описание и варианты"
     ,"Delete selected": "Удалить выбранные"
     ,"Active only": "Только активные"

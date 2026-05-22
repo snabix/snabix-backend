@@ -18,29 +18,7 @@ class CreateListingController
         CreateListingRequest $request,
         CreateListingHandler $handler,
     ): JsonResponse {
-        $request->validated();
-        $condition  = $request->input('condition');
-        $price      = $request->input('price');
-        $currency   = $request->input('currency');
-
-        $result     = $handler->execute(
-            CreateListingInput::from([
-                'userId'         => $request->userId(),
-                'categoryId'     => $request->integer('categoryId'),
-                'type'           => $request->integer('type'),
-                'condition'      => is_int($condition) ? $condition : (is_numeric($condition) ? (int) $condition : null),
-                'title'          => $request->string('title')->toString(),
-                'description'    => $request->string('description')->toString(),
-                'price'          => is_int($price) ? $price : (is_numeric($price) ? (int) $price : null),
-                'currency'       => is_string($currency) && $currency !== '' ? mb_strtoupper($currency) : null,
-                'isNegotiable'   => $request->boolean('isNegotiable', false),
-                'contactName'    => $request->filled('contactName') ? $request->string('contactName')->toString() : null,
-                'contactPhone'   => $request->filled('contactPhone') ? $request->string('contactPhone')->toString() : null,
-                'contactEmail'   => $request->filled('contactEmail') ? $request->string('contactEmail')->toString() : null,
-                'saveAsDraft'    => $request->saveAsDraft(),
-                'attributeValues'=> $request->attributeValues(),
-            ]),
-        );
+        $result = $handler->execute(CreateListingInput::from($request->inputData()));
 
         return CreateListingResponse::make($result)
             ->response()

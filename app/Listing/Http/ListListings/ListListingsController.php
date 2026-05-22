@@ -13,18 +13,7 @@ class ListListingsController
         ListListingsRequest $request,
         ListListingsHandler $handler,
     ): ListListingsResponse {
-        $request->validated();
-
-        $result     = $handler->execute(
-            ListListingsInput::from([
-                'userId'     => $request->userId(),
-                'page'       => $request->integer('page', 1),
-                'perPage'    => $request->integer('perPage', 12),
-                'status'     => $request->nullableIntegerInput('status'),
-                'type'       => $request->nullableIntegerInput('type'),
-                'categoryId' => $request->nullableIntegerInput('categoryId'),
-            ]),
-        );
+        $result = $handler->execute(ListListingsInput::from($request->inputData()));
 
         return ListListingsResponse::make($result);
     }

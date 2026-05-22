@@ -5,6 +5,102 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.15] - 2026-05-19
+
+### Added
+- Подключен `bezhansalleh/filament-shield` вместе со `spatie/laravel-permission` для управления ролями и permissions в Filament.
+- Добавлены таблицы ролей/permissions и подключение `HasRoles` к admin-модели.
+- Добавлена отдельная Filament-страница `Модерация объявлений` со статистикой статусов и очередью объявлений на проверке.
+- `app:make-admin` теперь назначает созданному администратору роль `super_admin`.
+- Добавлены feature-тесты для super-admin доступа и ограничения admin без permissions.
+
+### Changed
+- Filament admin panel подключает Shield plugin и discover для страниц/виджетов модуля Listing.
+- Таблицы объявлений, медиафайлов и характеристик категорий получили расширенные фильтры по ключевым полям.
+- Backend audit обновлен: задачи по roles/permissions, dashboard модерации и фильтрам отмечены выполненными.
+
+## [0.6.14] - 2026-05-19
+
+### Added
+- Добавлены `dependency_rules` для характеристик категорий, чтобы frontend мог строить условную видимость полей формы объявления.
+- Добавлен `schema_version` для характеристик категорий.
+- Значения характеристик объявлений теперь сохраняют `attribute_schema_version` и `attribute_snapshot`, чтобы старые объявления не зависели только от текущей версии формы категории.
+- Добавлены admin endpoints для bulk import/export характеристик категорий:
+  - `GET /api/v1/admin/category-attribute-definitions/export`;
+  - `POST /api/v1/admin/category-attribute-definitions/import`.
+- Добавлены feature-тесты для dependency rules, schema snapshot, delete guard и bulk import/export.
+
+### Changed
+- Удаление характеристики категории теперь запрещено, если по ней уже есть значения в объявлениях.
+- Backend audit обновлен: задачи каталога по slug policy, dependency rules, schema version, delete guard и bulk import/export отмечены выполненными.
+- DTO contracts обновлены полями `dependencyRules` и `schemaVersion`.
+
+## [0.6.13] - 2026-05-19
+
+### Added
+- Добавлен `docs/API_DTO_CONTRACTS.md` с response examples для сложных frontend DTO:
+  - private listing DTO;
+  - private listing collection DTO;
+  - public listing DTO;
+  - category attribute DTO;
+  - pagination meta DTO;
+  - expired session error DTO.
+- Явно зафиксированы enum values и label-поля для `ListingType`, `ListingStatus`, `ListingCondition`, `CategoryCatalogType` и `CategoryAttributeType`.
+- Добавлен feature-тест, который фиксирует наличие DTO examples, enum values/labels и границы public/private listing DTO.
+
+### Changed
+- Backend audit обновлен: задачи по response examples, enum labels и public/private listing DTO отмечены выполненными.
+
+## [0.6.12] - 2026-05-19
+
+### Added
+- Добавлен единый JSON-контракт истекшей/потерянной API-сессии:
+  - `401 auth.unauthenticated`;
+  - `419 auth.csrf-token-mismatch`.
+- Добавлен feature-тест unauthenticated API response для `auth:sanctum` маршрутов.
+
+### Changed
+- Backend audit обновлен: политика refresh/session expiration отмечена выполненной.
+- Frontend теперь обрабатывает `401` и `419` как истечение сессии: очищает локальное состояние, показывает уведомление и оставляет redirect target на текущую закрытую страницу.
+
+## [0.6.11] - 2026-05-19
+
+### Added
+- Добавлен endpoint `POST /api/v1/auth/change-password` для смены пароля авторизованного пользователя.
+- Добавлен use case `ChangePassword` с проверкой текущего пароля и сохранением нового hash.
+- Добавлено событие `UserPasswordChanged` и логирование действия `auth.change-password`.
+- `UserEmailVerificationRequested` теперь реализует `LoggableEvent` и пишет действие `auth.email-verification.requested`.
+- Добавлены feature-тесты смены пароля, неверного текущего пароля, resend verification cooldown и auth-логов.
+
+### Changed
+- Backend audit обновлен: cooldown resend verification, endpoint смены пароля и auth audit trail отмечены выполненными.
+- Frontend audit дополнен будущими задачами по подключению `change-password` и политике истечения сессии.
+
+## [0.6.10] - 2026-05-19
+
+### Added
+- Добавлен `ListingRequiredAttributeValidator` в application слой для проверки обязательных характеристик категории при создании, обновлении и отправке объявления на модерацию.
+- Добавлен общий request helper для получения authenticated `userId`.
+- В request-классы вынесены вычисляемые входные данные: route identifiers, nullable integer/string normalization, uppercase currency и payload сборка для use case input.
+
+### Changed
+- `ListingAttributeValueSynchronizer` теперь отвечает за нормализацию и синхронизацию значений характеристик, но не принимает решение о required-правилах публикации.
+- Контроллеры Auth/Catalog/Listing стали тоньше: логика получения `userId`, `listingId`, `attributeDefinitionId` и сборки input payload перенесена в request-классы.
+- Backend audit обновлен: задача переноса category-specific required validation в application service отмечена выполненной.
+
+## [0.6.9] - 2026-05-19
+
+### Added
+- Добавлены feature-тесты для admin API характеристик категорий:
+  - guest-запросы не проходят в `auth:admin`;
+  - обычная user-session не проходит в admin guard;
+  - `admin` guard проверяется как session guard;
+  - Sanctum stateful API проверяется на наличие CSRF middleware;
+  - admin session + CSRF token успешно создает характеристику категории.
+
+### Changed
+- Backend audit обновлен: задача проверки CSRF/session-guard сценария для admin category attribute API отмечена выполненной.
+
 ## [0.6.8] - 2026-05-18
 
 ### Added

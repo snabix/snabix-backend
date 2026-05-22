@@ -185,6 +185,12 @@ class CategoryAttributeDefinitionForm
                                     ->helperText('Необязательное значение по умолчанию для будущей формы объявления.')
                                     ->columnSpanFull(),
 
+                                KeyValue::make('dependency_rules')
+                                    ->label('Dependency rules')
+                                    ->translateLabel()
+                                    ->helperText('Необязательно. Используйте для правил видимости: от какой другой характеристики зависит отображение этого поля.')
+                                    ->columnSpanFull(),
+
                                 Textarea::make('help_text')
                                     ->label('Field help text')
                                     ->translateLabel()
@@ -211,6 +217,11 @@ class CategoryAttributeDefinitionForm
                             ->label('Attribute preview')
                             ->translateLabel()
                             ->content(fn(?EloquentCategoryAttributeDefinition $record): HtmlString => self::renderPreview($record)),
+
+                        Placeholder::make('schema_version')
+                            ->label('Schema version')
+                            ->translateLabel()
+                            ->content(fn(EloquentCategoryAttributeDefinition $record): string => (string) $record->schema_version),
                     ]),
             ]);
     }

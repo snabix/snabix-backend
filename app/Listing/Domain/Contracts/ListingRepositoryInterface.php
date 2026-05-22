@@ -37,7 +37,6 @@ interface ListingRepositoryInterface
     public function create(
         array $attributes,
         array $attributeValues = [],
-        bool $validateRequiredAttributes = true,
     ): EloquentListing;
 
     /**
@@ -48,7 +47,6 @@ interface ListingRepositoryInterface
         EloquentListing $listing,
         array $attributes,
         array $attributeValues = [],
-        bool $validateRequiredAttributes = true,
     ): EloquentListing;
 
     public function findOwnedByUser(string $listingId, string $userId): ?EloquentListing;

@@ -13,14 +13,7 @@ class ListPublicListingsController
         ListPublicListingsRequest $request,
         ListPublicListingsHandler $handler,
     ): ListPublicListingsResponse {
-        $request->validated();
-
-        $result    = $handler->execute(
-            ListPublicListingsInput::from([
-                'page'    => $request->integer('page', 1),
-                'perPage' => $request->integer('perPage', 24),
-            ]),
-        );
+        $result = $handler->execute(ListPublicListingsInput::from($request->inputData()));
 
         return ListPublicListingsResponse::make($result);
     }

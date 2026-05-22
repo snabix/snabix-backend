@@ -36,6 +36,7 @@ class CategoryAttributeDefinitionPayloadMapper
             'placeholder'       => $definition->placeholder,
             'helpText'          => $definition->help_text,
             'defaultValue'      => $definition->default_value,
+            'dependencyRules'   => $definition->dependency_rules,
             'groupName'         => $definition->group_name,
             'options'           => $definition->options,
             'isRequired'        => $definition->is_required,
@@ -43,6 +44,7 @@ class CategoryAttributeDefinitionPayloadMapper
             'showInCard'        => $definition->show_in_card,
             'isActive'          => $definition->is_active,
             'appliesToChildren' => $definition->applies_to_children,
+            'schemaVersion'     => $definition->schema_version,
             'sortOrder'         => $definition->sort_order,
         ];
     }

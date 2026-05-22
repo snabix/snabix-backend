@@ -15,7 +15,7 @@ class ShowCategoryAttributeDefinitionController
     ): ShowCategoryAttributeDefinitionResponse {
         $result = $handler->execute(
             ShowCategoryAttributeDefinitionInput::from([
-                'attributeDefinitionId' => (int) $request->route('attributeDefinitionId'),
+                'attributeDefinitionId' => $request->attributeDefinitionId(),
             ]),
         );
 

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Auth\Http\ChangePassword\ChangePasswordController;
 use App\Auth\Http\EmailVerification\ResendEmailVerificationController;
 use App\Auth\Http\EmailVerification\VerifyEmailController;
 use App\Auth\Http\ForgotPassword\ForgotPasswordController;
@@ -15,7 +16,9 @@ use App\Auth\Http\SignIn\SignInController;
 use App\Auth\Http\SignUp\SignUpController;
 use App\Catalog\Http\CreateCategoryAttributeDefinition\CreateCategoryAttributeDefinitionController;
 use App\Catalog\Http\DeleteCategoryAttributeDefinition\DeleteCategoryAttributeDefinitionController;
+use App\Catalog\Http\ExportCategoryAttributeDefinitions\ExportCategoryAttributeDefinitionsController;
 use App\Catalog\Http\GetCategoryAttributes\GetCategoryAttributesController;
+use App\Catalog\Http\ImportCategoryAttributeDefinitions\ImportCategoryAttributeDefinitionsController;
 use App\Catalog\Http\ListCategoryAttributeDefinitions\ListCategoryAttributeDefinitionsController;
 use App\Catalog\Http\ListRootCategories\ListRootCategoriesController;
 use App\Catalog\Http\ShowCategoryAttributeDefinition\ShowCategoryAttributeDefinitionController;
@@ -48,6 +51,8 @@ Route::prefix('v1')->group(function () {
             ->middleware('auth:sanctum');
         Route::patch('me', UpdateProfileController::class)
             ->middleware('auth:sanctum');
+        Route::post('change-password', ChangePasswordController::class)
+            ->middleware('auth:sanctum');
         Route::post('me/avatar', UpdateProfileAvatarController::class)
             ->middleware('auth:sanctum');
         Route::delete('me/avatar', DeleteProfileAvatarController::class)
@@ -63,6 +68,8 @@ Route::prefix('v1')->group(function () {
     Route::get('public/listings', ListPublicListingsController::class);
     Route::prefix('admin/category-attribute-definitions')->middleware('auth:admin')->group(function () {
         Route::get('/', ListCategoryAttributeDefinitionsController::class);
+        Route::get('/export', ExportCategoryAttributeDefinitionsController::class);
+        Route::post('/import', ImportCategoryAttributeDefinitionsController::class);
         Route::post('/', CreateCategoryAttributeDefinitionController::class);
         Route::get('/{attributeDefinitionId}', ShowCategoryAttributeDefinitionController::class);
         Route::patch('/{attributeDefinitionId}', UpdateCategoryAttributeDefinitionController::class);

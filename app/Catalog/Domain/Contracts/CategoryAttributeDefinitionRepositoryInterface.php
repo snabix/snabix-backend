@@ -26,5 +26,7 @@ interface CategoryAttributeDefinitionRepositoryInterface
 
     public function findById(int $id): ?EloquentCategoryAttributeDefinition;
 
+    public function findByCategoryAndSlug(int $categoryId, string $slug): ?EloquentCategoryAttributeDefinition;
+
     public function delete(EloquentCategoryAttributeDefinition $definition): void;
 }

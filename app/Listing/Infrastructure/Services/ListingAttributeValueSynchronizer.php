@@ -24,7 +24,6 @@ readonly class ListingAttributeValueSynchronizer
         EloquentListing $listing,
         int $categoryId,
         array $attributeValues,
-        bool $validateRequiredAttributes = true,
     ): void {
         $definitions     = $this->categoryAttributeDefinitionRepository
             ->forCategory($categoryId)
@@ -43,12 +42,6 @@ readonly class ListingAttributeValueSynchronizer
             $hasValue        = array_key_exists($definitionId, $submittedValues);
 
             if (! $hasValue) {
-                if ($validateRequiredAttributes && $definition->is_required) {
-                    throw ValidationException::withMessages([
-                        'attributeValues.' . $definitionId => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-                    ]);
-                }
-
                 $this->deleteAttributeValue($listing, $definitionId);
 
                 continue;
@@ -57,7 +50,6 @@ readonly class ListingAttributeValueSynchronizer
             $normalizedValue = $this->normalizeDefinitionValue(
                 definition: $definition,
                 value: $submittedValues[$definitionId],
-                validateRequired: $validateRequiredAttributes,
             );
 
             if ($normalizedValue === null) {
@@ -72,8 +64,10 @@ readonly class ListingAttributeValueSynchronizer
                     'attribute_definition_id' => $definitionId,
                 ],
                 [
-                    'value'         => $normalizedValue,
-                    'display_value' => $this->displayAttributeValue($normalizedValue),
+                    'attribute_schema_version' => $definition->schema_version,
+                    'attribute_snapshot'       => $this->makeAttributeSnapshot($definition),
+                    'value'                    => $normalizedValue,
+                    'display_value'            => $this->displayAttributeValue($normalizedValue),
                 ],
             );
         }
@@ -82,32 +76,6 @@ readonly class ListingAttributeValueSynchronizer
             ->attributeValues()
             ->whereNotIn('attribute_definition_id', $definitionIds)
             ->delete();
-    }
-
-    public function ensureRequiredValuesPresent(
-        EloquentListing $listing,
-        int $categoryId,
-    ): void {
-        $requiredDefinitions = $this->categoryAttributeDefinitionRepository
-            ->forCategory($categoryId)
-            ->filter(static fn(EloquentCategoryAttributeDefinition $definition): bool => (bool) $definition->is_required);
-
-        if ($requiredDefinitions->isEmpty()) {
-            return;
-        }
-
-        $listing->loadMissing('attributeValues');
-        $storedValues        = $listing->attributeValues->keyBy('attribute_definition_id');
-
-        foreach ($requiredDefinitions as $definition) {
-            $storedValue = $storedValues->get($definition->id);
-
-            if ($storedValue === null || ! $this->isFilledValue($storedValue->value)) {
-                throw ValidationException::withMessages([
-                    'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-                ]);
-            }
-        }
     }
 
     /**
@@ -139,37 +107,15 @@ readonly class ListingAttributeValueSynchronizer
             ->delete();
     }
 
-    private function isFilledValue(mixed $value): bool
-    {
-        if ($value === null || $value === '') {
-            return false;
-        }
-
-        return ! (is_array($value) && $value === []);
-    }
-
     private function normalizeDefinitionValue(
         EloquentCategoryAttributeDefinition $definition,
         mixed $value,
-        bool $validateRequired = true,
     ): mixed {
         if ($value === null || $value === '') {
-            if ($validateRequired && $definition->is_required) {
-                throw ValidationException::withMessages([
-                    'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-                ]);
-            }
-
             return null;
         }
 
         if ($value === []) {
-            if ($validateRequired && $definition->is_required) {
-                throw ValidationException::withMessages([
-                    'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-                ]);
-            }
-
             return null;
         }
 
@@ -194,12 +140,6 @@ readonly class ListingAttributeValueSynchronizer
         }
 
         $resolvedValue = trim((string) $value);
-
-        if ($resolvedValue === '' && $definition->is_required) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-            ]);
-        }
 
         return $resolvedValue;
     }
@@ -293,12 +233,6 @@ readonly class ListingAttributeValueSynchronizer
             ->values()
             ->all();
 
-        if ($normalizedValues === [] && $definition->is_required) {
-            throw ValidationException::withMessages([
-                'attributeValues.' . $definition->id => [sprintf('Поле "%s" обязательно для заполнения.', $definition->name)],
-            ]);
-        }
-
         foreach ($normalizedValues as $normalizedValue) {
             if (! in_array($normalizedValue, $options, true)) {
                 throw ValidationException::withMessages([
@@ -371,5 +305,22 @@ readonly class ListingAttributeValueSynchronizer
         }
 
         return is_scalar($value) ? (string) $value : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function makeAttributeSnapshot(EloquentCategoryAttributeDefinition $definition): array
+    {
+        return [
+            'id'              => $definition->id,
+            'name'            => $definition->name,
+            'slug'            => $definition->slug,
+            'type'            => $definition->type->value,
+            'typeLabel'       => $definition->type->label(),
+            'unit'            => $definition->unit,
+            'schemaVersion'   => $definition->schema_version,
+            'dependencyRules' => $definition->dependency_rules,
+        ];
     }
 }

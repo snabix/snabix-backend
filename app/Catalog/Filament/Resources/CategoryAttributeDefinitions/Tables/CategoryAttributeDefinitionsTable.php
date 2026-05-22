@@ -122,12 +122,50 @@ class CategoryAttributeDefinitionsTable
                     ->label('Attribute type')
                     ->translateLabel()
                     ->options(CategoryAttributeType::options()),
+                SelectFilter::make('group_name')
+                    ->label('Group')
+                    ->translateLabel()
+                    ->options(fn(): array => EloquentCategoryAttributeDefinition::query()
+                        ->whereNotNull('group_name')
+                        ->distinct()
+                        ->orderBy('group_name')
+                        ->pluck('group_name', 'group_name')
+                        ->all())
+                    ->searchable(),
                 SelectFilter::make('is_active')
                     ->label('Status')
                     ->translateLabel()
                     ->options([
                         '1' => __('Active only'),
                         '0' => __('Hidden only'),
+                    ]),
+                SelectFilter::make('is_required')
+                    ->label('Required')
+                    ->translateLabel()
+                    ->options([
+                        '1' => 'Только обязательные',
+                        '0' => 'Необязательные',
+                    ]),
+                SelectFilter::make('is_filterable')
+                    ->label('Filterable')
+                    ->translateLabel()
+                    ->options([
+                        '1' => 'Участвуют в фильтрах',
+                        '0' => 'Не участвуют в фильтрах',
+                    ]),
+                SelectFilter::make('show_in_card')
+                    ->label('Card')
+                    ->translateLabel()
+                    ->options([
+                        '1' => 'Показываются в карточке',
+                        '0' => 'Не показываются в карточке',
+                    ]),
+                SelectFilter::make('applies_to_children')
+                    ->label('For children')
+                    ->translateLabel()
+                    ->options([
+                        '1' => 'Наследуются',
+                        '0' => 'Только текущая категория',
                     ]),
             ])
             ->recordActions([

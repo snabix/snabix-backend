@@ -13,14 +13,7 @@ class ListCategoriesController
         ListCategoriesRequest $request,
         ListCategoriesHandler $handler,
     ): ListCategoriesResponse {
-        $validated = $request->validated();
-
-        $result    = $handler->execute(
-            ListCategoriesInput::from([
-                'onlyActive' => (bool) ($validated['only_active'] ?? true),
-                'tree'       => (bool) ($validated['tree'] ?? true),
-            ]),
-        );
+        $result = $handler->execute(ListCategoriesInput::from($request->inputData()));
 
         return ListCategoriesResponse::make($result);
     }

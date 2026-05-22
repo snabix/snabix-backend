@@ -10,6 +10,7 @@ class CreateCategoryAttributeDefinitionInput extends Input
 {
     /**
      * @param array<int|string, mixed>|null $defaultValue
+     * @param array<int, mixed>|null        $dependencyRules
      * @param array<int, mixed>|null        $options
      */
     public function __construct(
@@ -22,6 +23,7 @@ class CreateCategoryAttributeDefinitionInput extends Input
         public readonly ?string $placeholder,
         public readonly ?string $helpText,
         public readonly ?array $defaultValue,
+        public readonly ?array $dependencyRules,
         public readonly ?string $groupName,
         public readonly ?array $options,
         public readonly bool $isRequired,

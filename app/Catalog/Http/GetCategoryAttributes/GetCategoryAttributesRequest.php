@@ -18,6 +18,17 @@ class GetCategoryAttributesRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, int|bool>
+     */
+    public function inputData(): array
+    {
+        return [
+            'categoryId' => (int) $this->route('categoryId'),
+            'onlyActive' => $this->boolean('only_active', true),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;

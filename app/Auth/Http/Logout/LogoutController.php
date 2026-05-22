@@ -13,15 +13,9 @@ class LogoutController
         LogoutRequest $request,
         LogoutHandler $handler,
     ): LogoutResponse {
-        $user       = $request->user();
-        $identifier = is_object($user) ? $user->getAuthIdentifier() : null;
-        $userId     = is_string($identifier) || is_int($identifier)
-            ? (string) $identifier
-            : '';
-
-        $result     = $handler->execute(
+        $result = $handler->execute(
             LogoutInput::from([
-                'userId' => $userId,
+                'userId' => $request->userId(),
             ]),
         );
 
