@@ -21,6 +21,16 @@ class ShowCategoryAttributeDefinitionRequest extends FormRequest
         return (int) $this->route('attributeDefinitionId');
     }
 
+    /**
+     * @return array{attributeDefinitionId: int}
+     */
+    public function inputData(): array
+    {
+        return [
+            'attributeDefinitionId' => $this->attributeDefinitionId(),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;

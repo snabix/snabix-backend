@@ -27,6 +27,18 @@ class ResetPasswordRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array{email: string, token: string, password: string}
+     */
+    public function inputData(): array
+    {
+        return [
+            'email'    => $this->string('email')->toString(),
+            'token'    => $this->string('token')->toString(),
+            'password' => $this->string('password')->toString(),
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $this->merge([

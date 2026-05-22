@@ -19,6 +19,16 @@ class ListProfileAddressesRequest extends FormRequest
         return [];
     }
 
+    /**
+     * @return array{userId: string}
+     */
+    public function inputData(): array
+    {
+        return [
+            'userId' => $this->userId(),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;

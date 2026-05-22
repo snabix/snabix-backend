@@ -29,6 +29,21 @@ class SignUpRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array{firstName: string, lastName: string, phoneNumber: string, email: string, password: string, passwordConfirmation: string}
+     */
+    public function inputData(): array
+    {
+        return [
+            'firstName'            => $this->string('firstName')->toString(),
+            'lastName'             => $this->string('lastName')->toString(),
+            'phoneNumber'          => $this->string('phoneNumber')->toString(),
+            'email'                => $this->string('email')->toString(),
+            'password'             => $this->string('password')->toString(),
+            'passwordConfirmation' => $this->string('passwordConfirmation')->toString(),
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $this->merge([

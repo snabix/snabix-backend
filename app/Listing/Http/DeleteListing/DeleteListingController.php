@@ -13,12 +13,7 @@ class DeleteListingController
         DeleteListingRequest $request,
         DeleteListingHandler $handler,
     ): DeleteListingResponse {
-        $result = $handler->execute(
-            DeleteListingInput::from([
-                'userId'    => $request->userId(),
-                'listingId' => $request->listingId(),
-            ]),
-        );
+        $result = $handler->execute(DeleteListingInput::from($request->inputData()));
 
         return DeleteListingResponse::make($result);
     }

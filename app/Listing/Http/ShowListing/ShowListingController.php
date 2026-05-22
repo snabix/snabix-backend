@@ -13,12 +13,7 @@ class ShowListingController
         ShowListingRequest $request,
         ShowListingHandler $handler,
     ): ShowListingResponse {
-        $result = $handler->execute(
-            ShowListingInput::from([
-                'userId'    => $request->userId(),
-                'listingId' => $request->listingId(),
-            ]),
-        );
+        $result = $handler->execute(ShowListingInput::from($request->inputData()));
 
         return ShowListingResponse::make($result);
     }

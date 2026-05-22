@@ -17,11 +17,7 @@ class ResendEmailVerificationController
         ResendEmailVerificationRequest $request,
         ResendEmailVerificationHandler $handler,
     ): ResendEmailVerificationResponse {
-        $result = $handler->execute(
-            ResendEmailVerificationInput::from([
-                'userId' => $request->userId(),
-            ]),
-        );
+        $result = $handler->execute(ResendEmailVerificationInput::from($request->inputData()));
 
         return ResendEmailVerificationResponse::make($result);
     }

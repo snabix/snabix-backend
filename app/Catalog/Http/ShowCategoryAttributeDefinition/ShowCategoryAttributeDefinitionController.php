@@ -13,11 +13,7 @@ class ShowCategoryAttributeDefinitionController
         ShowCategoryAttributeDefinitionRequest $request,
         ShowCategoryAttributeDefinitionHandler $handler,
     ): ShowCategoryAttributeDefinitionResponse {
-        $result = $handler->execute(
-            ShowCategoryAttributeDefinitionInput::from([
-                'attributeDefinitionId' => $request->attributeDefinitionId(),
-            ]),
-        );
+        $result = $handler->execute(ShowCategoryAttributeDefinitionInput::from($request->inputData()));
 
         return ShowCategoryAttributeDefinitionResponse::make($result);
     }

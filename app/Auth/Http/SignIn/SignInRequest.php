@@ -19,6 +19,17 @@ class SignInRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array{email: string, password: string}
+     */
+    public function inputData(): array
+    {
+        return [
+            'email'    => $this->string('email')->toString(),
+            'password' => $this->string('password')->toString(),
+        ];
+    }
+
     public function authorize(): true
     {
         return true;

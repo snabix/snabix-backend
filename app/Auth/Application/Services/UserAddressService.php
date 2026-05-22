@@ -128,9 +128,10 @@ class UserAddressService
             'addressLine' => $address->address_line,
             'isPrimary'   => $address->is_primary,
             'region'      => [
-                'id'    => $address->region->id,
-                'name'  => $address->region->name,
-                'label' => $address->region->label,
+                'id'       => $address->region->id,
+                'name'     => $address->region->name,
+                'fullName' => $address->region->fullname ?? $address->region->name,
+                'label'    => $address->region->label,
             ],
             'city'        => $address->city !== null
                 ? [

@@ -132,7 +132,8 @@ class ProfileAddressesTest extends FeatureTestCase
             ->getJson('/api/v1/locations/regions')
             ->assertOk()
             ->assertJsonPath('data.regions.0.id', $region->id)
-            ->assertJsonPath('data.regions.0.name', 'Республика Башкортостан');
+            ->assertJsonPath('data.regions.0.name', 'Республика Башкортостан')
+            ->assertJsonPath('data.regions.0.fullName', 'Республика Башкортостан');
 
         $this
             ->getJson('/api/v1/locations/cities?regionId=' . $region->id . '&search=Уф')

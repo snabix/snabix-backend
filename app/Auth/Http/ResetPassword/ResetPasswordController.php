@@ -17,13 +17,7 @@ class ResetPasswordController
         ResetPasswordRequest $request,
         ResetPasswordHandler $handler,
     ): ResetPasswordResponse {
-        $result    = $handler->execute(
-            ResetPasswordInput::from([
-                'email'    => $request->string('email')->toString(),
-                'token'    => $request->string('token')->toString(),
-                'password' => $request->string('password')->toString(),
-            ]),
-        );
+        $result = $handler->execute(ResetPasswordInput::from($request->inputData()));
 
         return ResetPasswordResponse::make($result);
     }

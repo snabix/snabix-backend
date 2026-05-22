@@ -29,6 +29,17 @@ class ListCitiesRequest extends FormRequest
         return $this->filled('search') ? $this->string('search')->toString() : null;
     }
 
+    /**
+     * @return array{regionId: int, search: string|null}
+     */
+    public function inputData(): array
+    {
+        return [
+            'regionId' => $this->regionId(),
+            'search'   => $this->search(),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;

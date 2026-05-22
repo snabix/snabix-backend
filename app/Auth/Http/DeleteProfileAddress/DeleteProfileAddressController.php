@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace App\Auth\Http\DeleteProfileAddress;
 
-use App\Auth\Application\Services\UserAddressService;
+use App\Auth\Application\UseCases\DeleteProfileAddress\DeleteProfileAddressHandler;
+use App\Auth\Application\UseCases\DeleteProfileAddress\DeleteProfileAddressInput;
 
 class DeleteProfileAddressController
 {
     public function __invoke(
         DeleteProfileAddressRequest $request,
-        UserAddressService $userAddressService,
-        string $addressId,
+        DeleteProfileAddressHandler $handler,
     ): DeleteProfileAddressResponse {
-        $userAddressService->delete(
-            $request->userId(),
-            $addressId,
-        );
+        $result = $handler->execute(DeleteProfileAddressInput::from($request->inputData()));
 
-        return DeleteProfileAddressResponse::make([]);
+        return DeleteProfileAddressResponse::make($result);
     }
 }

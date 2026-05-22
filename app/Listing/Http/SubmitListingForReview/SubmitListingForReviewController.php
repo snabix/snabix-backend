@@ -13,14 +13,7 @@ class SubmitListingForReviewController
         SubmitListingForReviewRequest $request,
         SubmitListingForReviewHandler $handler,
     ): SubmitListingForReviewResponse {
-        $request->validated();
-
-        $result = $handler->execute(
-            SubmitListingForReviewInput::from([
-                'userId'    => $request->userId(),
-                'listingId' => $request->listingId(),
-            ]),
-        );
+        $result = $handler->execute(SubmitListingForReviewInput::from($request->inputData()));
 
         return SubmitListingForReviewResponse::make($result);
     }

@@ -46,6 +46,17 @@ class ReplaceProfileAddressesRequest extends FormRequest
         );
     }
 
+    /**
+     * @return array{userId: string, addresses: list<array<array-key, mixed>>}
+     */
+    public function inputData(): array
+    {
+        return [
+            'userId'    => $this->userId(),
+            'addresses' => $this->addresses(),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;

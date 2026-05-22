@@ -17,11 +17,7 @@ class ProfileController
         ProfileRequest $request,
         ProfileHandler $handler,
     ): ProfileResponse {
-        $result = $handler->execute(
-            ProfileInput::from([
-                'userId' => $request->userId(),
-            ]),
-        );
+        $result = $handler->execute(ProfileInput::from($request->inputData()));
 
         return ProfileResponse::make($result);
     }

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Auth\Http\ListProfileAddresses;
 
+use App\Auth\Application\UseCases\ListProfileAddresses\ListProfileAddressesOutput;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin ListProfileAddressesOutput
+ */
 class ListProfileAddressesResponse extends JsonResource
 {
     /**
@@ -15,22 +19,7 @@ class ListProfileAddressesResponse extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'addresses' => $this->addresses(),
+            'addresses' => $this->addresses,
         ];
-    }
-
-    /**
-     * @return list<array<array-key, mixed>>
-     */
-    private function addresses(): array
-    {
-        if (! is_array($this->resource)) {
-            return [];
-        }
-
-        return array_values(array_filter(
-            $this->resource,
-            fn(mixed $address): bool => is_array($address),
-        ));
     }
 }

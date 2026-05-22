@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Auth\Http\ReplaceProfileAddresses;
 
-use App\Auth\Application\Services\UserAddressService;
+use App\Auth\Application\UseCases\ReplaceProfileAddresses\ReplaceProfileAddressesHandler;
+use App\Auth\Application\UseCases\ReplaceProfileAddresses\ReplaceProfileAddressesInput;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -15,13 +16,10 @@ class ReplaceProfileAddressesController
      */
     public function __invoke(
         ReplaceProfileAddressesRequest $request,
-        UserAddressService $userAddressService,
+        ReplaceProfileAddressesHandler $handler,
     ): ReplaceProfileAddressesResponse {
-        return ReplaceProfileAddressesResponse::make(
-            $userAddressService->replace(
-                $request->userId(),
-                $request->addresses(),
-            ),
-        );
+        $result = $handler->execute(ReplaceProfileAddressesInput::from($request->inputData()));
+
+        return ReplaceProfileAddressesResponse::make($result);
     }
 }

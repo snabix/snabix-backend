@@ -4,26 +4,17 @@ declare(strict_types=1);
 
 namespace App\Location\Http\ListRegions;
 
-use App\Location\Infrastructure\Models\EloquentRegion;
+use App\Location\Application\UseCases\ListRegions\ListRegionsHandler;
+use App\Location\Application\UseCases\ListRegions\ListRegionsInput;
 
 class ListRegionsController
 {
-    public function __invoke(): ListRegionsResponse
-    {
-        $regions = EloquentRegion::query()
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->map(fn(EloquentRegion $region): array => [
-                'id'    => $region->id,
-                'name'  => $region->name,
-                'label' => $region->label,
-                'type'  => $region->type,
-            ])
-            ->values()
-            ->all();
+    public function __invoke(
+        ListRegionsRequest $request,
+        ListRegionsHandler $handler,
+    ): ListRegionsResponse {
+        $result = $handler->execute(ListRegionsInput::from($request->inputData()));
 
-        return ListRegionsResponse::make($regions);
+        return ListRegionsResponse::make($result);
     }
 }
