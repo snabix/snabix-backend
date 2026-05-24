@@ -17,16 +17,9 @@ use App\Auth\Http\SignUp\SignUpController;
 use App\Auth\Http\UpdateProfile\UpdateProfileController;
 use App\Auth\Http\UpdateProfileAvatar\UpdateProfileAvatarController;
 use App\Auth\Http\VerifyEmail\VerifyEmailController;
-use App\Catalog\Http\CreateCategoryAttributeDefinition\CreateCategoryAttributeDefinitionController;
-use App\Catalog\Http\DeleteCategoryAttributeDefinition\DeleteCategoryAttributeDefinitionController;
-use App\Catalog\Http\ExportCategoryAttributeDefinitions\ExportCategoryAttributeDefinitionsController;
 use App\Catalog\Http\GetCategoryAttributes\GetCategoryAttributesController;
-use App\Catalog\Http\ImportCategoryAttributeDefinitions\ImportCategoryAttributeDefinitionsController;
-use App\Catalog\Http\ListCategoryAttributeDefinitions\ListCategoryAttributeDefinitionsController;
 use App\Catalog\Http\ListRootCategories\ListRootCategoriesController;
-use App\Catalog\Http\ShowCategoryAttributeDefinition\ShowCategoryAttributeDefinitionController;
 use App\Catalog\Http\ShowCategoryBranch\ShowCategoryBranchController;
-use App\Catalog\Http\UpdateCategoryAttributeDefinition\UpdateCategoryAttributeDefinitionController;
 use App\Listing\Http\CreateListing\CreateListingController;
 use App\Listing\Http\DeleteListing\DeleteListingController;
 use App\Listing\Http\ListListings\ListListingsController;
@@ -82,15 +75,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/cities', ListCitiesController::class);
     });
     Route::get('public/listings', ListPublicListingsController::class);
-    Route::prefix('admin/category-attribute-definitions')->middleware('auth:admin')->group(function () {
-        Route::get('/', ListCategoryAttributeDefinitionsController::class);
-        Route::get('/export', ExportCategoryAttributeDefinitionsController::class);
-        Route::post('/import', ImportCategoryAttributeDefinitionsController::class);
-        Route::post('/', CreateCategoryAttributeDefinitionController::class);
-        Route::get('/{attributeDefinitionId}', ShowCategoryAttributeDefinitionController::class);
-        Route::patch('/{attributeDefinitionId}', UpdateCategoryAttributeDefinitionController::class);
-        Route::delete('/{attributeDefinitionId}', DeleteCategoryAttributeDefinitionController::class);
-    });
     Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
         Route::get('/', ListListingsController::class);
         Route::post('/', CreateListingController::class);

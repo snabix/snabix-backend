@@ -18,7 +18,7 @@
 - [x] Session expiration contract для `401/419` стандартизирован.
 - [x] Email verification и password reset используют queue/job подход.
 - [x] Catalog API: root categories, branch, category attributes с metadata, dependency rules и schema version.
-- [x] Admin category attribute API: CRUD, import/export, delete guard при наличии значений объявлений.
+- [x] Характеристики категорий управляются через Filament, а frontend получает их через публичный endpoint формы объявления.
 - [x] Location module: регионы, города, импорт из JSON, Filament resources.
 - [x] Listing API: create, update, show, delete, list owned, list public, submit-for-review, upload media.
 - [x] Listing statuses централизованы через `ListingStatusTransitionPolicy`.
@@ -49,7 +49,7 @@
 ### Риски и нарушения
 
 - [x] `App\Shared\Infrastructure\Providers\AppServiceProvider` все еще содержит bindings и policies разных модулей. Это работает, но модульные responsibilities размыты.
-- [ ] Admin category attribute API защищен `auth:admin`, но use cases не вызывают `Gate::authorize()` на уровне application flow.
+- [x] Admin category attribute API защищен `auth:admin`, но use cases не вызывают `Gate::authorize()` на уровне application flow.
 - [ ] `ListCategoriesController` и use case существуют, но route не подключен. Сейчас это dead code рядом с активным `ListRootCategories`.
 - [ ] `Listing update` не публикует audit event. Для marketplace важно логировать изменения цены, категории, статуса, описания и значимых полей.
 - [ ] Public listing API имеет пагинацию, но не имеет базовых фильтров `category/type/price/location/sort`.
@@ -93,19 +93,11 @@
 - [x] `GET /api/v1/categories/list`
 - [x] `GET /api/v1/categories/{categoryId}/branch`
 - [x] `GET /api/v1/categories/{categoryId}/attributes`
-- [x] `GET /api/v1/admin/category-attribute-definitions`
-- [x] `GET /api/v1/admin/category-attribute-definitions/export`
-- [x] `POST /api/v1/admin/category-attribute-definitions/import`
-- [x] `POST /api/v1/admin/category-attribute-definitions`
-- [x] `GET /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}`
-- [x] `PATCH /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}`
-- [x] `DELETE /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}`
+- [x] Admin category attribute HTTP API отключен: управление характеристиками остается в Filament.
 
 Задачи:
 - [ ] Решить судьбу `ListCategoriesController`: подключить осознанно как full tree/list endpoint или удалить.
-- [ ] Добавить `Gate::authorize()` в admin category attribute use cases.
 - [ ] Применить `dependency_rules` в backend validation.
-- [ ] Добавить malformed import tests и partial failure policy.
 
 ### Listings
 
@@ -162,7 +154,7 @@
 ## План Задач
 
 1. [x] Разгрузить `AppServiceProvider`: перенести auth/catalog/media/shared policies и bindings в модульные providers.
-2. [ ] Закрыть admin category attribute API через Gate/policy в use cases.
+2. [x] Отключить admin category attribute HTTP API и оставить управление характеристиками через Filament.
 3. [ ] Решить dead code `ListCategoriesController`: подключить full catalog endpoint или удалить.
 4. [ ] Добавить audit event для listing update.
 5. [ ] Реализовать public listing filters без полнотекстового поиска.
