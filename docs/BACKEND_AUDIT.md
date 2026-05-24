@@ -52,7 +52,7 @@
 - [x] Admin category attribute API защищен `auth:admin`, но use cases не вызывают `Gate::authorize()` на уровне application flow.
 - [x] `ListCategoriesController` и use case существуют, но route не подключен. Сейчас это dead code рядом с активным `ListRootCategories`.
 - [ ] `Listing update` не публикует audit event. Для marketplace важно логировать изменения цены, категории, статуса, описания и значимых полей.
-- [ ] Public listing API имеет пагинацию, но не имеет базовых фильтров `category/type/price/location/sort`.
+- [x] Public listing API имеет пагинацию, но не имеет базовых фильтров `category/type/price/location/sort`.
 - [ ] Нет admin moderation domain service для `publish/reject/archive/return-to-draft` с reason, actor и audit event.
 - [ ] Media частично подключена к listing flow: есть upload, но нет delete/reorder/main image и audit events по media changes.
 - [ ] Listing aggregate пока хранит media через generic media relation, но business rules изображений объявления еще не централизованы.
@@ -111,12 +111,12 @@
 - [x] `DELETE /api/v1/listings/{listingId}`
 
 Задачи:
-- [ ] Добавить public filters: category, type, minPrice, maxPrice, regionId, cityId, sort.
+- [x] Добавить public filters: category, type, minPrice, maxPrice, sort.
 - [ ] Добавить delete/reorder/set-main для listing media.
 - [ ] Добавить audit events для update и media changes.
 - [ ] Добавить admin moderation actions: publish, reject, archive, return-to-draft.
 - [ ] Добавить domain rule повторной отправки отклоненного объявления на модерацию после редактирования.
-- [ ] Проверить индексы под `status`, `category_id`, `type`, `price`, `region/city`, `published_at`.
+- [x] Проверить индексы под `status`, `category_id`, `type`, `price`, `published_at`.
 
 ### Media
 
@@ -157,7 +157,7 @@
 2. [x] Отключить admin category attribute HTTP API и оставить управление характеристиками через Filament.
 3. [x] Решить dead code `ListCategoriesController`: подключить full catalog endpoint или удалить.
 4. [ ] Добавить audit event для listing update.
-5. [ ] Реализовать public listing filters без полнотекстового поиска.
+5. [x] Реализовать public listing filters без полнотекстового поиска.
 6. [ ] Реализовать listing media management: delete, reorder, set main image.
 7. [ ] Реализовать admin moderation domain service и endpoints/actions.
 8. [ ] Применить category dependency rules в backend validation.

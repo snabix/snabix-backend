@@ -88,12 +88,90 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonPath('data.meta.total', 2);
     }
 
+    public function test_public_listings_can_be_filtered_and_sorted(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $rootCategory       = $categoryRepository->save([
+            'name'         => 'Электроника',
+            'slug'         => 'elektronika',
+            'catalog_type' => 1,
+        ]);
+        $childCategory      = $categoryRepository->save([
+            'parent_id'    => $rootCategory->id,
+            'name'         => 'Ноутбуки',
+            'slug'         => 'noutbuki',
+            'catalog_type' => 1,
+        ]);
+        $otherCategory      = $categoryRepository->save([
+            'name'         => 'Услуги ремонта',
+            'slug'         => 'uslugi-remonta',
+            'catalog_type' => 2,
+        ]);
+
+        $matchedListing     = $this->createPublishedListing(
+            $user->id,
+            $childCategory->id,
+            'Ноутбук игровой',
+            'noutbuk-igrovoj',
+            now(),
+            [
+                'price' => 85000,
+            ],
+        );
+
+        $this->createPublishedListing(
+            $user->id,
+            $rootCategory->id,
+            'Старый монитор',
+            'staryj-monitor',
+            now()->subDay(),
+            [
+                'price' => 10000,
+            ],
+        );
+
+        $this->createPublishedListing(
+            $user->id,
+            $otherCategory->id,
+            'Ремонт ноутбуков',
+            'remont-noutbukov',
+            now(),
+            [
+                'type'  => ListingType::SERVICE,
+                'price' => 5000,
+            ],
+        );
+
+        $this
+            ->getJson(sprintf(
+                '/api/v1/public/listings?categoryId=%d&type=%d&minPrice=80000&maxPrice=90000&sort=price_desc',
+                $rootCategory->id,
+                ListingType::PRODUCT->value,
+            ))
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $matchedListing->id);
+    }
+
+    public function test_public_listings_validate_filter_values(): void
+    {
+        $this
+            ->getJson('/api/v1/public/listings?minPrice=90000&maxPrice=1000&sort=unknown')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['maxPrice', 'sort']);
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     */
     private function createPublishedListing(
         string $userId,
         int $categoryId,
         string $title,
         string $slug,
         mixed $publishedAt,
+        array $overrides = [],
     ): EloquentListing {
         return EloquentListing::query()->create([
             'user_id'       => $userId,
@@ -108,6 +186,7 @@ class ListPublicListingsTest extends FeatureTestCase
             'currency'      => 'RUB',
             'is_negotiable' => true,
             'published_at'  => $publishedAt,
+            ...$overrides,
         ]);
     }
 }

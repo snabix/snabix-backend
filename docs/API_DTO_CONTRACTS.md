@@ -168,6 +168,8 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 | --- | --- |
 | `GET /api/v1/public/listings` | Публичный список опубликованных объявлений |
 
+Поддерживаемые query-фильтры: `categoryId`, `type`, `minPrice`, `maxPrice`, `sort`. Значения `sort`: `newest`, `oldest`, `price_asc`, `price_desc`, `popular`.
+
 Поля `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason` в public DTO не возвращаются. В `attributeValues` попадают только характеристики с `showInCard = true`.
 
 ```json
