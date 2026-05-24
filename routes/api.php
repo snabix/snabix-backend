@@ -34,6 +34,7 @@ use App\Listing\Http\ListPublicListings\ListPublicListingsController;
 use App\Listing\Http\ShowListing\ShowListingController;
 use App\Listing\Http\SubmitListingForReview\SubmitListingForReviewController;
 use App\Listing\Http\UpdateListing\UpdateListingController;
+use App\Listing\Http\UploadListingMedia\UploadListingMediaController;
 use App\Location\Http\ListCities\ListCitiesController;
 use App\Location\Http\ListRegions\ListRegionsController;
 use Illuminate\Support\Facades\Route;
@@ -94,6 +95,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/', ListListingsController::class);
         Route::post('/', CreateListingController::class);
         Route::post('/{listingId}/submit-for-review', SubmitListingForReviewController::class);
+        Route::post('/{listingId}/media', UploadListingMediaController::class);
         Route::get('/{listingId}', ShowListingController::class);
         Route::patch('/{listingId}', UpdateListingController::class);
         Route::delete('/{listingId}', DeleteListingController::class);

@@ -6,6 +6,8 @@ namespace App\Listing\Application\Support;
 
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
+use App\Media\Domain\Enums\MediaType;
+use App\Media\Infrastructure\Models\EloquentMedia;
 
 class ListingPayloadMapper
 {
@@ -15,6 +17,10 @@ class ListingPayloadMapper
     public function map(EloquentListing $listing): array
     {
         $category = $listing->category;
+
+        $media    = $listing->media
+            ->filter(fn(EloquentMedia $media): bool => $media->media_type === MediaType::IMAGE)
+            ->values();
 
         return [
             'id'             => $listing->id,
@@ -44,6 +50,11 @@ class ListingPayloadMapper
             'contactName'    => $listing->contact_name,
             'contactPhone'   => $listing->contact_phone,
             'contactEmail'   => $listing->contact_email,
+            'imageUrl'       => $media->first()?->getFullUrl(),
+            'imageUrls'      => $media
+                ->map(fn(EloquentMedia $media): string => $media->getFullUrl())
+                ->values()
+                ->all(),
             'viewsCount'     => $listing->views_count,
             'isFeatured'     => $listing->is_featured,
             'rejectionReason'=> $listing->rejection_reason,

@@ -38,7 +38,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         ?int $categoryId = null,
     ): LengthAwarePaginator {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
             ->where('user_id', $userId)
             ->when($status !== null, fn($query) => $query->where('status', $status))
             ->when($type !== null, fn($query) => $query->where('type', $type))
@@ -59,7 +59,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         int $perPage = 24,
     ): LengthAwarePaginator {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
             ->where('status', ListingStatus::PUBLISHED)
             ->orderByDesc('is_featured')
             ->orderByDesc('published_at')
@@ -120,7 +120,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 attributeValues: $attributeValues,
             );
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
         });
 
         return $listing;
@@ -173,7 +173,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 attributeValues: $attributeValues,
             );
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
         });
 
         return $updatedListing;
@@ -182,7 +182,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findOwnedByUser(string $listingId, string $userId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
             ->whereKey($listingId)
             ->where('user_id', $userId)
             ->first();
@@ -191,7 +191,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findById(string $listingId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
             ->whereKey($listingId)
             ->first();
     }
@@ -215,7 +215,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ]);
             $listing->save();
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
         });
 
         return $updatedListing;
