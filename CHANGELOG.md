@@ -5,6 +5,15 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.22] - 2026-05-24
+
+### Changed
+- Нормализация категорий вынесена из `EloquentCategoryRepository` в `CategoryInputNormalizer`.
+- Проверка родителя, построение `path/depth` и отображение вложенных названий категорий вынесены в `CategoryHierarchyService`.
+- Нормализация характеристик категорий вынесена из `EloquentCategoryAttributeDefinitionRepository` в `CategoryAttributeDefinitionNormalizer`.
+- Репозитории каталога стали ближе к persistence-слою: поиск модели, сохранение нормализованных данных и выдача результатов.
+- Backend audit обновлен: задачи по выносу business normalization/hierarchy logic из catalog repositories отмечены выполненными.
+
 ## [0.6.21] - 2026-05-24
 
 ### Removed

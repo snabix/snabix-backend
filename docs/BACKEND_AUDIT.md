@@ -58,8 +58,8 @@
 - [ ] Listing aggregate пока хранит media через generic media relation, но business rules изображений объявления еще не централизованы.
 - [ ] DTO mapping есть, но нет contract tests, которые автоматически сравнивают backend DTO expectations с frontend adapters.
 - [ ] Dependency rules категорий сохраняются и отдаются, но не применяются в backend validation.
-- [ ] `EloquentCategoryRepository` содержит много business normalization и hierarchy logic; постепенно стоит выделить normalizer/domain service для slug/parent/hierarchy.
-- [ ] `EloquentCategoryAttributeDefinitionRepository` содержит normalization для options/default/dependency rules; часть логики можно вынести в dedicated normalizer.
+- [x] `EloquentCategoryRepository` содержит много business normalization и hierarchy logic; постепенно стоит выделить normalizer/domain service для slug/parent/hierarchy.
+- [x] `EloquentCategoryAttributeDefinitionRepository` содержит normalization для options/default/dependency rules; часть логики можно вынести в dedicated normalizer.
 - [ ] Нет production security review по CORS/Sanctum/session/cookie/domain настройкам.
 - [ ] Нет performance review индексов под реальные сценарии marketplace.
 
