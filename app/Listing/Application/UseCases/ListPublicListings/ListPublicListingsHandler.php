@@ -22,6 +22,11 @@ readonly class ListPublicListingsHandler
         $paginator = $this->listingRepository->listPublicPublished(
             page: $input->page,
             perPage: $input->perPage,
+            categoryId: $input->categoryId,
+            type: $input->type,
+            minPrice: $input->minPrice,
+            maxPrice: $input->maxPrice,
+            sort: $input->sort,
         );
 
         return ListPublicListingsOutput::from([

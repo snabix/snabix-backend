@@ -11,5 +11,10 @@ class ListPublicListingsInput extends Input
     public function __construct(
         public readonly int $page = 1,
         public readonly int $perPage = 24,
+        public readonly ?int $categoryId = null,
+        public readonly ?int $type = null,
+        public readonly ?int $minPrice = null,
+        public readonly ?int $maxPrice = null,
+        public readonly string $sort = 'newest',
     ) {}
 }

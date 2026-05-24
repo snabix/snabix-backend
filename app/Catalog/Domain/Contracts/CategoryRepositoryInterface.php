@@ -19,11 +19,6 @@ interface CategoryRepositoryInterface
     /**
      * @return Collection<int, EloquentCategory>
      */
-    public function listOrdered(bool $onlyActive = true): Collection;
-
-    /**
-     * @return Collection<int, EloquentCategory>
-     */
     public function listRootCategories(bool $onlyActive = true): Collection;
 
     /**

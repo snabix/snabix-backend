@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listing\Infrastructure\Repositories;
 
+use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Listing\Application\Services\ListingInputNormalizer;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Services\ListingStatusTransitionPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Services\ListingAttributeValueSynchronizer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -55,13 +57,23 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function listPublicPublished(
         int $page = 1,
         int $perPage = 24,
+        ?int $categoryId = null,
+        ?int $type = null,
+        ?int $minPrice = null,
+        ?int $maxPrice = null,
+        string $sort = 'newest',
     ): LengthAwarePaginator {
-        return EloquentListing::query()
+        $query = EloquentListing::query()
             ->with(['category', 'attributeValues.attributeDefinition', 'media'])
             ->where('status', ListingStatus::PUBLISHED)
-            ->orderByDesc('is_featured')
-            ->orderByDesc('published_at')
-            ->latest('created_at')
+            ->when($type !== null, fn($query) => $query->where('type', $type))
+            ->when($minPrice !== null, fn($query) => $query->where('price', '>=', $minPrice))
+            ->when($maxPrice !== null, fn($query) => $query->where('price', '<=', $maxPrice));
+
+        $this->applyCategoryFilter($query, $categoryId);
+        $this->applyPublicSort($query, $sort);
+
+        return $query
             ->paginate(
                 perPage: $perPage,
                 pageName: 'page',
@@ -189,6 +201,60 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             $listing->attributeValues()->delete();
             $listing->delete();
         });
+    }
+
+    /**
+     * @param Builder<EloquentListing> $query
+     */
+    private function applyCategoryFilter(
+        Builder $query,
+        ?int $categoryId,
+    ): void {
+        if ($categoryId === null) {
+            return;
+        }
+
+        $category = EloquentCategory::query()->find($categoryId);
+
+        if ($category === null) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where(function (Builder $query) use ($category): void {
+            $query
+                ->where('category_id', $category->id)
+                ->orWhereHas(
+                    'category',
+                    fn(Builder $query): Builder => $query->where('path', 'like', $category->path . '/%'),
+                );
+        });
+    }
+
+    /**
+     * @param Builder<EloquentListing> $query
+     */
+    private function applyPublicSort(Builder $query, string $sort): void
+    {
+        match ($sort) {
+            'oldest'     => $query
+                ->orderBy('published_at')
+                ->orderBy('created_at'),
+            'price_asc'  => $query
+                ->orderByRaw('price asc nulls last')
+                ->orderByDesc('published_at'),
+            'price_desc' => $query
+                ->orderByRaw('price desc nulls last')
+                ->orderByDesc('published_at'),
+            'popular'    => $query
+                ->orderByDesc('views_count')
+                ->orderByDesc('published_at'),
+            default      => $query
+                ->orderByDesc('is_featured')
+                ->orderByDesc('published_at')
+                ->latest('created_at'),
+        };
     }
 
     private function generateUniqueSlug(

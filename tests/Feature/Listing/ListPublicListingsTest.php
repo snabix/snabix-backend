@@ -6,10 +6,13 @@ namespace Tests\Feature\Listing;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
+use App\Listing\Application\Services\ListingMediaService;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
 use App\Listing\Infrastructure\Models\EloquentListing;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 
 class ListPublicListingsTest extends FeatureTestCase
@@ -88,12 +91,120 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonPath('data.meta.total', 2);
     }
 
+    public function test_public_listings_include_image_urls(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $mediaService       = app(ListingMediaService::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Фототовары',
+            'slug'         => 'fototovary',
+            'catalog_type' => 1,
+        ]);
+        $listing            = $this->createPublishedListing(
+            $user->id,
+            $category->id,
+            'Фотоаппарат',
+            'fotoapparat',
+            now(),
+        );
+
+        $mediaService->uploadImages($listing, [$this->fakePng('listing-photo.png')]);
+
+        $this
+            ->getJson('/api/v1/public/listings')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items.0.imageUrls')
+            ->assertJsonPath('data.items.0.imageUrl', fn(mixed $url): bool => is_string($url) && $url !== '');
+    }
+
+    public function test_public_listings_can_be_filtered_and_sorted(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $rootCategory       = $categoryRepository->save([
+            'name'         => 'Электроника',
+            'slug'         => 'elektronika',
+            'catalog_type' => 1,
+        ]);
+        $childCategory      = $categoryRepository->save([
+            'parent_id'    => $rootCategory->id,
+            'name'         => 'Ноутбуки',
+            'slug'         => 'noutbuki',
+            'catalog_type' => 1,
+        ]);
+        $otherCategory      = $categoryRepository->save([
+            'name'         => 'Услуги ремонта',
+            'slug'         => 'uslugi-remonta',
+            'catalog_type' => 2,
+        ]);
+
+        $matchedListing     = $this->createPublishedListing(
+            $user->id,
+            $childCategory->id,
+            'Ноутбук игровой',
+            'noutbuk-igrovoj',
+            now(),
+            [
+                'price' => 85000,
+            ],
+        );
+
+        $this->createPublishedListing(
+            $user->id,
+            $rootCategory->id,
+            'Старый монитор',
+            'staryj-monitor',
+            now()->subDay(),
+            [
+                'price' => 10000,
+            ],
+        );
+
+        $this->createPublishedListing(
+            $user->id,
+            $otherCategory->id,
+            'Ремонт ноутбуков',
+            'remont-noutbukov',
+            now(),
+            [
+                'type'  => ListingType::SERVICE,
+                'price' => 5000,
+            ],
+        );
+
+        $this
+            ->getJson(sprintf(
+                '/api/v1/public/listings?categoryId=%d&type=%d&minPrice=80000&maxPrice=90000&sort=price_desc',
+                $rootCategory->id,
+                ListingType::PRODUCT->value,
+            ))
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $matchedListing->id);
+    }
+
+    public function test_public_listings_validate_filter_values(): void
+    {
+        $this
+            ->getJson('/api/v1/public/listings?minPrice=90000&maxPrice=1000&sort=unknown')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['maxPrice', 'sort']);
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     */
     private function createPublishedListing(
         string $userId,
         int $categoryId,
         string $title,
         string $slug,
         mixed $publishedAt,
+        array $overrides = [],
     ): EloquentListing {
         return EloquentListing::query()->create([
             'user_id'       => $userId,
@@ -108,6 +219,15 @@ class ListPublicListingsTest extends FeatureTestCase
             'currency'      => 'RUB',
             'is_negotiable' => true,
             'published_at'  => $publishedAt,
+            ...$overrides,
         ]);
+    }
+
+    private function fakePng(string $name): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', true) ?: '',
+        );
     }
 }

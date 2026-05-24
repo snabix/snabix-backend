@@ -5,6 +5,52 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.23] - 2026-05-24
+
+### Fixed
+- Публичный listing DTO теперь возвращает `imageUrl` и `imageUrls`, чтобы изображения объявлений отображались в публичной витрине.
+- Добавлен feature-тест, фиксирующий наличие изображений в `GET /api/v1/public/listings`.
+
+## [0.6.22] - 2026-05-24
+
+### Changed
+- Нормализация категорий вынесена из `EloquentCategoryRepository` в `CategoryInputNormalizer`.
+- Проверка родителя, построение `path/depth` и отображение вложенных названий категорий вынесены в `CategoryHierarchyService`.
+- Нормализация характеристик категорий вынесена из `EloquentCategoryAttributeDefinitionRepository` в `CategoryAttributeDefinitionNormalizer`.
+- Репозитории каталога стали ближе к persistence-слою: поиск модели, сохранение нормализованных данных и выдача результатов.
+- Backend audit обновлен: задачи по выносу business normalization/hierarchy logic из catalog repositories отмечены выполненными.
+
+## [0.6.21] - 2026-05-24
+
+### Removed
+- Из публичного listing API временно убраны фильтры `regionId` и `cityId`, так как сценарий локаций для объявлений будет проектироваться отдельно.
+- Из модели объявления убрана привязка к `region_id`, `city_id`, `street`, `house` до утверждения будущей логики адресации объявлений.
+
+### Changed
+- Публичные фильтры объявлений оставлены только для текущего рабочего каталога: `categoryId`, `type`, `minPrice`, `maxPrice`, `sort`.
+- Frontend adapter публичных объявлений синхронизирован с текущим backend-контрактом без location-фильтров.
+
+## [0.6.20] - 2026-05-24
+
+### Added
+- `GET /api/v1/public/listings` получил базовые фильтры: `categoryId`, `type`, `minPrice`, `maxPrice`, `sort`.
+- Добавлен индекс под публичную выдачу по `status + price`.
+- Добавлены feature-тесты публичных фильтров, сортировки и валидации filter query.
+
+### Changed
+- Фильтр `categoryId` в публичной выдаче учитывает выбранную категорию и ее дочерние категории.
+- Backend audit обновлен: задача по базовым public listing filters отмечена выполненной.
+
+## [0.6.19] - 2026-05-24
+
+### Removed
+- Удален неиспользуемый `ListCategoriesController` и связанный `ListCategories` use case, который не был подключен к маршрутам.
+- Удален неиспользуемый repository-метод `listOrdered`, обслуживавший только удаленный full-list/tree сценарий.
+
+### Changed
+- Публичный каталог оставлен в оптимизированной порционной модели: `GET /api/v1/categories/list` для корневых категорий, `GET /api/v1/categories/{categoryId}/branch` для ветки и `GET /api/v1/categories/{categoryId}/attributes` для формы объявления.
+- Backend audit обновлен: задача по dead code `ListCategoriesController` отмечена выполненной.
+
 ## [0.6.18] - 2026-05-24
 
 ### Removed
