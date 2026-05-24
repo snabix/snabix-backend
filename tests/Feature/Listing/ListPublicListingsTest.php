@@ -6,10 +6,13 @@ namespace Tests\Feature\Listing;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
+use App\Listing\Application\Services\ListingMediaService;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
 use App\Listing\Infrastructure\Models\EloquentListing;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 
 class ListPublicListingsTest extends FeatureTestCase
@@ -86,6 +89,36 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonPath('data.meta.currentPage', 2)
             ->assertJsonPath('data.meta.perPage', 1)
             ->assertJsonPath('data.meta.total', 2);
+    }
+
+    public function test_public_listings_include_image_urls(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $mediaService       = app(ListingMediaService::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Фототовары',
+            'slug'         => 'fototovary',
+            'catalog_type' => 1,
+        ]);
+        $listing            = $this->createPublishedListing(
+            $user->id,
+            $category->id,
+            'Фотоаппарат',
+            'fotoapparat',
+            now(),
+        );
+
+        $mediaService->uploadImages($listing, [$this->fakePng('listing-photo.png')]);
+
+        $this
+            ->getJson('/api/v1/public/listings')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items.0.imageUrls')
+            ->assertJsonPath('data.items.0.imageUrl', fn(mixed $url): bool => is_string($url) && $url !== '');
     }
 
     public function test_public_listings_can_be_filtered_and_sorted(): void
@@ -188,5 +221,13 @@ class ListPublicListingsTest extends FeatureTestCase
             'published_at'  => $publishedAt,
             ...$overrides,
         ]);
+    }
+
+    private function fakePng(string $name): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', true) ?: '',
+        );
     }
 }

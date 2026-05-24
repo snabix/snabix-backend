@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.23] - 2026-05-24
+
+### Fixed
+- Публичный listing DTO теперь возвращает `imageUrl` и `imageUrls`, чтобы изображения объявлений отображались в публичной витрине.
+- Добавлен feature-тест, фиксирующий наличие изображений в `GET /api/v1/public/listings`.
+
 ## [0.6.22] - 2026-05-24
 
 ### Changed

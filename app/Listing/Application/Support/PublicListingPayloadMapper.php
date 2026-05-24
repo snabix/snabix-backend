@@ -6,6 +6,8 @@ namespace App\Listing\Application\Support;
 
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
+use App\Media\Domain\Enums\MediaType;
+use App\Media\Infrastructure\Models\EloquentMedia;
 
 class PublicListingPayloadMapper
 {
@@ -15,6 +17,9 @@ class PublicListingPayloadMapper
     public function map(EloquentListing $listing): array
     {
         $category = $listing->category;
+        $media    = $listing->media
+            ->filter(fn(EloquentMedia $media): bool => $media->media_type === MediaType::IMAGE)
+            ->values();
 
         return [
             'id'             => $listing->id,
@@ -40,6 +45,11 @@ class PublicListingPayloadMapper
             'price'          => $listing->price,
             'currency'       => $listing->currency,
             'isNegotiable'   => $listing->is_negotiable,
+            'imageUrl'       => $media->first()?->getFullUrl(),
+            'imageUrls'      => $media
+                ->map(fn(EloquentMedia $media): string => $media->getFullUrl())
+                ->values()
+                ->all(),
             'viewsCount'     => $listing->views_count,
             'isFeatured'     => $listing->is_featured,
             'publishedAt'    => $listing->published_at?->toIso8601String(),
