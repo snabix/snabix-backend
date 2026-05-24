@@ -5,6 +5,16 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.19] - 2026-05-24
+
+### Removed
+- Удален неиспользуемый `ListCategoriesController` и связанный `ListCategories` use case, который не был подключен к маршрутам.
+- Удален неиспользуемый repository-метод `listOrdered`, обслуживавший только удаленный full-list/tree сценарий.
+
+### Changed
+- Публичный каталог оставлен в оптимизированной порционной модели: `GET /api/v1/categories/list` для корневых категорий, `GET /api/v1/categories/{categoryId}/branch` для ветки и `GET /api/v1/categories/{categoryId}/attributes` для формы объявления.
+- Backend audit обновлен: задача по dead code `ListCategoriesController` отмечена выполненной.
+
 ## [0.6.18] - 2026-05-24
 
 ### Removed

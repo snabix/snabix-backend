@@ -59,25 +59,6 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
     /**
      * @return Collection<int, EloquentCategory>
      */
-    public function listOrdered(bool $onlyActive = true): Collection
-    {
-        $query = EloquentCategory::query()
-            ->with('parentCategory')
-            ->withCount('children')
-            ->orderBy('path')
-            ->orderBy('sort_order')
-            ->orderBy('name');
-
-        if ($onlyActive) {
-            $query->where('is_active', true);
-        }
-
-        return $query->get();
-    }
-
-    /**
-     * @return Collection<int, EloquentCategory>
-     */
     public function listRootCategories(bool $onlyActive = true): Collection
     {
         $query = EloquentCategory::query()

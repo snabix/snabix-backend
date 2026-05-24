@@ -50,7 +50,7 @@
 
 - [x] `App\Shared\Infrastructure\Providers\AppServiceProvider` все еще содержит bindings и policies разных модулей. Это работает, но модульные responsibilities размыты.
 - [x] Admin category attribute API защищен `auth:admin`, но use cases не вызывают `Gate::authorize()` на уровне application flow.
-- [ ] `ListCategoriesController` и use case существуют, но route не подключен. Сейчас это dead code рядом с активным `ListRootCategories`.
+- [x] `ListCategoriesController` и use case существуют, но route не подключен. Сейчас это dead code рядом с активным `ListRootCategories`.
 - [ ] `Listing update` не публикует audit event. Для marketplace важно логировать изменения цены, категории, статуса, описания и значимых полей.
 - [ ] Public listing API имеет пагинацию, но не имеет базовых фильтров `category/type/price/location/sort`.
 - [ ] Нет admin moderation domain service для `publish/reject/archive/return-to-draft` с reason, actor и audit event.
@@ -96,7 +96,7 @@
 - [x] Admin category attribute HTTP API отключен: управление характеристиками остается в Filament.
 
 Задачи:
-- [ ] Решить судьбу `ListCategoriesController`: подключить осознанно как full tree/list endpoint или удалить.
+- [x] Решить судьбу `ListCategoriesController`: подключить осознанно как full tree/list endpoint или удалить.
 - [ ] Применить `dependency_rules` в backend validation.
 
 ### Listings
@@ -155,7 +155,7 @@
 
 1. [x] Разгрузить `AppServiceProvider`: перенести auth/catalog/media/shared policies и bindings в модульные providers.
 2. [x] Отключить admin category attribute HTTP API и оставить управление характеристиками через Filament.
-3. [ ] Решить dead code `ListCategoriesController`: подключить full catalog endpoint или удалить.
+3. [x] Решить dead code `ListCategoriesController`: подключить full catalog endpoint или удалить.
 4. [ ] Добавить audit event для listing update.
 5. [ ] Реализовать public listing filters без полнотекстового поиска.
 6. [ ] Реализовать listing media management: delete, reorder, set main image.
