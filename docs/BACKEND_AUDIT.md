@@ -1,204 +1,177 @@
 # Backend Audit
 
-Дата повторного аудита: 2026-05-20
+Дата аудита: 2026-05-24
 
-Контекст продукта: Snabix - региональная marketplace-платформа для размещения товаров и услуг пользователей. Backend должен устойчиво закрывать авторизацию, каталог, объявления, медиа, модерацию, аудит действий и административное управление.
+Контекст: Snabix backend - Laravel 12 API и Filament admin panel для регионального marketplace товаров и услуг. Текущая архитектура ближе к DDD / application-first: `Http -> Application -> Domain -> Infrastructure`, с отдельными bounded contexts `Auth`, `Catalog`, `Listing`, `Media`, `Location`, `Shared`.
 
 ## Проверка
 
-- [x] Повторно просмотрены `AGENTS.md`, `routes/api.php`, bounded contexts `Auth`, `Catalog`, `Listing`, `Media`, `Shared`, `Mail`, `CLI`.
-- [x] Повторно проверена DDD-граница: `Http` -> `Application` -> `Domain` -> `Infrastructure`.
-- [x] Проверены публичные, пользовательские и admin API endpoints.
-- [x] Проверены feature/unit tests, PHP CS Fixer, PHPStan, Scramble.
-- [x] Проверены текущие правила ролей/permissions в Filament через Shield/Spatie Permission.
-- [ ] Нужен отдельный production security review перед публичным запуском.
-- [ ] Нужен performance review запросов объявлений, категорий и фильтров после появления реального объема данных.
+- [x] Изучены `AGENTS.md`, `routes/api.php`, `bootstrap/providers.php`, `composer.json`, `Taskfile.yaml`.
+- [x] Проверены основные bounded contexts: `Auth`, `Catalog`, `Listing`, `Media`, `Location`, `Shared`.
+- [x] Проверены текущие API routes, request/response/use case паттерны, policies, Filament resources, events и tests.
+- [x] Выполнен `task check`: PHP CS Fixer dry-run, PHPStan, Scramble, Laravel tests.
+- [x] Результат тестов: `83 passed`, `427 assertions`.
 
-## Результаты Команд
+## Реализовано
 
-- `task check` прошел.
-- PHP CS Fixer dry-run прошел без изменений.
-- PHPStan прошел без ошибок.
-- Scramble analysis прошел без ошибок.
-- Laravel tests прошли: 74 теста, 374 assertions.
+- [x] Auth API: регистрация, вход, выход, профиль, обновление профиля, адреса, аватар, email verification, resend verification, forgot/reset password, change password.
+- [x] Session expiration contract для `401/419` стандартизирован.
+- [x] Email verification и password reset используют queue/job подход.
+- [x] Catalog API: root categories, branch, category attributes с metadata, dependency rules и schema version.
+- [x] Admin category attribute API: CRUD, import/export, delete guard при наличии значений объявлений.
+- [x] Location module: регионы, города, импорт из JSON, Filament resources.
+- [x] Listing API: create, update, show, delete, list owned, list public, submit-for-review, upload media.
+- [x] Listing statuses централизованы через `ListingStatusTransitionPolicy`.
+- [x] Required category attributes проверяются в application service.
+- [x] Listing input normalization вынесена из repository в `ListingInputNormalizer`.
+- [x] Listing attribute sync вынесен в `ListingAttributeValueSynchronizer`.
+- [x] Listing media upload подключен к единому media-хранилищу.
+- [x] Public/private listing DTO разделены.
+- [x] Media module: Spatie Media Library, типы, visibility, path generator, Filament resource, preview.
+- [x] Filament Shield / Spatie Permission подключены для admin roles/permissions.
+- [x] Filament admin panel имеет collapsible sidebar.
+- [x] Business audit реализован через loggable events и listener.
+- [x] HTTP activity logging вынесен в middleware.
+- [x] Health checks и system resources widgets реализованы.
+- [x] Backend tests используют отдельную `snabix_test` database.
+
+## Архитектура
+
+### Сильные стороны
+
+- [x] Контроллеры в основном тонкие: принимают `Request`, собирают `Input`, вызывают `Handler`, возвращают `Response`.
+- [x] Use cases читаемые и хорошо отделены от HTTP слоя.
+- [x] Domain слой содержит enums, events, contracts, value objects, policies и status policy.
+- [x] Eloquent скрыт за repositories/services там, где это уже было критично для развития.
+- [x] API response classes единообразны и совместимы со Scramble.
+- [x] Tests покрывают auth, catalog, listings, media, locations, Filament permissions, docs.
+
+### Риски и нарушения
+
+- [x] `App\Shared\Infrastructure\Providers\AppServiceProvider` все еще содержит bindings и policies разных модулей. Это работает, но модульные responsibilities размыты.
+- [ ] Admin category attribute API защищен `auth:admin`, но use cases не вызывают `Gate::authorize()` на уровне application flow.
+- [ ] `ListCategoriesController` и use case существуют, но route не подключен. Сейчас это dead code рядом с активным `ListRootCategories`.
+- [ ] `Listing update` не публикует audit event. Для marketplace важно логировать изменения цены, категории, статуса, описания и значимых полей.
+- [ ] Public listing API имеет пагинацию, но не имеет базовых фильтров `category/type/price/location/sort`.
+- [ ] Нет admin moderation domain service для `publish/reject/archive/return-to-draft` с reason, actor и audit event.
+- [ ] Media частично подключена к listing flow: есть upload, но нет delete/reorder/main image и audit events по media changes.
+- [ ] Listing aggregate пока хранит media через generic media relation, но business rules изображений объявления еще не централизованы.
+- [ ] DTO mapping есть, но нет contract tests, которые автоматически сравнивают backend DTO expectations с frontend adapters.
+- [ ] Dependency rules категорий сохраняются и отдаются, но не применяются в backend validation.
+- [ ] `EloquentCategoryRepository` содержит много business normalization и hierarchy logic; постепенно стоит выделить normalizer/domain service для slug/parent/hierarchy.
+- [ ] `EloquentCategoryAttributeDefinitionRepository` содержит normalization для options/default/dependency rules; часть логики можно вынести в dedicated normalizer.
+- [ ] Нет production security review по CORS/Sanctum/session/cookie/domain настройкам.
+- [ ] Нет performance review индексов под реальные сценарии marketplace.
 
 ## API Матрица
 
 ### Auth
 
-- [x] `POST /api/v1/auth/sign-up` - работает, покрыт тестами, создает пользователя и отправляет email verification job.
-- [x] `POST /api/v1/auth/sign-in` - работает, покрыт happy/failed/inactive сценариями.
-- [x] `POST /api/v1/auth/logout` - работает через `auth:sanctum`, покрыт тестом.
-- [x] `GET /api/v1/auth/me` - работает, возвращает профиль текущего пользователя.
-- [x] `PATCH /api/v1/auth/me` - работает, обновляет профиль и повторно сбрасывает email verification при смене email.
-- [x] `POST /api/v1/auth/me/avatar` - работает, умеет replace старого файла.
-- [x] `DELETE /api/v1/auth/me/avatar` - работает, удаляет аватар.
-- [x] `POST /api/v1/auth/forgot-password` - работает, отправляет reset email.
-- [x] `POST /api/v1/auth/reset-password` - работает, меняет пароль по токену.
-- [x] `POST /api/v1/auth/change-password` - работает для авторизованного пользователя.
-- [x] `POST /api/v1/auth/verify-email` - работает через код подтверждения.
-- [x] `POST /api/v1/auth/email-verification-notification` - работает, имеет throttle и application cooldown.
+- [x] `POST /api/v1/auth/sign-up`
+- [x] `POST /api/v1/auth/sign-in`
+- [x] `POST /api/v1/auth/logout`
+- [x] `GET /api/v1/auth/me`
+- [x] `PATCH /api/v1/auth/me`
+- [x] `GET /api/v1/auth/me/addresses`
+- [x] `PUT /api/v1/auth/me/addresses`
+- [x] `DELETE /api/v1/auth/me/addresses/{addressId}`
+- [x] `POST /api/v1/auth/me/avatar`
+- [x] `DELETE /api/v1/auth/me/avatar`
+- [x] `POST /api/v1/auth/forgot-password`
+- [x] `POST /api/v1/auth/reset-password`
+- [x] `POST /api/v1/auth/change-password`
+- [x] `POST /api/v1/auth/verify-email`
+- [x] `POST /api/v1/auth/email-verification-notification`
 
-Что добавить: унифицировать response examples для auth errors в документации, добавить тесты на rate-limit/cooldown headers, добавить явную политику session lifetime в env/config и документацию для frontend.
+Задачи:
+- [ ] Документировать session lifetime, idle expiration, remember-me, logout-all-devices стратегию.
+- [ ] Добавить audit event для reset password success/fail, если security-аудит требует эти события.
+- [ ] Добавить tests на rate limit/cooldown headers.
 
 ### Catalog
 
-- [x] `GET /api/v1/categories/list` - возвращает root categories.
-- [x] `GET /api/v1/categories/{categoryId}/branch` - возвращает ветку категории.
-- [x] `GET /api/v1/categories/{categoryId}/attributes` - возвращает характеристики с metadata, dependency rules и schema version.
-- [x] `GET /api/v1/admin/category-attribute-definitions` - защищен `auth:admin`, возвращает список характеристик.
-- [x] `GET /api/v1/admin/category-attribute-definitions/export` - защищен `auth:admin`, экспортирует характеристики.
-- [x] `POST /api/v1/admin/category-attribute-definitions/import` - защищен `auth:admin`, импортирует характеристики.
-- [x] `POST /api/v1/admin/category-attribute-definitions` - защищен `auth:admin`, создает характеристику.
-- [x] `GET /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}` - защищен `auth:admin`, показывает характеристику.
-- [x] `PATCH /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}` - защищен `auth:admin`, обновляет характеристику.
-- [x] `DELETE /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}` - защищен `auth:admin`, блокирует удаление при наличии значений объявлений.
+- [x] `GET /api/v1/categories/list`
+- [x] `GET /api/v1/categories/{categoryId}/branch`
+- [x] `GET /api/v1/categories/{categoryId}/attributes`
+- [x] `GET /api/v1/admin/category-attribute-definitions`
+- [x] `GET /api/v1/admin/category-attribute-definitions/export`
+- [x] `POST /api/v1/admin/category-attribute-definitions/import`
+- [x] `POST /api/v1/admin/category-attribute-definitions`
+- [x] `GET /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}`
+- [x] `PATCH /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}`
+- [x] `DELETE /api/v1/admin/category-attribute-definitions/{attributeDefinitionId}`
 
-Что добавить: admin API сейчас опирается на `auth:admin`, но не вызывает `Gate::authorize()`/policy внутри application flow. Для marketplace это важно, потому что после появления ролей "модератор", "контент-менеджер", "support" одного факта admin-сессии будет мало.
+Задачи:
+- [ ] Решить судьбу `ListCategoriesController`: подключить осознанно как full tree/list endpoint или удалить.
+- [ ] Добавить `Gate::authorize()` в admin category attribute use cases.
+- [ ] Применить `dependency_rules` в backend validation.
+- [ ] Добавить malformed import tests и partial failure policy.
 
 ### Listings
 
-- [x] `GET /api/v1/public/listings` - публичный список опубликованных объявлений, без owner/contact private fields.
-- [x] `GET /api/v1/listings` - список объявлений текущего пользователя с пагинацией и фильтрами.
-- [x] `POST /api/v1/listings` - создание объявления, статус `pending_review` или `draft` через `saveAsDraft`.
-- [x] `GET /api/v1/listings/{listingId}` - просмотр своего объявления.
-- [x] `PATCH /api/v1/listings/{listingId}` - обновление своего объявления без изменения moderation fields.
-- [x] `POST /api/v1/listings/{listingId}/submit-for-review` - отправка черновика на модерацию.
-- [x] `DELETE /api/v1/listings/{listingId}` - удаление своего объявления с audit event.
+- [x] `GET /api/v1/public/listings`
+- [x] `GET /api/v1/listings`
+- [x] `POST /api/v1/listings`
+- [x] `GET /api/v1/listings/{listingId}`
+- [x] `PATCH /api/v1/listings/{listingId}`
+- [x] `POST /api/v1/listings/{listingId}/submit-for-review`
+- [x] `POST /api/v1/listings/{listingId}/media`
+- [x] `DELETE /api/v1/listings/{listingId}`
 
-Что добавить: admin moderation actions `publish/reject/archive`, media attachments для объявлений, search/filter/sort public API, индексы под category/status/type/price/published_at, отдельные DTO и tests для moderation API.
+Задачи:
+- [ ] Добавить public filters: category, type, minPrice, maxPrice, regionId, cityId, sort.
+- [ ] Добавить delete/reorder/set-main для listing media.
+- [ ] Добавить audit events для update и media changes.
+- [ ] Добавить admin moderation actions: publish, reject, archive, return-to-draft.
+- [ ] Добавить domain rule повторной отправки отклоненного объявления на модерацию после редактирования.
+- [ ] Проверить индексы под `status`, `category_id`, `type`, `price`, `region/city`, `published_at`.
 
 ### Media
 
-- [x] Единое хранение реализовано через Spatie Media Library.
-- [x] Есть типизация `MediaType` и `MediaVisibility`.
-- [x] Есть path generator и service для create/replace/delete.
-- [x] Есть Filament preview и таблица медиа.
-- [x] Есть тесты replace/delete/move.
+- [x] Единое media-хранилище.
+- [x] Filament media resource с preview.
+- [x] Upload для listing images.
 
-Что добавить: привязку media к объявлениям, conversions/thumbnails для карточек, orphan cleanup, access-control для private media, политику загрузки разных типов файлов по назначению.
+Задачи:
+- [ ] Добавить image conversions/thumbnails для карточек.
+- [ ] Добавить orphan cleanup для непривязанных media.
+- [ ] Добавить access-control для private media.
+- [ ] Добавить media audit events.
 
-### Shared, Health, Audit
+### Admin / Filament
 
-- [x] HTTP activity logging вынесен в middleware.
-- [x] Business audit идет через loggable events и listener.
-- [x] Health widgets и system resources check покрыты тестом.
-- [x] RabbitMQ и Redis присутствуют в инфраструктурном контуре.
+- [x] Shield permissions подключены.
+- [x] Super admin bypass работает.
+- [x] Ресурсы пользователей, администраторов, категорий, характеристик, объявлений, медиа, регионов и городов есть.
+- [x] Collapsible sidebar включен.
 
-Что добавить: retention policy для system logs по типам, отдельные event tests для listing moderation events, health endpoint/виджет для queue lag и failed jobs.
+Задачи:
+- [x] Перенести модульные policies/bindings из shared `AppServiceProvider` в модульные providers.
+- [ ] Добавить role seeders: `super_admin`, `moderator`, `content_manager`, `support`.
+- [ ] Добавить moderation actions прямо в Filament tables/dashboard.
+- [ ] Добавить tests Filament moderation actions.
 
-## DDD И Чистота Кода
+## Уязвимые Места
 
-### Что Хорошо
+- [ ] Admin API permissions: один `auth:admin` недостаточен для разных ролей админки.
+- [ ] CORS/Sanctum/session cookies требуют отдельного production review перед публичным запуском.
+- [ ] File upload: есть лимит 3MB и image validation для listing, но нет централизованной policy по назначению файла и расширениям для всех upload-сценариев.
+- [ ] Public listings могут стать дорогими без фильтров, индексов и query review на реальных данных.
+- [ ] Business audit неполный для изменения объявлений и модерации.
 
-- [x] Контроллеры тонкие и в основном только собирают input DTO, вызывают handler и возвращают response resource.
-- [x] FormRequest используется для HTTP validation и вычисляемых входных данных.
-- [x] Use cases читаемые, сценарные, без прямого смешивания с Laravel controller logic.
-- [x] Domain слой содержит enums, events, contracts, value objects и policies для ключевых правил.
-- [x] Репозитории спрятали Eloquent и транзакции за contracts.
-- [x] Правила публикации и переходов статуса вынесены в domain services.
-- [x] Синхронизация характеристик вынесена из repository в отдельный synchronizer.
-- [x] Тесты идут на отдельной test database `snabix_test`.
+## План Задач
 
-### Что Рисково
-
-- [x] `EloquentListingRepository` все еще содержит много normalization/validation методов. Это допустимо как persistence normalization, но часть логики `resolveType/resolveCondition/resolvePrice/assertTypeMatchesCategory` лучше постепенно перенести в dedicated application/domain normalizers, чтобы repository отвечал только за persistence.
-- [ ] Admin category attribute API не использует policy/Gate на уровне use case. Это следующий естественный шаг после подключения Shield.
-- [ ] `ListCategoriesController` и часть catalog use case существуют, но маршрут в `routes/api.php` сейчас не подключен. Нужно либо подключить осознанно, либо удалить как dead code.
-- [ ] Listing update не публикует audit event. Для marketplace важно логировать изменение цены, категории, статуса черновика и значимых полей.
-- [ ] Публичный listing API пока не имеет фильтров по category/type/price/location. Поиск можно оставить на будущее, но базовые фильтры нужны раньше полнотекстового поиска.
-- [ ] Нет moderation domain service для admin-решений `publish/reject/archive` с reason, actor и audit event.
-- [ ] Media пока не является частью listing aggregate/application flow.
-- [ ] DTO mapping есть, но нет отдельного набора contract tests, который сравнивает backend examples с frontend expectations.
-
-## Auth
-
-- [x] Основные auth flows рабочие и покрыты тестами.
-- [x] Email verification переведен на код и queue job.
-- [x] Password reset и change password разделены правильно.
-- [x] 401/419 session-expiration contract стандартизирован.
-
-Что добавить:
-
-- [ ] Документировать cookie/Sanctum session policy: lifetime, idle expiration, remember-me, logout all devices.
-- [ ] Добавить endpoint `logout-all-devices`, когда появятся активные сессии в личном кабинете.
-- [ ] Добавить audit event для reset password success/fail, если нужно видеть критичные security-события.
-- [ ] Добавить frontend/backend contract test для `me.avatar`, чтобы не ломать UI профиля.
-
-## Catalog И Характеристики
-
-- [x] Категории имеют дерево, branch endpoint и demo seeder.
-- [x] Slug policy выбрана глобальная.
-- [x] Характеристики имеют dependency rules и schema version.
-- [x] Значения объявления сохраняют snapshot схемы.
-- [x] Удаление характеристики защищено при наличии listing values.
-- [x] Есть bulk import/export.
-
-Что добавить:
-
-- [ ] Реально применить `dependency_rules` в frontend форме и backend validation, иначе правило описано, но не управляет поведением формы.
-- [ ] Добавить UI/endpoint для preview формы категории в admin.
-- [ ] Добавить миграционную стратегию изменения схемы характеристик: clone version, deprecate old fields, backward compatibility.
-- [ ] Добавить tests на import malformed payload и частичный import failure.
-
-## Listings
-
-- [x] Create/update/show/delete/list/submit-for-review реализованы.
-- [x] Public/private DTO границы зафиксированы.
-- [x] Пользователь не может управлять чужими объявлениями.
-- [x] Required attributes проверяются в application service.
-- [x] Status transitions централизованы.
-
-Что добавить:
-
-- [ ] Admin moderation flow: `publish`, `reject`, `archive`, `return-to-draft`.
-- [ ] Listing media attachments: upload/order/delete/main image.
-- [ ] Public filters без полнотекстового поиска: category, type, price range, status published, sort.
-- [ ] Audit trail для update, moderation actions и media changes.
-- [ ] Индексы и query review под `public/listings` и personal listings.
-- [ ] Domain rule для повторной отправки на модерацию после редактирования отклоненного объявления.
-
-## Filament
-
-- [x] Filament ресурсы разнесены по bounded contexts.
-- [x] Shield/Spatie permissions подключены.
-- [x] Super admin bypass реализован через Gate.
-- [x] Есть страница модерации объявлений и виджеты.
-- [x] Таблицы получили фильтры.
-
-Что добавить:
-
-- [ ] Проверить API permissions отдельно от Filament permissions, потому что Filament policy и API route middleware не всегда закрывают один и тот же сценарий.
-- [ ] Добавить moderation actions прямо в dashboard/table actions.
-- [ ] Добавить seed roles: `super_admin`, `moderator`, `content_manager`, `support`.
-- [ ] Добавить тесты Filament actions на publish/reject, когда появятся moderation actions.
-
-## Тестирование
-
-- [x] Unit и feature tests проходят.
-- [x] Есть тесты auth, catalog, listing, media, Filament permissions, docs.
-- [x] PHPStan и Scramble проходят.
-
-Что добавить:
-
-- [ ] Contract tests для frontend DTO: `items/meta`, enum labels, avatar shape, category attributes shape.
-- [ ] Tests для admin moderation actions.
-- [ ] Tests для dependency rules.
-- [ ] Tests для listing media attachments.
-- [ ] Tests для orphan media cleanup.
-- [ ] Tests для role-specific admin permissions, не только super-admin и admin-without-permissions.
-
-## Обновленный План
-
-1. [ ] Ввести Gate/policy checks в admin category attribute API use cases.
-2. [ ] Реализовать admin moderation flow для объявлений.
-3. [ ] Подключить media attachments к объявлениям.
-4. [ ] Реализовать public listing filters без полнотекстового поиска.
-5. [ ] Применить dependency rules на backend validation и frontend UI.
-6. [ ] Добавить role seeders для админки.
-7. [ ] Добавить contract tests для backend/frontend DTO.
-8. [ ] Добавить health/audit checks для queue lag и failed jobs.
+1. [x] Разгрузить `AppServiceProvider`: перенести auth/catalog/media/shared policies и bindings в модульные providers.
+2. [ ] Закрыть admin category attribute API через Gate/policy в use cases.
+3. [ ] Решить dead code `ListCategoriesController`: подключить full catalog endpoint или удалить.
+4. [ ] Добавить audit event для listing update.
+5. [ ] Реализовать public listing filters без полнотекстового поиска.
+6. [ ] Реализовать listing media management: delete, reorder, set main image.
+7. [ ] Реализовать admin moderation domain service и endpoints/actions.
+8. [ ] Применить category dependency rules в backend validation.
+9. [ ] Добавить backend/frontend DTO contract tests.
+10. [ ] Провести production security review CORS/Sanctum/session/uploads.
 
 ## Вывод
 
-Backend уже выглядит не как учебный Laravel CRUD, а как нормальный product backend с bounded contexts, use cases, событиями, тестами и отдельной админкой. Главный следующий риск не в работоспособности, а в том, что marketplace быстро потребует модерацию, медиа объявлений, фильтры и более строгие admin permissions. Эти зоны стоит закрывать следующими, не ломая текущую DDD-структуру.
+Backend находится в хорошем состоянии для активной разработки: тесты зеленые, DDD-границы в целом соблюдаются, основные marketplace-модули уже связаны. Главный риск сейчас не в работоспособности, а в неполной зрелости marketplace-core: фильтры, модерация, media management, audit trail и admin permissions нужно закрыть до публичного запуска.

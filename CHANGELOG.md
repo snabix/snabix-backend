@@ -5,9 +5,17 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.17] - 2026-05-24
+
+### Changed
+- `AppServiceProvider` разгружен от модульных responsibilities: auth bindings и policies перенесены в `AuthServiceProvider`, catalog policies - в `CatalogServiceProvider`, media policy - в новый `MediaServiceProvider`.
+- `bootstrap/providers.php` подключает `MediaServiceProvider`.
+- Backend audit обновлен: задача по переносу модульных policies/bindings из shared provider отмечена выполненной.
+
 ## [0.6.16] - 2026-05-24
 
 ### Changed
+- В Filament admin panel включен collapsible sidebar на desktop с компактной шириной в свернутом состоянии.
 - Нормализация входных данных объявления вынесена из `EloquentListingRepository` в `ListingInputNormalizer`.
 - Репозиторий объявлений сфокусирован на persistence flow: транзакции, сохранение модели, уникальный slug и синхронизация характеристик.
 - Backend audit обновлен: задача по выносу normalization/validation логики из repository отмечена выполненной.
