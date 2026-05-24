@@ -9,7 +9,8 @@ use App\Shared\Domain\DTO\Output;
 class UpdateProfileOutput extends Output
 {
     /**
-     * @param array<string, mixed>|null $avatar
+     * @param array<string, mixed>|null  $avatar
+     * @param list<array<string, mixed>> $addresses
      */
     public function __construct(
         public readonly string $id,
@@ -20,5 +21,6 @@ class UpdateProfileOutput extends Output
         public readonly bool $isActive,
         public readonly ?string $emailVerifiedAt,
         public readonly ?array $avatar,
+        public readonly array $addresses,
     ) {}
 }

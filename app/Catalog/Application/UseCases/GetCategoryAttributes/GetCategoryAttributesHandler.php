@@ -56,6 +56,8 @@ readonly class GetCategoryAttributesHandler
                         'defaultValue'      => $definition->default_value,
                         'groupName'         => $definition->group_name,
                         'options'           => $definition->options,
+                        'dependencyRules'   => $definition->dependency_rules,
+                        'schemaVersion'     => $definition->schema_version,
                         'isRequired'        => $definition->is_required,
                         'isFilterable'      => $definition->is_filterable,
                         'showInCard'        => $definition->show_in_card,

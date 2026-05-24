@@ -13,11 +13,7 @@ class ForgotPasswordController
         ForgotPasswordRequest $request,
         ForgotPasswordHandler $handler,
     ): ForgotPasswordResponse {
-        $result    = $handler->execute(
-            ForgotPasswordInput::from([
-                'email' => $request->string('email')->toString(),
-            ]),
-        );
+        $result = $handler->execute(ForgotPasswordInput::from($request->inputData()));
 
         return ForgotPasswordResponse::make($result);
     }

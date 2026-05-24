@@ -18,9 +18,7 @@ class SignUpController
         SignUpRequest $request,
         SignUpHandler $handler,
     ): SignUpResponse {
-        $data     = SignUpInput::from($request->validated());
-
-        $response = $handler->execute($data);
+        $response = $handler->execute(SignUpInput::from($request->inputData()));
 
         return SignUpResponse::make($response);
     }

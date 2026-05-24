@@ -17,11 +17,7 @@ class SignInController
         SignInRequest $request,
         SignInHandler $handler,
     ): SignInResponse {
-        $data   = SignInInput::from(
-            $request->validated(),
-        );
-
-        $result = $handler->execute($data);
+        $result = $handler->execute(SignInInput::from($request->inputData()));
 
         return SignInResponse::make($result);
     }

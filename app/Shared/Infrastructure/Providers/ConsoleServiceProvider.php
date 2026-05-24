@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Providers;
 
 use App\CLI\AuthCLIMakeAdminUser;
 use App\CLI\CatalogCLIImportCategories;
+use App\CLI\LocationCLIImportRussiaLocations;
 use Illuminate\Support\ServiceProvider;
 
 class ConsoleServiceProvider extends ServiceProvider
@@ -15,6 +16,7 @@ class ConsoleServiceProvider extends ServiceProvider
         $this->commands([
             AuthCLIMakeAdminUser::class,
             CatalogCLIImportCategories::class,
+            LocationCLIImportRussiaLocations::class,
         ]);
     }
 }

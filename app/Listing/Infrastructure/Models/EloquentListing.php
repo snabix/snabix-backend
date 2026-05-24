@@ -9,12 +9,14 @@ use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Media\Infrastructure\Models\EloquentMedia;
 use Database\Factories\EloquentListingFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -103,6 +105,17 @@ class EloquentListing extends Model
     public function attributeValues(): HasMany
     {
         return $this->hasMany(EloquentListingAttributeValue::class, 'listing_id');
+    }
+
+    /**
+     * @return MorphMany<EloquentMedia, $this>
+     */
+    public function media(): MorphMany
+    {
+        return $this
+            ->morphMany(EloquentMedia::class, 'model')
+            ->orderBy('order_column')
+            ->orderBy('id');
     }
 
     /**

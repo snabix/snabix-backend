@@ -4,16 +4,43 @@ declare(strict_types=1);
 
 namespace App\Auth\Infrastructure\Providers;
 
+use App\Auth\Domain\Contracts\UserRepositoryInterface;
+use App\Auth\Infrastructure\Models\EloquentAdmin;
+use App\Auth\Infrastructure\Models\EloquentUser;
+use App\Auth\Infrastructure\Policies\EloquentAdminPolicy;
+use App\Auth\Infrastructure\Policies\EloquentUserPolicy;
+use App\Auth\Infrastructure\Repositories\EloquentUserRepository;
+use App\Policies\RolePolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Permission\Models\Role;
 
 class AuthServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(
+            UserRepositoryInterface::class,
+            EloquentUserRepository::class,
+        );
+    }
+
     public function boot(): void
     {
+        Gate::before(
+            fn(mixed $user): ?bool => $user instanceof EloquentAdmin && $user->hasRole('super_admin')
+                ? true
+                : null,
+        );
+
+        Gate::policy(EloquentAdmin::class, EloquentAdminPolicy::class);
+        Gate::policy(EloquentUser::class, EloquentUserPolicy::class);
+        Gate::policy(Role::class, RolePolicy::class);
+
         RateLimiter::for('auth.sign-in', function (Request $request): Limit {
             $email = (string) $request->string('email')->lower()->trim();
             $ip    = $request->ip() ?? 'unknown';

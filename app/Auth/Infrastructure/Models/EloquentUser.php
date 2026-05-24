@@ -7,6 +7,7 @@ namespace App\Auth\Infrastructure\Models;
 use Database\Factories\EloquentUserFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -73,6 +74,17 @@ class EloquentUser extends Authenticatable
     protected static function newFactory(): Factory
     {
         return EloquentUserFactory::new();
+    }
+
+    /**
+     * @return HasMany<EloquentUserAddress, $this>
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(EloquentUserAddress::class, 'user_id')
+            ->orderByDesc('is_primary')
+            ->orderBy('sort_order')
+            ->orderBy('created_at');
     }
 
     /**

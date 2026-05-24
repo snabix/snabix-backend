@@ -13,11 +13,7 @@ class LogoutController
         LogoutRequest $request,
         LogoutHandler $handler,
     ): LogoutResponse {
-        $result = $handler->execute(
-            LogoutInput::from([
-                'userId' => $request->userId(),
-            ]),
-        );
+        $result = $handler->execute(LogoutInput::from($request->inputData()));
 
         return LogoutResponse::make($result);
     }

@@ -5,6 +5,32 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.18] - 2026-05-24
+
+### Removed
+- Отключен admin HTTP API характеристик категорий `/api/v1/admin/category-attribute-definitions/*`.
+- Удалены HTTP-классы и application use cases, которые обслуживали admin REST API характеристик категорий.
+
+### Changed
+- Управление характеристиками категорий остается через Filament resources, а пользовательская форма объявления продолжает получать характеристики через `GET /api/v1/categories/{categoryId}/attributes`.
+- Feature-тесты каталога обновлены: вместо проверки удаленного admin API покрываются публичный endpoint характеристик, schema version, dependency rules, schema snapshot и delete guard на уровне repository.
+- Backend audit обновлен: задача по admin category attribute API закрыта через отключение HTTP surface area.
+
+## [0.6.17] - 2026-05-24
+
+### Changed
+- `AppServiceProvider` разгружен от модульных responsibilities: auth bindings и policies перенесены в `AuthServiceProvider`, catalog policies - в `CatalogServiceProvider`, media policy - в новый `MediaServiceProvider`.
+- `bootstrap/providers.php` подключает `MediaServiceProvider`.
+- Backend audit обновлен: задача по переносу модульных policies/bindings из shared provider отмечена выполненной.
+
+## [0.6.16] - 2026-05-24
+
+### Changed
+- В Filament admin panel включен collapsible sidebar на desktop с компактной шириной в свернутом состоянии.
+- Нормализация входных данных объявления вынесена из `EloquentListingRepository` в `ListingInputNormalizer`.
+- Репозиторий объявлений сфокусирован на persistence flow: транзакции, сохранение модели, уникальный slug и синхронизация характеристик.
+- Backend audit обновлен: задача по выносу normalization/validation логики из repository отмечена выполненной.
+
 ## [0.6.15] - 2026-05-19
 
 ### Added

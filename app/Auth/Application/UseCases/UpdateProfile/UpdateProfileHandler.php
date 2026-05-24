@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Application\UseCases\UpdateProfile;
 
+use App\Auth\Application\Services\UserAddressService;
 use App\Auth\Application\Services\UserAvatarService;
 use App\Auth\Domain\Contracts\UserRepositoryInterface;
 use App\Auth\Domain\Events\UserEmailVerificationRequested;
@@ -21,6 +22,7 @@ readonly class UpdateProfileHandler
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private UserAvatarService $userAvatarService,
+        private UserAddressService $userAddressService,
     ) {}
 
     /**
@@ -70,6 +72,7 @@ readonly class UpdateProfileHandler
             'isActive'        => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
             'avatar'          => $this->userAvatarService->toPayload($data->userId),
+            'addresses'       => $this->userAddressService->listPayload($data->userId),
         ]);
     }
 }

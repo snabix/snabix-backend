@@ -18,6 +18,16 @@ class ForgotPasswordRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array{email: string}
+     */
+    public function inputData(): array
+    {
+        return [
+            'email' => $this->string('email')->toString(),
+        ];
+    }
+
     public function authorize(): bool
     {
         return true;
