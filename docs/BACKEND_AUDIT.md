@@ -102,7 +102,7 @@
 
 ### Что Рисково
 
-- [ ] `EloquentListingRepository` все еще содержит много normalization/validation методов. Это допустимо как persistence normalization, но часть логики `resolveType/resolveCondition/resolvePrice/assertTypeMatchesCategory` лучше постепенно перенести в dedicated application/domain normalizers, чтобы repository отвечал только за persistence.
+- [x] `EloquentListingRepository` все еще содержит много normalization/validation методов. Это допустимо как persistence normalization, но часть логики `resolveType/resolveCondition/resolvePrice/assertTypeMatchesCategory` лучше постепенно перенести в dedicated application/domain normalizers, чтобы repository отвечал только за persistence.
 - [ ] Admin category attribute API не использует policy/Gate на уровне use case. Это следующий естественный шаг после подключения Shield.
 - [ ] `ListCategoriesController` и часть catalog use case существуют, но маршрут в `routes/api.php` сейчас не подключен. Нужно либо подключить осознанно, либо удалить как dead code.
 - [ ] Listing update не публикует audit event. Для marketplace важно логировать изменение цены, категории, статуса черновика и значимых полей.

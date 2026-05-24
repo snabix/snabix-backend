@@ -5,6 +5,13 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.16] - 2026-05-24
+
+### Changed
+- Нормализация входных данных объявления вынесена из `EloquentListingRepository` в `ListingInputNormalizer`.
+- Репозиторий объявлений сфокусирован на persistence flow: транзакции, сохранение модели, уникальный slug и синхронизация характеристик.
+- Backend audit обновлен: задача по выносу normalization/validation логики из repository отмечена выполненной.
+
 ## [0.6.15] - 2026-05-19
 
 ### Added
