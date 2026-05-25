@@ -43,7 +43,7 @@ class ListPublicListingsRequest extends FormRequest
     {
         return [
             'page'      => $this->integer('page', 1),
-            'perPage'   => $this->integer('perPage', 24),
+            'perPage'   => $this->integer('perPage', 15),
             'categoryId'=> $this->nullableIntegerInput('categoryId'),
             'type'      => $this->nullableIntegerInput('type'),
             'minPrice'  => $this->nullableIntegerInput('minPrice'),

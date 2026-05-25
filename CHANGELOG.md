@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.24] - 2026-05-24
+
+### Changed
+- Значение `perPage` по умолчанию для `GET /api/v1/public/listings` изменено на `15`, чтобы публичная витрина показывала одинаковое количество объявлений в grid/list режимах.
+- Feature-тест публичной выдачи обновлен под новый default pagination contract.
+
 ## [0.6.23] - 2026-05-24
 
 ### Fixed

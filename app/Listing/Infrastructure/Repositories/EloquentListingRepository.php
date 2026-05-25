@@ -56,7 +56,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
      */
     public function listPublicPublished(
         int $page = 1,
-        int $perPage = 24,
+        int $perPage = 15,
         ?int $categoryId = null,
         ?int $type = null,
         ?int $minPrice = null,
