@@ -7,6 +7,7 @@ namespace App\Listing\Infrastructure\Services;
 use App\Catalog\Domain\Contracts\CategoryAttributeDefinitionRepositoryInterface;
 use App\Catalog\Domain\Enums\CategoryAttributeType;
 use App\Catalog\Infrastructure\Models\EloquentCategoryAttributeDefinition;
+use App\Listing\Application\Services\CategoryAttributeDependencyRuleEvaluator;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
 use Illuminate\Validation\ValidationException;
@@ -15,6 +16,7 @@ readonly class ListingAttributeValueSynchronizer
 {
     public function __construct(
         private CategoryAttributeDefinitionRepositoryInterface $categoryAttributeDefinitionRepository,
+        private CategoryAttributeDependencyRuleEvaluator $categoryAttributeDependencyRuleEvaluator,
     ) {}
 
     /**
@@ -25,11 +27,14 @@ readonly class ListingAttributeValueSynchronizer
         int $categoryId,
         array $attributeValues,
     ): void {
-        $definitions     = $this->categoryAttributeDefinitionRepository
+        $definitions        = $this->categoryAttributeDefinitionRepository
             ->forCategory($categoryId)
             ->keyBy('id');
-        $submittedValues = $this->normalizeSubmittedAttributeValues($attributeValues);
-        $definitionIds   = $definitions->keys()->map(static fn(mixed $definitionId): int => (int) $definitionId)->all();
+        $submittedValues    = $this->normalizeSubmittedAttributeValues($attributeValues);
+        $visibleDefinitions = $this->categoryAttributeDependencyRuleEvaluator
+            ->visibleDefinitions($definitions->values(), $submittedValues)
+            ->keyBy('id');
+        $definitionIds      = $visibleDefinitions->keys()->map(static fn(mixed $definitionId): int => (int) $definitionId)->all();
 
         if ($definitionIds === []) {
             $listing->attributeValues()->delete();
@@ -37,7 +42,7 @@ readonly class ListingAttributeValueSynchronizer
             return;
         }
 
-        foreach ($definitions as $definition) {
+        foreach ($visibleDefinitions as $definition) {
             $definitionId    = $definition->id;
             $hasValue        = array_key_exists($definitionId, $submittedValues);
 

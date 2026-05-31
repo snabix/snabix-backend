@@ -71,6 +71,11 @@ class ShowAndUpdateListingTest extends FeatureTestCase
             'currency'      => 'RUB',
             'is_negotiable' => false,
         ]);
+        $this->assertDatabaseHas('system_logs', [
+            'category' => 'listing',
+            'action'   => 'listing.update',
+            'user_id'  => $user->id,
+        ]);
     }
 
     public function test_user_update_does_not_change_moderation_fields(): void
@@ -168,6 +173,86 @@ class ShowAndUpdateListingTest extends FeatureTestCase
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['attributeValues.' . $attribute->id]);
+    }
+
+    public function test_hidden_required_dependency_attribute_is_not_required_for_non_draft_listing(): void
+    {
+        $categoryRepository            = app(CategoryRepositoryInterface::class);
+        $attributeDefinitionRepository = app(CategoryAttributeDefinitionRepositoryInterface::class);
+        $user                          = EloquentUser::factory()->create();
+        $category                      = $categoryRepository->save([
+            'name'         => 'Смартфоны',
+            'slug'         => 'smartfony-dependencies',
+            'catalog_type' => 1,
+        ]);
+        $brandAttribute                = $attributeDefinitionRepository->save([
+            'category_id'   => $category->id,
+            'name'          => 'Бренд',
+            'slug'          => 'brand',
+            'type'          => 4,
+            'options'       => ['Apple', 'Samsung'],
+            'is_required'   => true,
+            'is_filterable' => true,
+            'is_active'     => true,
+        ]);
+        $modelAttribute                = $attributeDefinitionRepository->save([
+            'category_id'      => $category->id,
+            'name'             => 'Модель Apple',
+            'slug'             => 'apple-model',
+            'type'             => 1,
+            'is_required'      => true,
+            'is_active'        => true,
+            'dependency_rules' => [
+                [
+                    'attributeDefinitionId' => $brandAttribute->id,
+                    'operator'              => 'equals',
+                    'value'                 => 'Apple',
+                ],
+            ],
+        ]);
+        $listing                       = EloquentListing::query()->create([
+            'user_id'       => $user->id,
+            'category_id'   => $category->id,
+            'type'          => ListingType::PRODUCT,
+            'status'        => ListingStatus::PENDING_REVIEW,
+            'condition'     => ListingCondition::USED,
+            'title'         => 'Samsung Galaxy',
+            'slug'          => 'samsung-galaxy',
+            'description'   => 'Смартфон в хорошем состоянии.',
+            'price'         => 35000,
+            'currency'      => 'RUB',
+            'is_negotiable' => false,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->patchJson('/api/v1/listings/' . $listing->id, [
+                'categoryId'      => $category->id,
+                'type'            => ListingType::PRODUCT->value,
+                'condition'       => ListingCondition::USED->value,
+                'title'           => 'Samsung Galaxy',
+                'description'     => 'Смартфон в хорошем состоянии.',
+                'price'           => 35000,
+                'currency'        => 'RUB',
+                'isNegotiable'    => false,
+                'attributeValues' => [
+                    $brandAttribute->id => 'Samsung',
+                    $modelAttribute->id => 'Это скрытое значение нужно отбросить',
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data.attributeValues')
+            ->assertJsonPath('data.attributeValues.0.attributeDefinitionId', $brandAttribute->id);
+
+        $this->assertDatabaseHas('listing_attribute_values', [
+            'listing_id'              => $listing->id,
+            'attribute_definition_id' => $brandAttribute->id,
+            'display_value'           => 'Samsung',
+        ]);
+        $this->assertDatabaseMissing('listing_attribute_values', [
+            'listing_id'              => $listing->id,
+            'attribute_definition_id' => $modelAttribute->id,
+        ]);
     }
 
     public function test_update_removes_cleared_or_no_longer_applicable_attribute_values(): void

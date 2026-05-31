@@ -108,6 +108,14 @@ class EloquentListing extends Model
     }
 
     /**
+     * @return HasMany<EloquentListingFavorite, $this>
+     */
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(EloquentListingFavorite::class, 'listing_id');
+    }
+
+    /**
      * @return MorphMany<EloquentMedia, $this>
      */
     public function media(): MorphMany

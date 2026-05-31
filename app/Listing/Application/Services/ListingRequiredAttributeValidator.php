@@ -14,6 +14,7 @@ readonly class ListingRequiredAttributeValidator
 {
     public function __construct(
         private CategoryAttributeDefinitionRepositoryInterface $categoryAttributeDefinitionRepository,
+        private CategoryAttributeDependencyRuleEvaluator $categoryAttributeDependencyRuleEvaluator,
     ) {}
 
     /**
@@ -21,13 +22,12 @@ readonly class ListingRequiredAttributeValidator
      */
     public function validateSubmittedValues(int $categoryId, array $attributeValues): void
     {
-        $requiredDefinitions = $this->requiredDefinitions($categoryId);
+        $submittedValues     = $this->normalizeSubmittedAttributeValues($attributeValues);
+        $requiredDefinitions = $this->requiredDefinitions($categoryId, $submittedValues);
 
         if ($requiredDefinitions->isEmpty()) {
             return;
         }
-
-        $submittedValues     = $this->normalizeSubmittedAttributeValues($attributeValues);
 
         foreach ($requiredDefinitions as $definition) {
             if (! array_key_exists($definition->id, $submittedValues) || ! $this->isFilledValue($submittedValues[$definition->id])) {
@@ -38,14 +38,16 @@ readonly class ListingRequiredAttributeValidator
 
     public function validateStoredValues(EloquentListing $listing, int $categoryId): void
     {
-        $requiredDefinitions = $this->requiredDefinitions($categoryId);
+        $listing->loadMissing('attributeValues');
+        $storedValues        = $listing->attributeValues->keyBy('attribute_definition_id');
+        $resolvedValues      = $storedValues
+            ->mapWithKeys(fn($storedValue, int $definitionId): array => [$definitionId => $storedValue->value])
+            ->all();
+        $requiredDefinitions = $this->requiredDefinitions($categoryId, $resolvedValues);
 
         if ($requiredDefinitions->isEmpty()) {
             return;
         }
-
-        $listing->loadMissing('attributeValues');
-        $storedValues        = $listing->attributeValues->keyBy('attribute_definition_id');
 
         foreach ($requiredDefinitions as $definition) {
             $storedValue = $storedValues->get($definition->id);
@@ -57,12 +59,17 @@ readonly class ListingRequiredAttributeValidator
     }
 
     /**
+     * @param array<int, mixed> $values
+     *
      * @return Collection<int, EloquentCategoryAttributeDefinition>
      */
-    private function requiredDefinitions(int $categoryId): Collection
+    private function requiredDefinitions(int $categoryId, array $values): Collection
     {
-        return $this->categoryAttributeDefinitionRepository
-            ->forCategory($categoryId)
+        $definitions = $this->categoryAttributeDefinitionRepository
+            ->forCategory($categoryId);
+
+        return $this->categoryAttributeDependencyRuleEvaluator
+            ->visibleDefinitions($definitions, $values)
             ->filter(static fn(EloquentCategoryAttributeDefinition $definition): bool => (bool) $definition->is_required)
             ->values();
     }

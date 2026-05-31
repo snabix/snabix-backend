@@ -5,6 +5,35 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 а сам проект следует принципам [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.27] - 2026-05-31
+
+### Added
+- Добавлен backend evaluator для `dependency_rules` характеристик категорий.
+- Добавлен audit event `listing.update` для значимых изменений объявления.
+- Добавлены audit events для media-действий объявления: upload, delete, reorder и set-main.
+- Добавлены feature-тесты conditional backend validation и audit trail для listing update/media changes.
+
+### Changed
+- Required-валидация характеристик теперь учитывает условную видимость: скрытые зависимые обязательные поля не блокируют сохранение/отправку.
+- Синхронизация значений характеристик удаляет скрытые dependency-поля, даже если frontend случайно отправил их в payload.
+- Backend audit обновлен: задачи по `dependency_rules` validation и audit events для listing update/media changes отмечены выполненными.
+
+## [0.6.26] - 2026-05-30
+
+### Added
+- Добавлено избранное объявлений: таблица `listing_favorites`, API добавления, удаления и списка избранных объявлений пользователя.
+- Добавлены feature-тесты избранного: добавление, получение списка, удаление и запрет добавления черновика.
+
+## [0.6.25] - 2026-05-27
+
+### Added
+- Добавлены API-методы управления изображениями объявления: удаление, переупорядочивание и выбор главного изображения.
+- Приватный listing DTO теперь возвращает массив `media` с `id`, `url`, `fileName`, `order` и `isMain` для frontend media management UI.
+- Добавлен feature-тест, покрывающий upload, reorder, set main и delete для изображений объявления.
+
+### Changed
+- `ListingMediaService` централизует базовые business rules коллекции изображений объявления: лимит, порядок, главное изображение и нормализацию `order_column`.
+
 ## [0.6.24] - 2026-05-24
 
 ### Changed
