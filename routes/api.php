@@ -6,6 +6,7 @@ use App\Auth\Http\ChangePassword\ChangePasswordController;
 use App\Auth\Http\DeleteProfileAddress\DeleteProfileAddressController;
 use App\Auth\Http\DeleteProfileAvatar\DeleteProfileAvatarController;
 use App\Auth\Http\ForgotPassword\ForgotPasswordController;
+use App\Auth\Http\ListActiveSessions\ListActiveSessionsController;
 use App\Auth\Http\ListProfileAddresses\ListProfileAddressesController;
 use App\Auth\Http\Logout\LogoutController;
 use App\Auth\Http\ReplaceProfileAddresses\ReplaceProfileAddressesController;
@@ -14,6 +15,8 @@ use App\Auth\Http\ResetPassword\ResetPasswordController;
 use App\Auth\Http\ShowProfile\ProfileController;
 use App\Auth\Http\SignIn\SignInController;
 use App\Auth\Http\SignUp\SignUpController;
+use App\Auth\Http\TerminateOtherSessions\TerminateOtherSessionsController;
+use App\Auth\Http\TerminateSession\TerminateSessionController;
 use App\Auth\Http\UpdateProfile\UpdateProfileController;
 use App\Auth\Http\UpdateProfileAvatar\UpdateProfileAvatarController;
 use App\Auth\Http\VerifyEmail\VerifyEmailController;
@@ -63,6 +66,12 @@ Route::prefix('v1')->group(function () {
         Route::delete('me/addresses/{addressId}', DeleteProfileAddressController::class)
             ->middleware('auth:sanctum');
         Route::post('change-password', ChangePasswordController::class)
+            ->middleware('auth:sanctum');
+        Route::get('sessions', ListActiveSessionsController::class)
+            ->middleware('auth:sanctum');
+        Route::delete('sessions', TerminateOtherSessionsController::class)
+            ->middleware('auth:sanctum');
+        Route::delete('sessions/{sessionId}', TerminateSessionController::class)
             ->middleware('auth:sanctum');
         Route::post('me/avatar', UpdateProfileAvatarController::class)
             ->middleware('auth:sanctum');
