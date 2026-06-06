@@ -18,11 +18,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property string           $id
  * @property string           $user_id
- * @property int              $category_id
+ * @property string           $category_id
  * @property ListingType      $type
  * @property ListingStatus    $status
  * @property ListingCondition $condition
@@ -41,12 +43,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null      $published_at
  * @property Carbon|null      $expires_at
  */
-class EloquentListing extends Model
+class EloquentListing extends Model implements HasMedia
 {
     /** @use HasFactory<EloquentListingFactory> */
     use HasFactory;
 
     use HasUuids;
+    use InteractsWithMedia;
 
     public $incrementing = false;
 
@@ -124,6 +127,13 @@ class EloquentListing extends Model
             ->morphMany(EloquentMedia::class, 'model')
             ->orderBy('order_column')
             ->orderBy('id');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('listing-images')
+            ->useDisk('public')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
     }
 
     /**

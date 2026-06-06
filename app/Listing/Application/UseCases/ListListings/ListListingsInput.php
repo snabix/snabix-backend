@@ -14,6 +14,6 @@ class ListListingsInput extends Input
         public readonly int $perPage = 12,
         public readonly ?int $status = null,
         public readonly ?int $type = null,
-        public readonly ?int $categoryId = null,
+        public readonly ?string $categoryId = null,
     ) {}
 }

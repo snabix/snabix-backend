@@ -20,7 +20,7 @@ readonly class ListingRequiredAttributeValidator
     /**
      * @param array<array-key, mixed> $attributeValues
      */
-    public function validateSubmittedValues(int $categoryId, array $attributeValues): void
+    public function validateSubmittedValues(string $categoryId, array $attributeValues): void
     {
         $submittedValues     = $this->normalizeSubmittedAttributeValues($attributeValues);
         $requiredDefinitions = $this->requiredDefinitions($categoryId, $submittedValues);
@@ -36,7 +36,7 @@ readonly class ListingRequiredAttributeValidator
         }
     }
 
-    public function validateStoredValues(EloquentListing $listing, int $categoryId): void
+    public function validateStoredValues(EloquentListing $listing, string $categoryId): void
     {
         $listing->loadMissing('attributeValues');
         $storedValues        = $listing->attributeValues->keyBy('attribute_definition_id');
@@ -63,7 +63,7 @@ readonly class ListingRequiredAttributeValidator
      *
      * @return Collection<int, EloquentCategoryAttributeDefinition>
      */
-    private function requiredDefinitions(int $categoryId, array $values): Collection
+    private function requiredDefinitions(string $categoryId, array $values): Collection
     {
         $definitions = $this->categoryAttributeDefinitionRepository
             ->forCategory($categoryId);

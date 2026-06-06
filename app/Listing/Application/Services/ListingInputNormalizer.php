@@ -92,13 +92,13 @@ readonly class ListingInputNormalizer
 
     private function resolveCategory(mixed $categoryId): EloquentCategory
     {
-        if (! is_numeric($categoryId)) {
+        if (! is_string($categoryId) || ! Str::isUuid($categoryId)) {
             throw ValidationException::withMessages([
                 'categoryId' => ['Категория объявления обязательна.'],
             ]);
         }
 
-        $category = $this->categoryRepository->findById((int) $categoryId);
+        $category = $this->categoryRepository->findById($categoryId);
 
         if ($category === null) {
             throw ValidationException::withMessages([

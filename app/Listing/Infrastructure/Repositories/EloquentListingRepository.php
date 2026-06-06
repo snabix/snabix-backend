@@ -35,7 +35,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         int $perPage = 12,
         ?ListingStatus $status = null,
         ?int $type = null,
-        ?int $categoryId = null,
+        ?string $categoryId = null,
     ): LengthAwarePaginator {
         return EloquentListing::query()
             ->with(['category', 'attributeValues.attributeDefinition', 'media'])
@@ -57,7 +57,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function listPublicPublished(
         int $page = 1,
         int $perPage = 15,
-        ?int $categoryId = null,
+        ?string $categoryId = null,
         ?int $type = null,
         ?int $minPrice = null,
         ?int $maxPrice = null,
@@ -208,7 +208,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
      */
     private function applyCategoryFilter(
         Builder $query,
-        ?int $categoryId,
+        ?string $categoryId,
     ): void {
         if ($categoryId === null) {
             return;

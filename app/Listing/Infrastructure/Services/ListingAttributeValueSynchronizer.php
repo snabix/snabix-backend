@@ -24,7 +24,7 @@ readonly class ListingAttributeValueSynchronizer
      */
     public function sync(
         EloquentListing $listing,
-        int $categoryId,
+        string $categoryId,
         array $attributeValues,
     ): void {
         $definitions        = $this->categoryAttributeDefinitionRepository

@@ -37,7 +37,7 @@ readonly class EloquentCategoryAttributeDefinitionRepository implements Category
     /**
      * @return Collection<int, EloquentCategoryAttributeDefinition>
      */
-    public function forCategory(int $categoryId, bool $onlyActive = true): Collection
+    public function forCategory(string $categoryId, bool $onlyActive = true): Collection
     {
         $category         = EloquentCategory::query()->find($categoryId);
 
@@ -102,7 +102,7 @@ readonly class EloquentCategoryAttributeDefinitionRepository implements Category
             ->find($id);
     }
 
-    public function findByCategoryAndSlug(int $categoryId, string $slug): ?EloquentCategoryAttributeDefinition
+    public function findByCategoryAndSlug(string $categoryId, string $slug): ?EloquentCategoryAttributeDefinition
     {
         return EloquentCategoryAttributeDefinition::query()
             ->with('category')

@@ -12,7 +12,7 @@ return new class extends Migration {
         Schema::create('category_attribute_definitions', function (Blueprint $table): void {
             $table->timestamps();
             $table->id();
-            $table->foreignId('category_id')
+            $table->foreignUuid('category_id')
                 ->constrained('categories')
                 ->cascadeOnDelete();
             $table->string('name');

@@ -71,6 +71,6 @@ class CategoryHierarchyTest extends FeatureTestCase
             'name'      => $root->name,
             'slug'      => $root->slug,
             'parent_id' => $child->id,
-        ], (int) $root->id);
+        ], $root->id);
     }
 }

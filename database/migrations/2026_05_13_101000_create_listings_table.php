@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->foreignUuid('user_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
-            $table->foreignId('category_id')
+            $table->foreignUuid('category_id')
                 ->constrained('categories')
                 ->restrictOnDelete();
             $table->unsignedTinyInteger('type')

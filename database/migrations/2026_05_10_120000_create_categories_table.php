@@ -11,9 +11,10 @@ return new class extends Migration {
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->timestamps();
-            $table->id();
+            $table->uuid('id')
+                ->primary();
             $table->unsignedTinyInteger('catalog_type')->default(1)->index();
-            $table->foreignId('parent_id')
+            $table->foreignUuid('parent_id')
                 ->nullable()
                 ->constrained('categories')
                 ->nullOnDelete();

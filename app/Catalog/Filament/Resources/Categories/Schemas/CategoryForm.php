@@ -7,6 +7,8 @@ namespace App\Catalog\Filament\Resources\Categories\Schemas;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Catalog\Filament\Resources\Categories\CategoryResource;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
+use Filament\Forms\Components\BaseFileUpload;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -19,6 +21,8 @@ use Illuminate\Support\HtmlString;
 
 class CategoryForm
 {
+    private const string CURRENT_ICON_STATE_PREFIX = 'current-media:';
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -52,6 +56,27 @@ class CategoryForm
                             ->prefixIcon(Heroicon::OutlinedLink)
                             ->maxLength(255)
                             ->helperText(__('Used in URLs and category path building.')),
+
+                        FileUpload::make('uploaded_icon')
+                            ->label('Icon')
+                            ->translateLabel()
+                            ->disk('local')
+                            ->directory('filament-category-icons-temp')
+                            ->preserveFilenames()
+                            ->storeFiles()
+                            ->image()
+                            ->downloadable()
+                            ->openable()
+                            ->deletable(false)
+                            ->maxSize(1024 * 3)
+                            ->default(fn(?EloquentCategory $record): ?string => self::currentIconState($record))
+                            ->afterStateHydrated(
+                                fn(FileUpload $component, ?EloquentCategory $record): FileUpload => $component->state(self::currentIconState($record)),
+                            )
+                            ->getUploadedFileUsing(
+                                fn(BaseFileUpload $component, ?EloquentCategory $record, string $file): ?array => self::resolveUploadedIcon($component, $record, $file),
+                            )
+                            ->helperText(__('Upload a new category icon up to 3 MB. A new upload replaces the current icon.')),
 
                         TextInput::make('sort_order')
                             ->label('Sort order')
@@ -95,6 +120,49 @@ class CategoryForm
                             ->content(fn(?EloquentCategory $record): HtmlString => self::renderChildCategories($record)),
                     ]),
             ]);
+    }
+
+    private static function currentIconState(?EloquentCategory $record): ?string
+    {
+        $media = $record?->getFirstMedia('category_icons');
+
+        return $media !== null ? self::CURRENT_ICON_STATE_PREFIX . $media->id : null;
+    }
+
+    /**
+     * @return array{name: string, size: int, type: string|null, url: string}|null
+     */
+    private static function resolveUploadedIcon(BaseFileUpload $component, ?EloquentCategory $record, string $file): ?array
+    {
+        if (str_starts_with($file, self::CURRENT_ICON_STATE_PREFIX)) {
+            $media = $record?->getFirstMedia('category_icons');
+
+            if ($media === null) {
+                return null;
+            }
+
+            return [
+                'name' => $media->file_name,
+                'size' => $media->size,
+                'type' => $media->mime_type,
+                'url'  => $media->getFullUrl(),
+            ];
+        }
+
+        $storage  = $component->getDisk();
+
+        if (! $storage->exists($file)) {
+            return null;
+        }
+
+        $mimeType = $storage->mimeType($file);
+
+        return [
+            'name' => basename($file),
+            'size' => $storage->size($file),
+            'type' => is_string($mimeType) ? $mimeType : null,
+            'url'  => $storage->url($file),
+        ];
     }
 
     private static function renderChildCategories(?EloquentCategory $record): HtmlString

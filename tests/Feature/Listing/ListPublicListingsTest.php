@@ -178,7 +178,7 @@ class ListPublicListingsTest extends FeatureTestCase
 
         $this
             ->getJson(sprintf(
-                '/api/v1/public/listings?categoryId=%d&type=%d&minPrice=80000&maxPrice=90000&sort=price_desc',
+                '/api/v1/public/listings?categoryId=%s&type=%d&minPrice=80000&maxPrice=90000&sort=price_desc',
                 $rootCategory->id,
                 ListingType::PRODUCT->value,
             ))
@@ -200,7 +200,7 @@ class ListPublicListingsTest extends FeatureTestCase
      */
     private function createPublishedListing(
         string $userId,
-        int $categoryId,
+        string $categoryId,
         string $title,
         string $slug,
         mixed $publishedAt,

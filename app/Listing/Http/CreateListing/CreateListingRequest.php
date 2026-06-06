@@ -20,7 +20,7 @@ class CreateListingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'categoryId'       => ['required', 'integer', 'min:1'],
+            'categoryId'       => ['required', 'uuid', 'exists:categories,id'],
             'type'             => ['required', 'integer', Rule::enum(ListingType::class)],
             'condition'        => ['nullable', 'integer', Rule::enum(ListingCondition::class)],
             'title'            => ['required', 'string', 'max:255'],
@@ -43,7 +43,7 @@ class CreateListingRequest extends FormRequest
     {
         return [
             'userId'         => $this->userId(),
-            'categoryId'     => $this->integer('categoryId'),
+            'categoryId'     => $this->string('categoryId')->toString(),
             'type'           => $this->integer('type'),
             'condition'      => $this->nullableIntegerInput('condition'),
             'title'          => $this->string('title')->toString(),

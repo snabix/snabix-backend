@@ -28,7 +28,7 @@ class ListPublicListingsRequest extends FormRequest
         return [
             'page'      => ['nullable', 'integer', 'min:1'],
             'perPage'   => ['nullable', 'integer', 'min:1', 'max:48'],
-            'categoryId'=> ['nullable', 'integer', 'min:1', 'exists:categories,id'],
+            'categoryId'=> ['nullable', 'uuid', 'exists:categories,id'],
             'type'      => ['nullable', 'integer', Rule::enum(ListingType::class)],
             'minPrice'  => ['nullable', 'integer', 'min:0'],
             'maxPrice'  => ['nullable', 'integer', 'min:0', 'gte:minPrice'],
@@ -44,7 +44,7 @@ class ListPublicListingsRequest extends FormRequest
         return [
             'page'      => $this->integer('page', 1),
             'perPage'   => $this->integer('perPage', 15),
-            'categoryId'=> $this->nullableIntegerInput('categoryId'),
+            'categoryId'=> $this->nullableStringInput('categoryId'),
             'type'      => $this->nullableIntegerInput('type'),
             'minPrice'  => $this->nullableIntegerInput('minPrice'),
             'maxPrice'  => $this->nullableIntegerInput('maxPrice'),
@@ -62,5 +62,12 @@ class ListPublicListingsRequest extends FormRequest
         $value = $this->input($key);
 
         return is_int($value) ? $value : (is_numeric($value) ? (int) $value : null);
+    }
+
+    private function nullableStringInput(string $key): ?string
+    {
+        $value = $this->input($key);
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

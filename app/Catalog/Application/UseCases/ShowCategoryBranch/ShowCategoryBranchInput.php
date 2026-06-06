@@ -9,7 +9,7 @@ use App\Shared\Domain\DTO\Input;
 class ShowCategoryBranchInput extends Input
 {
     public function __construct(
-        public readonly int $categoryId,
+        public readonly string $categoryId,
         public readonly bool $onlyActive,
     ) {}
 }

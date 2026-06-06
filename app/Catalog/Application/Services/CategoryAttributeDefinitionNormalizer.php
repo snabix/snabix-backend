@@ -29,7 +29,7 @@ class CategoryAttributeDefinitionNormalizer
             'category_id'         => $category->id,
             'name'                => $name,
             'slug'                => $this->generateUniqueSlug(
-                categoryId: (int) $category->id,
+                categoryId: $category->id,
                 name: $name,
                 slug: $attributes['slug'] ?? null,
                 ignoreId: $definition->exists ? (int) $definition->id : null,
@@ -67,13 +67,13 @@ class CategoryAttributeDefinitionNormalizer
 
     private function resolveCategory(mixed $categoryId): EloquentCategory
     {
-        if (! is_numeric($categoryId)) {
+        if (! is_string($categoryId) || ! Str::isUuid($categoryId)) {
             throw ValidationException::withMessages([
                 'categoryId' => ['Категория характеристики обязательна.'],
             ]);
         }
 
-        $category = EloquentCategory::query()->find((int) $categoryId);
+        $category = EloquentCategory::query()->find($categoryId);
 
         if ($category === null) {
             throw ValidationException::withMessages([
@@ -290,7 +290,7 @@ class CategoryAttributeDefinitionNormalizer
     }
 
     private function generateUniqueSlug(
-        int $categoryId,
+        string $categoryId,
         string $name,
         mixed $slug,
         ?int $ignoreId = null,

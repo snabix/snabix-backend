@@ -12,9 +12,9 @@ interface CategoryRepositoryInterface
     public function count(): int;
 
     /**
-     * @return array<int, string>
+     * @return array<string, string>
      */
-    public function parentOptions(?int $ignoreId = null): array;
+    public function parentOptions(?string $ignoreId = null): array;
 
     /**
      * @return Collection<int, EloquentCategory>
@@ -24,14 +24,14 @@ interface CategoryRepositoryInterface
     /**
      * @return Collection<int, EloquentCategory>
      */
-    public function listBranch(int $categoryId, bool $onlyActive = true): Collection;
+    public function listBranch(string $categoryId, bool $onlyActive = true): Collection;
 
     /**
      * @param array<string, mixed> $attributes
      */
-    public function save(array $attributes, ?int $id = null): EloquentCategory;
+    public function save(array $attributes, ?string $id = null): EloquentCategory;
 
-    public function findByParentAndName(?int $parentId, string $name): ?EloquentCategory;
+    public function findByParentAndName(?string $parentId, string $name): ?EloquentCategory;
 
-    public function findById(int $id): ?EloquentCategory;
+    public function findById(string $id): ?EloquentCategory;
 }

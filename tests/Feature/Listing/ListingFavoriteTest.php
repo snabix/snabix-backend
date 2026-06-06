@@ -82,7 +82,7 @@ class ListingFavoriteTest extends FeatureTestCase
     /**
      * @param array<string, mixed> $overrides
      */
-    private function createPublishedListing(string $userId, int $categoryId, array $overrides = []): EloquentListing
+    private function createPublishedListing(string $userId, string $categoryId, array $overrides = []): EloquentListing
     {
         return EloquentListing::query()->create([
             'user_id'       => $userId,

@@ -111,7 +111,7 @@ class CategoryAttributeDefinitionApiTest extends FeatureTestCase
             'is_required'      => true,
             'is_filterable'    => true,
             'show_in_card'     => true,
-        ], (int) $attribute->id);
+        ], $attribute->id);
 
         $this->assertSame(2, $updatedAttribute->schema_version);
     }

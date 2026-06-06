@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class CategoryHierarchyService
 {
-    public function assertParentIsValid(EloquentCategory $category, ?int $parentId): void
+    public function assertParentIsValid(EloquentCategory $category, ?string $parentId): void
     {
         if ($parentId === null) {
             return;
@@ -74,7 +74,7 @@ class CategoryHierarchyService
 
     public function isAllowedParentOption(
         EloquentCategory $category,
-        ?int $ignoreId,
+        ?string $ignoreId,
         ?string $ignoredPath,
     ): bool {
         if ($ignoreId !== null && $category->id === $ignoreId) {

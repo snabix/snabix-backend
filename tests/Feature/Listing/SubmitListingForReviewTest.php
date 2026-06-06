@@ -138,7 +138,7 @@ class SubmitListingForReviewTest extends FeatureTestCase
 
     private function createListing(
         string $userId,
-        int $categoryId,
+        string $categoryId,
         ListingStatus $status,
     ): EloquentListing {
         return EloquentListing::query()->create([

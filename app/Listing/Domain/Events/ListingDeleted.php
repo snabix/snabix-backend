@@ -15,7 +15,7 @@ readonly class ListingDeleted implements LoggableEvent
         public string $userId,
         public string $title,
         public ListingStatus $status,
-        public int $categoryId,
+        public string $categoryId,
     ) {}
 
     public function logLevel(): SystemLogLevel

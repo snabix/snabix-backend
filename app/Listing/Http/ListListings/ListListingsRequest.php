@@ -24,7 +24,7 @@ class ListListingsRequest extends FormRequest
             'perPage'    => ['nullable', 'integer', 'min:1', 'max:48'],
             'status'     => ['nullable', 'integer', Rule::enum(ListingStatus::class)],
             'type'       => ['nullable', 'integer', Rule::enum(ListingType::class)],
-            'categoryId' => ['nullable', 'integer', 'min:1'],
+            'categoryId' => ['nullable', 'uuid', 'exists:categories,id'],
         ];
     }
 
@@ -39,7 +39,7 @@ class ListListingsRequest extends FormRequest
             'perPage'    => $this->integer('perPage', 12),
             'status'     => $this->nullableIntegerInput('status'),
             'type'       => $this->nullableIntegerInput('type'),
-            'categoryId' => $this->nullableIntegerInput('categoryId'),
+            'categoryId' => $this->nullableStringInput('categoryId'),
         ];
     }
 
@@ -48,6 +48,13 @@ class ListListingsRequest extends FormRequest
         $value = $this->input($key);
 
         return is_numeric($value) ? (int) $value : null;
+    }
+
+    public function nullableStringInput(string $key): ?string
+    {
+        $value = $this->input($key);
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     public function authorize(): bool

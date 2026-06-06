@@ -185,11 +185,9 @@ class ListingForm
                                             ->label('Характеристика')
                                             ->options(function (Get $get, ?EloquentListing $record): array {
                                                 $categoryId         = $get('../../category_id');
-                                                $resolvedCategoryId = is_int($categoryId)
+                                                $resolvedCategoryId = is_string($categoryId) && Str::isUuid($categoryId)
                                                     ? $categoryId
-                                                    : (is_string($categoryId) && is_numeric($categoryId)
-                                                        ? (int) $categoryId
-                                                        : $record?->category_id);
+                                                    : $record?->category_id;
 
                                                 return EloquentCategoryAttributeDefinition::query()
                                                     ->when($resolvedCategoryId !== null, fn($query) => $query->where('category_id', $resolvedCategoryId))
