@@ -20,12 +20,13 @@
 - [x] Catalog API: root categories, branch, category attributes с metadata, dependency rules и schema version.
 - [x] Характеристики категорий управляются через Filament, а frontend получает их через публичный endpoint формы объявления.
 - [x] Location module: регионы, города, импорт из JSON, Filament resources.
-- [x] Listing API: create, update, show, delete, list owned, list public, submit-for-review, upload media.
+- [x] Listing API: create, update, show, delete, list owned, list public, submit-for-review, upload media, favorites.
 - [x] Listing statuses централизованы через `ListingStatusTransitionPolicy`.
 - [x] Required category attributes проверяются в application service.
 - [x] Listing input normalization вынесена из repository в `ListingInputNormalizer`.
 - [x] Listing attribute sync вынесен в `ListingAttributeValueSynchronizer`.
 - [x] Listing media upload подключен к единому media-хранилищу.
+- [x] Listing favorites хранятся в отдельной таблице и покрыты feature-тестами.
 - [x] Public/private listing DTO разделены.
 - [x] Media module: Spatie Media Library, типы, visibility, path generator, Filament resource, preview.
 - [x] Filament Shield / Spatie Permission подключены для admin roles/permissions.
@@ -51,13 +52,13 @@
 - [x] `App\Shared\Infrastructure\Providers\AppServiceProvider` все еще содержит bindings и policies разных модулей. Это работает, но модульные responsibilities размыты.
 - [x] Admin category attribute API защищен `auth:admin`, но use cases не вызывают `Gate::authorize()` на уровне application flow.
 - [x] `ListCategoriesController` и use case существуют, но route не подключен. Сейчас это dead code рядом с активным `ListRootCategories`.
-- [ ] `Listing update` не публикует audit event. Для marketplace важно логировать изменения цены, категории, статуса, описания и значимых полей.
+- [x] `Listing update` не публикует audit event. Для marketplace важно логировать изменения цены, категории, статуса, описания и значимых полей.
 - [x] Public listing API имеет пагинацию, но не имеет базовых фильтров `category/type/price/location/sort`.
 - [ ] Нет admin moderation domain service для `publish/reject/archive/return-to-draft` с reason, actor и audit event.
-- [ ] Media частично подключена к listing flow: есть upload, но нет delete/reorder/main image и audit events по media changes.
-- [ ] Listing aggregate пока хранит media через generic media relation, но business rules изображений объявления еще не централизованы.
+- [x] Media частично подключена к listing flow: есть upload, delete/reorder/main image, но нет audit events по media changes.
+- [x] Listing aggregate пока хранит media через generic media relation, но business rules изображений объявления еще не централизованы.
 - [ ] DTO mapping есть, но нет contract tests, которые автоматически сравнивают backend DTO expectations с frontend adapters.
-- [ ] Dependency rules категорий сохраняются и отдаются, но не применяются в backend validation.
+- [x] Dependency rules категорий сохраняются и отдаются, но не применяются в backend validation.
 - [x] `EloquentCategoryRepository` содержит много business normalization и hierarchy logic; постепенно стоит выделить normalizer/domain service для slug/parent/hierarchy.
 - [x] `EloquentCategoryAttributeDefinitionRepository` содержит normalization для options/default/dependency rules; часть логики можно вынести в dedicated normalizer.
 - [ ] Нет production security review по CORS/Sanctum/session/cookie/domain настройкам.
@@ -97,7 +98,7 @@
 
 Задачи:
 - [x] Решить судьбу `ListCategoriesController`: подключить осознанно как full tree/list endpoint или удалить.
-- [ ] Применить `dependency_rules` в backend validation.
+- [x] Применить `dependency_rules` в backend validation.
 
 ### Listings
 
@@ -108,12 +109,15 @@
 - [x] `PATCH /api/v1/listings/{listingId}`
 - [x] `POST /api/v1/listings/{listingId}/submit-for-review`
 - [x] `POST /api/v1/listings/{listingId}/media`
+- [x] `PATCH /api/v1/listings/{listingId}/media/reorder`
+- [x] `PATCH /api/v1/listings/{listingId}/media/{mediaId}/main`
+- [x] `DELETE /api/v1/listings/{listingId}/media/{mediaId}`
 - [x] `DELETE /api/v1/listings/{listingId}`
 
 Задачи:
 - [x] Добавить public filters: category, type, minPrice, maxPrice, sort.
-- [ ] Добавить delete/reorder/set-main для listing media.
-- [ ] Добавить audit events для update и media changes.
+- [x] Добавить delete/reorder/set-main для listing media.
+- [x] Добавить audit events для update и media changes.
 - [ ] Добавить admin moderation actions: publish, reject, archive, return-to-draft.
 - [ ] Добавить domain rule повторной отправки отклоненного объявления на модерацию после редактирования.
 - [x] Проверить индексы под `status`, `category_id`, `type`, `price`, `published_at`.
@@ -128,7 +132,7 @@
 - [ ] Добавить image conversions/thumbnails для карточек.
 - [ ] Добавить orphan cleanup для непривязанных media.
 - [ ] Добавить access-control для private media.
-- [ ] Добавить media audit events.
+- [x] Добавить media audit events.
 
 ### Admin / Filament
 
@@ -156,11 +160,11 @@
 1. [x] Разгрузить `AppServiceProvider`: перенести auth/catalog/media/shared policies и bindings в модульные providers.
 2. [x] Отключить admin category attribute HTTP API и оставить управление характеристиками через Filament.
 3. [x] Решить dead code `ListCategoriesController`: подключить full catalog endpoint или удалить.
-4. [ ] Добавить audit event для listing update.
+4. [x] Добавить audit event для listing update.
 5. [x] Реализовать public listing filters без полнотекстового поиска.
-6. [ ] Реализовать listing media management: delete, reorder, set main image.
+6. [x] Реализовать listing media management: delete, reorder, set main image.
 7. [ ] Реализовать admin moderation domain service и endpoints/actions.
-8. [ ] Применить category dependency rules в backend validation.
+8. [x] Применить category dependency rules в backend validation.
 9. [ ] Добавить backend/frontend DTO contract tests.
 10. [ ] Провести production security review CORS/Sanctum/session/uploads.
 

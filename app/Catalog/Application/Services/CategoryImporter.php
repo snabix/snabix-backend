@@ -48,7 +48,7 @@ readonly class CategoryImporter
      */
     private function persistNode(
         ParsedCategoryNode $node,
-        ?int               $parentId,
+        ?string            $parentId,
         array              &$stats,
         ?Closure           $progressCallback = null,
     ): void {

@@ -13,7 +13,7 @@ class CreateListingInput extends Input
      */
     public function __construct(
         public readonly string $userId,
-        public readonly int $categoryId,
+        public readonly string $categoryId,
         public readonly int $type,
         public readonly ?int $condition,
         public readonly string $title,

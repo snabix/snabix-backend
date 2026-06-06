@@ -19,12 +19,12 @@ class ShowCategoryBranchRequest extends FormRequest
     }
 
     /**
-     * @return array<string, int|bool>
+     * @return array<string, string|bool>
      */
     public function inputData(): array
     {
         return [
-            'categoryId' => (int) $this->route('categoryId'),
+            'categoryId' => (string) $this->route('categoryId'),
             'onlyActive' => $this->boolean('only_active', true),
         ];
     }

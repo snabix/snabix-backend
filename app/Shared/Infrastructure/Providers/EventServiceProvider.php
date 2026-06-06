@@ -19,7 +19,9 @@ use App\Auth\Domain\Events\UserRegistered;
 use App\Auth\Domain\Events\UserSignedIn;
 use App\Listing\Domain\Events\ListingCreated;
 use App\Listing\Domain\Events\ListingDeleted;
+use App\Listing\Domain\Events\ListingMediaChanged;
 use App\Listing\Domain\Events\ListingSubmittedForReview;
+use App\Listing\Domain\Events\ListingUpdated;
 use App\Shared\Infrastructure\Listeners\PersistLoggableEventListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -71,6 +73,12 @@ class EventServiceProvider extends ServiceProvider
             PersistLoggableEventListener::class,
         ],
         ListingDeleted::class                 => [
+            PersistLoggableEventListener::class,
+        ],
+        ListingUpdated::class                 => [
+            PersistLoggableEventListener::class,
+        ],
+        ListingMediaChanged::class            => [
             PersistLoggableEventListener::class,
         ],
     ];

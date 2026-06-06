@@ -76,7 +76,7 @@ class CatalogCLIImportCategories extends Command
                 $nodes,
                 $source,
                 function (ParsedCategoryNode $node, EloquentCategory $category) use ($progressBar): void {
-                    $progressBar->setMessage(sprintf('%s -> #%d', $node->name, $category->id));
+                    $progressBar->setMessage(sprintf('%s -> %s', $node->name, $category->id));
                     $progressBar->advance();
                 },
             );

@@ -27,7 +27,7 @@ class CategoryInputNormalizer
             'slug'         => $this->generateUniqueSlug(
                 name: $name,
                 slug: $attributes['slug'] ?? null,
-                ignoreId: $category->exists ? (int) $category->id : null,
+                ignoreId: $category->exists ? (string) $category->id : null,
             ),
             'description'  => is_string($rawDescription) ? $rawDescription : null,
             'sort_order'   => $this->resolveSortOrder($attributes['sort_order'] ?? 0),
@@ -48,9 +48,9 @@ class CategoryInputNormalizer
         return $resolvedName;
     }
 
-    private function resolveParentId(mixed $parentId): ?int
+    private function resolveParentId(mixed $parentId): ?string
     {
-        return is_numeric($parentId) ? (int) $parentId : null;
+        return is_string($parentId) && Str::isUuid($parentId) ? $parentId : null;
     }
 
     private function resolveSortOrder(mixed $sortOrder): int
@@ -78,7 +78,7 @@ class CategoryInputNormalizer
     private function generateUniqueSlug(
         string $name,
         mixed $slug,
-        ?int $ignoreId = null,
+        ?string $ignoreId = null,
     ): string {
         $baseSource = is_string($slug) && trim($slug) !== '' ? trim($slug) : $name;
         $baseSlug   = Str::slug($baseSource);

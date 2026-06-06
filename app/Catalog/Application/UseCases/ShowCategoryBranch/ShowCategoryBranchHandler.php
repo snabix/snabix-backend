@@ -58,6 +58,7 @@ readonly class ShowCategoryBranchHandler
             'name'             => $category->name,
             'slug'             => $category->slug,
             'description'      => $category->description,
+            'icon'             => $category->iconMedia?->getFullUrl(),
             'sortOrder'        => $category->sort_order,
             'isActive'         => $category->is_active,
             'path'             => $category->path,

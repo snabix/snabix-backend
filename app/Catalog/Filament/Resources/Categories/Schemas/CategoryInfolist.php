@@ -7,6 +7,7 @@ namespace App\Catalog\Filament\Resources\Categories\Schemas;
 use App\Catalog\Filament\Resources\Categories\CategoryResource;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -34,6 +35,12 @@ class CategoryInfolist
                         TextEntry::make('slug')
                             ->translateLabel()
                             ->copyable(),
+
+                        ImageEntry::make('iconMedia')
+                            ->label('Icon')
+                            ->translateLabel()
+                            ->state(fn(EloquentCategory $record): ?string => $record->iconMedia?->getFullUrl())
+                            ->circular(),
 
                         TextEntry::make('sort_order')
                             ->label('Sort order')
@@ -88,11 +95,11 @@ class CategoryInfolist
             ->map(fn(EloquentCategory $child): string => sprintf(
                 '<a href="%s" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e5e7eb;border-radius:16px;background:#ffffff;text-decoration:none;color:#111827;">
                     <span style="font-weight:700;">%s</span>
-                    <span style="font-size:12px;color:#6b7280;">#%d</span>
+                    <span style="font-size:12px;color:#6b7280;">%s</span>
                 </a>',
                 e(CategoryResource::getUrl('edit', ['record' => $child])),
                 e($child->name),
-                $child->id,
+                e($child->slug),
             ))
             ->implode('');
 

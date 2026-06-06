@@ -11,8 +11,10 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
@@ -23,10 +25,17 @@ class CategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn(Builder $query): Builder => $query->with('parentCategory')->withCount('children'))
+            ->modifyQueryUsing(fn(Builder $query): Builder => $query->with(['parentCategory', 'iconMedia'])->withCount('children'))
             ->defaultSort('path')
             ->recordUrl(fn(EloquentCategory $record): string => CategoryResource::getUrl('edit', ['record' => $record]))
             ->columns([
+                ImageColumn::make('iconMedia')
+                    ->label('Icon')
+                    ->translateLabel()
+                    ->getStateUsing(fn(EloquentCategory $record): ?string => $record->iconMedia?->getFullUrl())
+                    ->circular()
+                    ->toggleable(),
+
                 TextColumn::make('name')
                     ->label('Category tree')
                     ->translateLabel()
@@ -98,6 +107,17 @@ class CategoriesTable
                     ->toggleable(),
             ])
             ->filters([
+                TernaryFilter::make('root_categories')
+                    ->label('Root categories')
+                    ->translateLabel()
+                    ->placeholder(__('All categories'))
+                    ->trueLabel(__('Root categories only'))
+                    ->falseLabel(__('Child categories only'))
+                    ->queries(
+                        true: fn(Builder $query): Builder => $query->whereNull('parent_id'),
+                        false: fn(Builder $query): Builder => $query->whereNotNull('parent_id'),
+                        blank: fn(Builder $query): Builder => $query,
+                    ),
                 SelectFilter::make('is_active')
                     ->label('Status')
                     ->translateLabel()

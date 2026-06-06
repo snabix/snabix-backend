@@ -17,7 +17,7 @@ interface CategoryAttributeDefinitionRepositoryInterface
     /**
      * @return Collection<int, EloquentCategoryAttributeDefinition>
      */
-    public function forCategory(int $categoryId, bool $onlyActive = true): Collection;
+    public function forCategory(string $categoryId, bool $onlyActive = true): Collection;
 
     /**
      * @param array<string, mixed> $attributes
@@ -26,7 +26,7 @@ interface CategoryAttributeDefinitionRepositoryInterface
 
     public function findById(int $id): ?EloquentCategoryAttributeDefinition;
 
-    public function findByCategoryAndSlug(int $categoryId, string $slug): ?EloquentCategoryAttributeDefinition;
+    public function findByCategoryAndSlug(string $categoryId, string $slug): ?EloquentCategoryAttributeDefinition;
 
     public function delete(EloquentCategoryAttributeDefinition $definition): void;
 }

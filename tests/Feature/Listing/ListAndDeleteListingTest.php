@@ -131,7 +131,7 @@ class ListAndDeleteListingTest extends FeatureTestCase
 
     private function createListing(
         string $userId,
-        int $categoryId,
+        string $categoryId,
         ListingStatus $status,
         string $title,
         string $slug,

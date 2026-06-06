@@ -23,9 +23,9 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
-     * @return array<int, string>
+     * @return array<string, string>
      */
-    public function parentOptions(?int $ignoreId = null): array
+    public function parentOptions(?string $ignoreId = null): array
     {
         $query       = EloquentCategory::query()
             ->orderBy('path')
@@ -59,6 +59,7 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
     public function listRootCategories(bool $onlyActive = true): Collection
     {
         $query = EloquentCategory::query()
+            ->with('iconMedia')
             ->whereNull('parent_id')
             ->orderBy('sort_order')
             ->orderBy('name');
@@ -73,7 +74,7 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
     /**
      * @return Collection<int, EloquentCategory>
      */
-    public function listBranch(int $categoryId, bool $onlyActive = true): Collection
+    public function listBranch(string $categoryId, bool $onlyActive = true): Collection
     {
         $rootCategory = $this->findById($categoryId);
 
@@ -82,6 +83,7 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
         }
 
         $query        = EloquentCategory::query()
+            ->with('iconMedia')
             ->where('path', 'like', $rootCategory->path . '/%')
             ->whereBetween('depth', [
                 $rootCategory->depth + 1,
@@ -103,13 +105,13 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
      */
     public function save(
         array $attributes,
-        ?int  $id = null,
+        ?string $id = null,
     ): EloquentCategory {
         $category       = $id !== null
             ? EloquentCategory::query()->findOrFail($id)
             : new EloquentCategory();
         $normalized     = $this->categoryInputNormalizer->normalize($attributes, $category);
-        $parentId       = is_int($normalized['parent_id']) ? $normalized['parent_id'] : null;
+        $parentId       = is_string($normalized['parent_id']) ? $normalized['parent_id'] : null;
 
         $this->categoryHierarchyService->assertParentIsValid($category, $parentId);
 
@@ -122,7 +124,7 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
     }
 
     public function findByParentAndName(
-        ?int   $parentId,
+        ?string $parentId,
         string $name,
     ): ?EloquentCategory {
         return EloquentCategory::query()
@@ -131,8 +133,10 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
             ->first();
     }
 
-    public function findById(int $id): ?EloquentCategory
+    public function findById(string $id): ?EloquentCategory
     {
-        return EloquentCategory::query()->find($id);
+        return EloquentCategory::query()
+            ->with('iconMedia')
+            ->find($id);
     }
 }

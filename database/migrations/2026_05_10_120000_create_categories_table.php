@@ -11,12 +11,11 @@ return new class extends Migration {
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->timestamps();
-            $table->id();
+            $table->uuid('id')
+                ->primary();
             $table->unsignedTinyInteger('catalog_type')->default(1)->index();
-            $table->foreignId('parent_id')
-                ->nullable()
-                ->constrained('categories')
-                ->nullOnDelete();
+            $table->uuid('parent_id')
+                ->nullable();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
@@ -27,6 +26,13 @@ return new class extends Migration {
 
             $table->index(['parent_id', 'sort_order']);
             $table->index(['is_active', 'sort_order']);
+        });
+
+        Schema::table('categories', function (Blueprint $table): void {
+            $table->foreign('parent_id')
+                ->references('id')
+                ->on('categories')
+                ->nullOnDelete();
         });
     }
 

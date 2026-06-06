@@ -55,6 +55,16 @@ class ListingPayloadMapper
                 ->map(fn(EloquentMedia $media): string => $media->getFullUrl())
                 ->values()
                 ->all(),
+            'media'          => $media
+                ->map(fn(EloquentMedia $media, int $index): array => [
+                    'id'       => $media->id,
+                    'url'      => $media->getFullUrl(),
+                    'fileName' => $media->file_name,
+                    'order'    => (int) ($media->order_column ?? ($index + 1)),
+                    'isMain'   => $index === 0,
+                ])
+                ->values()
+                ->all(),
             'viewsCount'     => $listing->views_count,
             'isFeatured'     => $listing->is_featured,
             'rejectionReason'=> $listing->rejection_reason,

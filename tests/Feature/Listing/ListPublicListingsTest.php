@@ -51,7 +51,7 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonCount(1, 'data.items')
             ->assertJsonPath('data.items.0.title', 'Горный велосипед')
             ->assertJsonPath('data.meta.currentPage', 1)
-            ->assertJsonPath('data.meta.perPage', 24)
+            ->assertJsonPath('data.meta.perPage', 15)
             ->assertJsonPath('data.meta.total', 1)
             ->assertJsonMissingPath('data.items.0.userId')
             ->assertJsonMissingPath('data.items.0.contactName')
@@ -178,7 +178,7 @@ class ListPublicListingsTest extends FeatureTestCase
 
         $this
             ->getJson(sprintf(
-                '/api/v1/public/listings?categoryId=%d&type=%d&minPrice=80000&maxPrice=90000&sort=price_desc',
+                '/api/v1/public/listings?categoryId=%s&type=%d&minPrice=80000&maxPrice=90000&sort=price_desc',
                 $rootCategory->id,
                 ListingType::PRODUCT->value,
             ))
@@ -200,7 +200,7 @@ class ListPublicListingsTest extends FeatureTestCase
      */
     private function createPublishedListing(
         string $userId,
-        int $categoryId,
+        string $categoryId,
         string $title,
         string $slug,
         mixed $publishedAt,

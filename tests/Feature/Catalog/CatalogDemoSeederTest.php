@@ -13,6 +13,13 @@ class CatalogDemoSeederTest extends FeatureTestCase
 {
     public function test_catalog_demo_seeder_creates_categories_and_attribute_definitions_idempotently(): void
     {
+        EloquentCategory::query()->create([
+            'name'  => 'Одежда и обувь',
+            'slug'  => 'odezda-i-obuv',
+            'path'  => 'odezda-i-obuv',
+            'depth' => 0,
+        ]);
+
         $this->seed(CatalogDemoSeeder::class);
         $this->seed(CatalogDemoSeeder::class);
 
@@ -23,6 +30,9 @@ class CatalogDemoSeederTest extends FeatureTestCase
         $this->assertDatabaseHas('categories', [
             'slug' => 'smartfony',
             'name' => 'Смартфоны',
+        ]);
+        $this->assertDatabaseHas('categories', [
+            'slug' => 'odezda-i-obuv',
         ]);
         $this->assertDatabaseHas('category_attribute_definitions', [
             'category_id' => $smartphones->id,
