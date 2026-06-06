@@ -6,6 +6,7 @@ namespace App\Media\Application\Support;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
 use App\Auth\Infrastructure\Models\EloquentUser;
+use App\News\Infrastructure\Models\EloquentNewsPost;
 use Illuminate\Database\Eloquent\Model;
 
 class MediaAttachableModels
@@ -16,8 +17,9 @@ class MediaAttachableModels
     public static function options(): array
     {
         return [
-            EloquentUser::class  => 'Пользователи',
-            EloquentAdmin::class => 'Администраторы',
+            EloquentUser::class     => 'Пользователи',
+            EloquentAdmin::class    => 'Администраторы',
+            EloquentNewsPost::class => 'Новости',
         ];
     }
 
@@ -55,6 +57,22 @@ class MediaAttachableModels
 
             foreach ($admins as $admin) {
                 $options[(string) $admin->id] = $admin->email;
+            }
+
+            return $options;
+        }
+
+        if ($modelClass === EloquentNewsPost::class) {
+            $options = [];
+
+            $posts   = EloquentNewsPost::query()
+                ->orderByDesc('published_at')
+                ->orderBy('title')
+                ->limit(100)
+                ->get(['id', 'title', 'slug']);
+
+            foreach ($posts as $post) {
+                $options[(string) $post->id] = $post->title . ' · ' . $post->slug;
             }
 
             return $options;

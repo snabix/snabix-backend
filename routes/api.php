@@ -39,6 +39,8 @@ use App\Listing\Http\UpdateListing\UpdateListingController;
 use App\Listing\Http\UploadListingMedia\UploadListingMediaController;
 use App\Location\Http\ListCities\ListCitiesController;
 use App\Location\Http\ListRegions\ListRegionsController;
+use App\News\Http\ListPublishedNewsPosts\ListPublishedNewsPostsController;
+use App\News\Http\ShowPublishedNewsPost\ShowPublishedNewsPostController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -88,6 +90,10 @@ Route::prefix('v1')->group(function () {
     Route::prefix('locations')->group(function () {
         Route::get('/regions', ListRegionsController::class);
         Route::get('/cities', ListCitiesController::class);
+    });
+    Route::prefix('news')->group(function () {
+        Route::get('/', ListPublishedNewsPostsController::class);
+        Route::get('/{slug}', ShowPublishedNewsPostController::class);
     });
     Route::get('public/listings', ListPublicListingsController::class);
     Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
