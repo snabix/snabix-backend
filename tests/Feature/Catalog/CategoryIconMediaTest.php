@@ -37,7 +37,7 @@ class CategoryIconMediaTest extends FeatureTestCase
             'model_id'        => $category->id,
             'collection_name' => 'category_icons',
         ]);
-        Storage::disk('public')->assertExists(MediaType::IMAGE->directory() . '/' . $firstIcon->id . '/electronics.png');
+        Storage::disk('public')->assertExists($this->expectedMediaPath($firstIcon, 'electronics.png'));
 
         $this
             ->getJson('/api/v1/categories/list')
@@ -52,7 +52,12 @@ class CategoryIconMediaTest extends FeatureTestCase
 
         $this->assertTrue(($category->getFirstMedia('category_icons'))?->is($secondIcon) === true);
         $this->assertDatabaseMissing('media', ['id' => $firstIcon->id]);
-        Storage::disk('public')->assertMissing(MediaType::IMAGE->directory() . '/' . $firstIcon->id . '/electronics.png');
-        Storage::disk('public')->assertExists(MediaType::IMAGE->directory() . '/' . $secondIcon->id . '/electronics-new.png');
+        Storage::disk('public')->assertMissing($this->expectedMediaPath($firstIcon, 'electronics.png'));
+        Storage::disk('public')->assertExists($this->expectedMediaPath($secondIcon, 'electronics-new.png'));
+    }
+
+    private function expectedMediaPath(object $media, string $fileName): string
+    {
+        return MediaType::IMAGE->directory() . '/category-icons/' . $media->uuid . '/' . $fileName;
     }
 }

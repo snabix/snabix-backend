@@ -6,6 +6,7 @@ namespace App\Media\Infrastructure\Support;
 
 use App\Media\Domain\Enums\MediaType;
 use App\Media\Infrastructure\Models\EloquentMedia;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
 
@@ -28,15 +29,31 @@ class MediaPathGenerator implements PathGenerator
 
     private function getBasePath(Media $media): string
     {
-        $prefix    = config('media-library.prefix', '');
-        $prefix    = trim(is_string($prefix) ? $prefix : '', '/');
-        $directory = $this->resolveDirectory($media);
-        $mediaKey  = $media->getKey();
-        $path      = $directory . '/' . (is_string($mediaKey) || is_int($mediaKey) ? (string) $mediaKey : '');
+        $prefix        = config('media-library.prefix', '');
+        $prefix        = trim(is_string($prefix) ? $prefix : '', '/');
+        $directory     = $this->resolveDirectory($media);
+        $collection    = Str::slug($media->collection_name ?: 'default');
+        $mediaIdentity = $this->resolveMediaIdentity($media);
+        $path          = $directory . '/' . $collection . '/' . $mediaIdentity;
 
         return $prefix !== ''
             ? $prefix . '/' . $path
             : $path;
+    }
+
+    private function resolveMediaIdentity(Media $media): string
+    {
+        $uuid = $media->uuid;
+
+        if ($uuid !== '') {
+            return $uuid;
+        }
+
+        $mediaKey = $media->getKey();
+
+        return is_string($mediaKey) || is_int($mediaKey)
+            ? (string) $mediaKey
+            : 'media';
     }
 
     private function resolveDirectory(Media $media): string

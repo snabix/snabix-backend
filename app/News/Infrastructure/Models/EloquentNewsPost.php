@@ -13,11 +13,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Carbon;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property      string                    $id
- * @property      int|null                  $cover_media_id
  * @property      int|null                  $author_admin_id
  * @property      NewsPostStatus            $status
  * @property      string                    $title
@@ -34,12 +36,15 @@ use Illuminate\Support\Carbon;
  * @property-read EloquentMedia|null        $coverMedia
  * @property-read EloquentAdmin|null        $authorAdmin
  */
-class EloquentNewsPost extends Model
+class EloquentNewsPost extends Model implements HasMedia
 {
     /** @use HasFactory<EloquentNewsPostFactory> */
     use HasFactory;
 
     use HasUuids;
+    use InteractsWithMedia;
+
+    public const string COVER_COLLECTION = 'news_covers';
 
     public $incrementing = false;
 
@@ -50,7 +55,6 @@ class EloquentNewsPost extends Model
     /** @var list<string> */
     protected $fillable  = [
         'id',
-        'cover_media_id',
         'author_admin_id',
         'status',
         'title',
@@ -72,11 +76,14 @@ class EloquentNewsPost extends Model
     }
 
     /**
-     * @return BelongsTo<EloquentMedia, $this>
+     * @return MorphOne<EloquentMedia, $this>
      */
-    public function coverMedia(): BelongsTo
+    public function coverMedia(): MorphOne
     {
-        return $this->belongsTo(EloquentMedia::class, 'cover_media_id');
+        return $this
+            ->morphOne(EloquentMedia::class, 'model')
+            ->where('collection_name', self::COVER_COLLECTION)
+            ->latestOfMany();
     }
 
     /**
@@ -96,6 +103,14 @@ class EloquentNewsPost extends Model
             ->hasMany(EloquentNewsPostBlock::class, 'news_post_id')
             ->orderBy('sort_order')
             ->orderBy('created_at');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::COVER_COLLECTION)
+            ->useDisk('public')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
     }
 
     /**

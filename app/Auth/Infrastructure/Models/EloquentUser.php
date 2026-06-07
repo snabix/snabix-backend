@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Auth\Infrastructure\Models;
 
+use App\Media\Infrastructure\Models\EloquentMedia;
 use Database\Factories\EloquentUserFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * Class EloquentUser
@@ -27,13 +31,14 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon      $updated_at
  * @property Carbon|null $email_verified_at
  */
-class EloquentUser extends Authenticatable
+class EloquentUser extends Authenticatable implements HasMedia
 {
     use HasApiTokens;
 
     /** @use HasFactory<EloquentUserFactory> */
     use HasFactory;
 
+    use InteractsWithMedia;
     use Notifiable;
 
     public $incrementing = false;
@@ -85,6 +90,25 @@ class EloquentUser extends Authenticatable
             ->orderByDesc('is_primary')
             ->orderBy('sort_order')
             ->orderBy('created_at');
+    }
+
+    /**
+     * @return MorphOne<EloquentMedia, $this>
+     */
+    public function avatarMedia(): MorphOne
+    {
+        return $this
+            ->morphOne(EloquentMedia::class, 'model')
+            ->where('collection_name', 'avatar')
+            ->latestOfMany();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->useDisk('public')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
     }
 
     /**

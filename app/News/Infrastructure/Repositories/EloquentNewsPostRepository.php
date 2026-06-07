@@ -38,7 +38,7 @@ class EloquentNewsPostRepository implements NewsPostRepositoryInterface
     public function findPublishedBySlug(string $slug): ?EloquentNewsPost
     {
         return EloquentNewsPost::query()
-            ->with(['coverMedia', 'authorAdmin', 'blocks.media'])
+            ->with(['coverMedia', 'authorAdmin', 'blocks.blockMedia'])
             ->where('slug', $slug)
             ->where('status', NewsPostStatus::PUBLISHED)
             ->whereNotNull('published_at')

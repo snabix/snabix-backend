@@ -58,6 +58,8 @@ interface ListingRepositoryInterface
 
     public function findById(string $listingId): ?EloquentListing;
 
+    public function findPublicPublishedById(string $listingId): ?EloquentListing;
+
     public function transitionStatus(EloquentListing $listing, ListingStatus $status): EloquentListing;
 
     public function delete(EloquentListing $listing): void;

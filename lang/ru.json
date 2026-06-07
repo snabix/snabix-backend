@@ -95,9 +95,6 @@
     "Status": "Статус",
     "Hidden": "Скрыта",
     "Source": "Источник",
-    "Active only": "Только активные",
-    "Hidden only": "Только скрытые",
-    "Delete selected": "Удалить выбранные",
     "Categories have not been created yet": "Категории ещё не созданы",
     "Create the first root section or prepare an import from a public source.": "Создайте первый корневой раздел или подготовьте импорт из публичного источника.",
     "Category catalog": "Каталог категорий",
@@ -123,7 +120,6 @@
     ,"Options are needed only for fields with a fixed set of values, such as a brand, size, or condition.": "Варианты нужны только для полей с фиксированным набором значений, например бренд, размер или состояние."
     ,"Preview for the team": "Предпросмотр для команды"
     ,"Helps immediately understand how this attribute will be used when a user creates an ad from their account.": "Помогает сразу понять, как эта характеристика будет использоваться, когда пользователь создаёт объявление из своего аккаунта."
-    ,"Category": "Категория"
     ,"Choose a category": "Выберите категорию"
     ,"Attribute type": "Тип характеристики"
     ,"Attribute name": "Название характеристики"
@@ -170,4 +166,10 @@
     ,"Card": "Карточка"
     ,"Create": "Создать"
     ,"Save changes": "Сохранить изменения"
+    ,"Root categories": "Корневые категории"
+    ,"Root categories only": "Только корневые категории"
+    ,"Child categories only": "Только дочерние категории"
+    ,"All categories": "Все категории"
+    ,"Icon": "Иконка"
+    ,"Is active": "Активна"
 }

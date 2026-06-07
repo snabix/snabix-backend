@@ -5,70 +5,45 @@ declare(strict_types=1);
 namespace App\Auth\Application\Services;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
-use App\Media\Application\Services\MediaStorageService;
-use App\Media\Domain\Enums\MediaType;
-use App\Media\Domain\Enums\MediaVisibility;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Http\UploadedFile;
-use RuntimeException;
-use Throwable;
 
 readonly class UserAvatarService
 {
     public const string COLLECTION_NAME = 'avatar';
 
-    public function __construct(
-        private MediaStorageService $mediaStorageService,
-    ) {}
-
     public function findForUser(string $userId): ?EloquentMedia
     {
-        return EloquentMedia::query()
-            ->where('model_type', EloquentUser::class)
-            ->where('model_id', $userId)
-            ->where('collection_name', self::COLLECTION_NAME)
-            ->latest('id')
-            ->first();
+        return EloquentUser::query()
+            ->with('avatarMedia')
+            ->find($userId)
+            ?->avatarMedia;
     }
 
-    /**
-     * @throws Throwable
-     */
     public function uploadForUser(
         string       $userId,
         UploadedFile $file,
     ): EloquentMedia {
-        $sourcePath    = $file->storeAs(
-            'profile-avatar-temp/' . $userId,
-            $file->getClientOriginalName(),
-            'local',
-        );
+        /** @var EloquentUser $user */
+        $user  = EloquentUser::query()->findOrFail($userId);
+        $media = $user
+            ->addMedia($file)
+            ->usingName('user-avatar-' . $userId)
+            ->usingFileName($file->getClientOriginalName())
+            ->toMediaCollection(self::COLLECTION_NAME, 'public');
 
-        if (! is_string($sourcePath) || $sourcePath === '') {
-            throw new RuntimeException('Не удалось сохранить временный файл аватара.');
-        }
+        $media->forceFill([
+            'description' => 'User profile avatar.',
+        ])->save();
 
-        $currentAvatar = $this->findForUser($userId);
-        $attributes    = [
-            'model_type'      => EloquentUser::class,
-            'model_id'        => $userId,
-            'collection_name' => self::COLLECTION_NAME,
-            'name'            => 'user-avatar-' . $userId,
-            'media_type'      => MediaType::IMAGE,
-            'visibility'      => MediaVisibility::PUBLIC,
-            'description'     => 'User profile avatar.',
-        ];
-
-        if ($currentAvatar instanceof EloquentMedia) {
-            return $this->mediaStorageService->replaceFromStoredUpload($currentAvatar, 'local', $sourcePath, $attributes);
-        }
-
-        return $this->mediaStorageService->createFromStoredUpload('local', $sourcePath, $attributes);
+        return EloquentMedia::query()
+            ->whereKey($media->getKey())
+            ->firstOrFail();
     }
 
     public function deleteForUser(string $userId): void
     {
-        $this->findForUser($userId)?->delete();
+        EloquentUser::query()->find($userId)?->clearMediaCollection(self::COLLECTION_NAME);
     }
 
     /**

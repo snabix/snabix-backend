@@ -26,7 +26,7 @@ readonly class ShowPublishedNewsPostHandler
 
         $post->increment('views_count');
         $post->refresh();
-        $post->loadMissing(['coverMedia', 'authorAdmin', 'blocks.media']);
+        $post->loadMissing(['coverMedia', 'authorAdmin', 'blocks.blockMedia']);
 
         return ShowPublishedNewsPostOutput::from([
             'item' => $this->newsPostPayloadMapper->map($post, includeBlocks: true),

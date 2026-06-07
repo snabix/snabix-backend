@@ -154,9 +154,9 @@ class MediaForm
     private static function directoryPreview(mixed $mediaType): string
     {
         if (! is_numeric($mediaType)) {
-            return MediaType::FILE->directory() . '/{media_id}/';
+            return MediaType::FILE->directory() . '/{collection}/{media_uuid}/';
         }
 
-        return MediaType::from((int) $mediaType)->directory() . '/{media_id}/';
+        return MediaType::from((int) $mediaType)->directory() . '/{collection}/{media_uuid}/';
     }
 }
