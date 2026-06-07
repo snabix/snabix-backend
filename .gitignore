@@ -12,6 +12,8 @@
 /.vscode
 /.zed
 /auth.json
+/russia-cities.json
+/russia-regions.json
 /node_modules
 /public/build
 /public/hot
@@ -22,3 +24,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+/storage/api-docs
+/storage/phpstan

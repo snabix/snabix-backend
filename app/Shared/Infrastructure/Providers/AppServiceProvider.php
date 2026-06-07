@@ -1,7 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Shared\Infrastructure\Providers;
 
+use App\Mail\Application\Contracts\MailSender;
+use App\Mail\Infrastructure\Services\LaravelMailSender;
+use App\Shared\Domain\Contracts\HasherInterface;
+use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
+use App\Shared\Infrastructure\Models\EloquentSystemLog;
+use App\Shared\Infrastructure\Policies\EloquentSystemLogPolicy;
+use App\Shared\Infrastructure\Services\HasherService;
+use App\Shared\Infrastructure\Services\SessionAuthenticatorService;
+use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +23,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            HasherInterface::class,
+            HasherService::class,
+        );
+
+        $this->app->bind(
+            SessionAuthenticatorInterface::class,
+            SessionAuthenticatorService::class,
+        );
+
+        $this->app->bind(
+            MailSender::class,
+            LaravelMailSender::class,
+        );
     }
 
     /**
@@ -19,6 +44,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        CreateRecord::disableCreateAnother();
+
+        Gate::policy(EloquentSystemLog::class, EloquentSystemLogPolicy::class);
     }
 }

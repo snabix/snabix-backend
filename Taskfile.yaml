@@ -1,0 +1,149 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Показать список доступных задач
+    cmds:
+      - task --list
+
+  # Docker
+  build:
+    desc: Собрать контейнеры с использованием кэша
+    cmd: docker compose build
+
+  rebuild:
+    desc: Пересобрать и поднять контейнеры
+    cmds:
+      - docker compose down
+      - docker compose build
+      - docker compose up -d
+
+  rebuild:no-cache:
+    desc: Пересобрать контейнеры без кэша и поднять их
+    cmds:
+      - docker compose down
+      - docker compose build --no-cache
+      - docker compose up -d
+
+  up:
+    desc: Поднять контейнеры в фоне
+    cmd: docker compose up -d
+
+  stop:
+    desc: Остановить контейнеры без удаления
+    cmd: docker compose stop
+
+  down:
+    desc: Остановить и удалить контейнеры и сеть
+    cmd: docker compose down
+
+  # PHP CS Fixer
+  cs:
+    desc: PHP CS Fixer — исправить код
+    cmds:
+      - ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --sequential --verbose
+
+  cs:dry:
+    desc: PHP CS Fixer — проверить без изменений
+    cmd: ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
+
+  stan:
+    desc: Larastan / PHPStan — статический анализ backend на уровне 9
+    cmd: composer stan
+
+  check:
+    desc: "Полная проверка backend: cs-fixer, larastan, scramble и тесты"
+    cmds:
+      - task "cs:dry"
+      - task stan
+      - task "docs:scramble"
+      - task test
+
+  docs:scramble:
+    desc: Scramble — открыть и проверить сгенерированную API-документацию
+    cmds:
+      - docker compose exec -T app php artisan scramble:analyze
+
+  docs:scramble-export:
+    desc: Scramble — экспортировать OpenAPI JSON
+    cmds:
+      - docker compose exec -T app php artisan scramble:export
+
+  shell:
+    desc: Зайти в контейнер
+    cmds:
+      - docker compose exec app sh
+
+
+  queue:work:
+    desc: Запустить RabbitMQ worker для очередей проекта
+    cmds:
+      - docker compose exec -T app php artisan app:rabbitmq-declare-topology
+      - 'docker compose exec -T app sh -c ''php artisan queue:work rabbitmq --queue="${QUEUE_WORK_QUEUES:-notifications,media,images,default}" --tries=3 --backoff=10 --timeout=120'''
+
+  queue:setup:
+    desc: Объявить RabbitMQ exchange, очереди и bindings проекта
+    cmds:
+      - docker compose exec -T app php artisan app:rabbitmq-declare-topology
+
+  queue:failed:
+    desc: Показать failed jobs
+    cmds:
+      - docker compose exec -T app php artisan queue:failed
+
+  queue:prune-failed:
+    desc: Удалить устаревшие failed jobs
+    cmds:
+      - 'docker compose exec -T app sh -c ''php artisan queue:prune-failed --hours="${QUEUE_FAILED_RETENTION_HOURS:-168}"'''
+
+  queue:restart:
+    desc: Перезапустить queue workers после текущих jobs
+    cmds:
+      - docker compose exec -T app php artisan queue:restart
+
+  logs:cleanup:
+    desc: Удалить устаревшие системные логи
+    cmds:
+      - docker compose exec -T app php artisan shared:cleanup-system-logs
+
+  auth:clear-resets:
+    desc: Очистить устаревшие токены сброса пароля
+    cmds:
+      - docker compose exec -T app php artisan auth:clear-resets
+
+  queue:logs:
+    desc: Смотреть логи queue-worker в реальном времени
+    cmds:
+      - docker compose logs -f queue-worker
+
+  rabbitmq:status:
+    desc: Проверить состояние RabbitMQ
+    cmds:
+      - docker compose exec -T rabbitmq rabbitmq-diagnostics status
+
+  rabbitmq:queues:
+    desc: Показать очереди RabbitMQ
+    cmds:
+      - docker compose exec -T rabbitmq rabbitmqctl list_queues name messages messages_ready messages_unacknowledged consumers
+
+  rabbitmq:watch:
+    desc: Смотреть состояние очередей RabbitMQ в реальном времени
+    cmds:
+      - sh -c 'while true; do clear; date; echo; docker compose exec -T rabbitmq rabbitmqctl list_queues name messages messages_ready messages_unacknowledged consumers; sleep 2; done'
+
+  rabbitmq:ui:
+    desc: Показать адрес RabbitMQ Management UI
+    cmds:
+      - 'echo "RabbitMQ Management UI: http://localhost:${RABBITMQ_MANAGEMENT_PORT:-15672}"'
+
+  redis:cli:
+    desc: Открыть Redis CLI
+    cmds:
+      - docker compose exec redis redis-cli
+
+
+  test:
+    desc: Запустить тесты Laravel
+    cmds:
+      - docker compose up -d db-test
+      - docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=pgsql -e DB_HOST=db-test -e DB_PORT=5432 -e DB_DATABASE=snabix_test -e DB_USERNAME=root -e DB_PASSWORD=1234 -e DB_URL= app php artisan test

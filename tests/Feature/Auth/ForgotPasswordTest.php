@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Auth;
+
+use App\Auth\Application\Jobs\SendPasswordResetJob;
+use App\Auth\Infrastructure\Models\EloquentUser;
+use Illuminate\Support\Facades\Queue;
+use Tests\Feature\FeatureTestCase;
+
+class ForgotPasswordTest extends FeatureTestCase
+{
+    public function test_user_can_request_password_reset_instructions(): void
+    {
+        Queue::fake();
+
+        $user     = EloquentUser::factory()->create([
+            'email' => 'imran@example.com',
+        ]);
+
+        $response = $this->postJson('/api/v1/auth/forgot-password', [
+            'email' => $user->email,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.sent', true);
+
+        Queue::assertPushed(
+            SendPasswordResetJob::class,
+            fn(SendPasswordResetJob $job): bool => $job->email === $user->email
+                && str_contains($job->resetUrl, 'token=')
+                && str_contains($job->resetUrl, 'email=' . urlencode($user->email)),
+        );
+
+        $this->assertDatabaseHas('system_logs', [
+            'category' => 'auth',
+            'action'   => 'auth.forgot-password',
+            'user_id'  => $user->id,
+        ]);
+    }
+}

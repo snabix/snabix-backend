@@ -1,6 +1,9 @@
 <?php
 
-use App\Shared\Infrastructure\Models\EloquentUser;
+declare(strict_types=1);
+
+use App\Auth\Infrastructure\Models\EloquentAdmin;
+use App\Auth\Infrastructure\Models\EloquentUser;
 
 return [
 
@@ -15,8 +18,8 @@ return [
     |
     */
 
-    'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
+    'defaults'         => [
+        'guard'     => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
@@ -37,10 +40,14 @@ return [
     |
     */
 
-    'guards' => [
-        'web' => [
-            'driver' => 'session',
+    'guards'           => [
+        'web'   => [
+            'driver'   => 'session',
             'provider' => 'users',
+        ],
+        'admin' => [
+            'driver'   => 'session',
+            'provider' => 'admins',
         ],
     ],
 
@@ -61,10 +68,14 @@ return [
     |
     */
 
-    'providers' => [
-        'users' => [
+    'providers'        => [
+        'users'  => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', EloquentUser::class),
+            'model'  => env('AUTH_MODEL', EloquentUser::class),
+        ],
+        'admins' => [
+            'driver' => 'eloquent',
+            'model'  => env('AUTH_ADMIN_MODEL', EloquentAdmin::class),
         ],
 
         // 'users' => [
@@ -92,11 +103,17 @@ return [
     |
     */
 
-    'passwords' => [
-        'users' => [
+    'passwords'        => [
+        'users'  => [
             'provider' => 'users',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
+            'table'    => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire'   => 60,
+            'throttle' => 60,
+        ],
+        'admins' => [
+            'provider' => 'admins',
+            'table'    => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire'   => 60,
             'throttle' => 60,
         ],
     ],

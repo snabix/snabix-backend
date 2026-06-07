@@ -1,0 +1,173 @@
+{
+    "(and :count more error)": "(и ещё :count ошибка)",
+    "(and :count more errors)": "(и ещё :count ошибка)|(и ещё :count ошибки)|(и ещё :count ошибок)",
+    "A decryption key is required.": "Ключ дешифровки обязателен.",
+    "All rights reserved.": "Все права защищены.",
+    "Encrypted environment file already exists.": "Зашифрованный файл настроек окружения уже существует.",
+    "Encrypted environment file not found.": "Зашифрованный файл настроек окружения не найден.",
+    "Environment file already exists.": "Файл настроек окружения уже существует.",
+    "Environment file not found.": "Файл настроек окружения не найден.",
+    "errors": "ошибки",
+    "Forbidden": "Доступ запрещен",
+    "Go to page :page": "Перейти к :page-й странице",
+    "Hello!": "Здравствуйте!",
+    "If you did not create an account, no further action is required.": "Если Вы не создавали учетную запись, никаких дополнительных действий не требуется.",
+    "If you did not request a password reset, no further action is required.": "Если Вы не запрашивали восстановление пароля, никаких дополнительных действий не требуется.",
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Если у Вас возникли проблемы с нажатием кнопки \":actionText\", скопируйте и вставьте приведенный ниже URL-адрес в свой браузер:",
+    "Invalid filename.": "Некорректное имя файла.",
+    "Invalid JSON was returned from the route.": "Маршрут вернул некорректный JSON.",
+    "length": "длина",
+    "Location": "Местоположение",
+    "Login": "Войти",
+    "Logout": "Выйти",
+    "Not Found": "Не найдено",
+    "of": "из",
+    "Page Expired": "Страница устарела",
+    "Pagination Navigation": "Навигация",
+    "Payment Required": "Необходима оплата",
+    "Please click the button below to verify your email address.": "Пожалуйста, нажмите кнопку ниже, чтобы подтвердить свой адрес электронной почты.",
+    "Regards,": "С уважением,",
+    "Register": "Регистрация",
+    "Reset Password": "Сбросить пароль",
+    "Reset Password Notification": "Оповещение о сбросе пароля",
+    "results": "результатов",
+    "Server Error": "Ошибка сервера",
+    "Service Unavailable": "Сервис недоступен",
+    "Showing": "Показано с",
+    "The given data was invalid.": "Указанные данные недействительны.",
+    "The response is not a streamed response.": "Ответ не является потоковым.",
+    "The response is not a view.": "Ответ не является представлением.",
+    "This action is unauthorized.": "Действие не авторизовано.",
+    "This password reset link will expire in :count minutes.": "Срок действия ссылки для сброса пароля истекает через :count минут.",
+    "to": "по",
+    "Toggle navigation": "Переключить навигацию",
+    "Too Many Requests": "Слишком много запросов",
+    "Unauthorized": "Не авторизован",
+    "Verify Email Address": "Подтвердить адрес электронной почты",
+    "Whoops!": "Упс!",
+    "You are receiving this email because we received a password reset request for your account.": "Вы получили это письмо, потому что мы получили запрос на сброс пароля для Вашей учётной записи.",
+    "Password": "Пароль",
+    "Password confirmation": "Подтверждение пароля",
+    "Name": "Имя",
+    "Email": "Почта",
+    "Email verified at": "Подтверждение email",
+    "Id": "ID",
+    "Created at": "Создано",
+    "Updated at": "Обновлено",
+    "Category structure": "Структура категории",
+    "Create a category tree with any nesting depth. Path and depth are calculated automatically.": "Создавайте дерево категорий с любой глубиной вложенности. Путь и глубина рассчитываются автоматически.",
+    "Category name": "Название",
+    "For example, Electronics": "Например, Электроника",
+    "Parent category": "Родительская категория",
+    "Root category": "Корневая категория",
+    "Will be generated automatically if left empty": "Будет создан автоматически, если оставить пустым",
+    "Used in URLs, imports, and category path building.": "Используется в URL, импорте и построении пути категории.",
+    "Used in URLs and category path building.": "Используется в URL и построении пути категории.",
+    "Sort order": "Порядок сортировки",
+    "Lower values place the category higher among siblings.": "Меньшее значение поднимает категорию выше среди соседних.",
+    "Category is active": "Категория активна",
+    "Current path": "Текущий путь",
+    "Will be calculated after saving": "Будет рассчитан после сохранения",
+    "Description": "Описание",
+    "A short note for the admin panel and the future frontend catalog.": "Короткая справка для админки и будущего frontend-каталога.",
+    "Describe the purpose of the category, its specifics, or content rules.": "Опишите назначение категории, особенности или правила наполнения.",
+    "Source and integrations": "Источник и интеграции",
+    "These fields are used to synchronize with an external public source of categories.": "Поля понадобятся для синхронизации с внешним публичным источником категорий.",
+    "External source": "Внешний источник",
+    "For example, prom.ua": "Например, prom.ua",
+    "External ID": "Внешний ID",
+    "For example, 12345": "Например, 12345",
+    "External URL": "Внешний URL",
+    "Category tree position": "Позиция в дереве",
+    "Shows the category position in the hierarchy and its relationship to the parent node.": "Показывает место категории в иерархии и связь с родительским узлом.",
+    "Full path": "Полный путь",
+    "Depth": "Глубина",
+    "Child categories count": "Дочерних категорий",
+    "Active": "Активна",
+    "System fields": "Системные поля",
+    "Technical path": "Технический путь",
+    "Description has not been filled in yet.": "Описание пока не заполнено.",
+    "Category tree": "Дерево категорий",
+    "Parent": "Родитель",
+    "Root": "Корень",
+    "Children": "Дочерние",
+    "Level": "Уровень",
+    "Status": "Статус",
+    "Hidden": "Скрыта",
+    "Source": "Источник",
+    "Active only": "Только активные",
+    "Hidden only": "Только скрытые",
+    "Delete selected": "Удалить выбранные",
+    "Categories have not been created yet": "Категории ещё не созданы",
+    "Create the first root section or prepare an import from a public source.": "Создайте первый корневой раздел или подготовьте импорт из публичного источника.",
+    "Category catalog": "Каталог категорий",
+    "New category": "Новая категория",
+    "Create category": "Создать категорию",
+    "Edit category": "Редактирование категории",
+    "View category": "Просмотр категории",
+    "View": "Просмотр",
+    "Edit": "Редактировать",
+    "Delete": "Удалить",
+    "Category": "Категория",
+    "Categories": "Категории",
+    "Child categories": "Дочерние категории",
+    "Shows direct child categories of the current section.": "Показывает прямые дочерние категории текущего раздела.",
+    "This category has no children yet.": "У этой категории пока нет дочерних категорий."
+    ,"Category attribute": "Характеристика категории"
+    ,"Category attributes": "Характеристики категорий"
+    ,"Category attribute basics": "Основа характеристики"
+    ,"Define a reusable ready-made field that users will fill in when creating an ad in a selected category.": "Определите готовое переиспользуемое поле, которое пользователь будет просто заполнять при создании объявления в выбранной категории."
+    ,"Behavior in listing forms": "Поведение в формах объявления"
+    ,"These settings determine how the field behaves for users when they fill out a ready-made ad form.": "Эти настройки определяют, как поле будет вести себя для пользователя при заполнении готовой формы объявления."
+    ,"Options and description": "Варианты и описание"
+    ,"Options are needed only for fields with a fixed set of values, such as a brand, size, or condition.": "Варианты нужны только для полей с фиксированным набором значений, например бренд, размер или состояние."
+    ,"Preview for the team": "Предпросмотр для команды"
+    ,"Helps immediately understand how this attribute will be used when a user creates an ad from their account.": "Помогает сразу понять, как эта характеристика будет использоваться, когда пользователь создаёт объявление из своего аккаунта."
+    ,"Category": "Категория"
+    ,"Choose a category": "Выберите категорию"
+    ,"Attribute type": "Тип характеристики"
+    ,"Attribute name": "Название характеристики"
+    ,"For example, Brand or Material": "Например, Бренд или Материал"
+    ,"Attribute code": "Код характеристики"
+    ,"Will be generated from the name": "Будет создан из названия"
+    ,"For example, cm, kg, kW": "Например, см, кг, кВт"
+    ,"Attribute is required": "Характеристика обязательна"
+    ,"Attribute is filterable": "Характеристика участвует в фильтрах"
+    ,"Apply to child categories": "Применять к дочерним категориям"
+    ,"Attribute is active": "Характеристика активна"
+    ,"Attribute options": "Варианты характеристики"
+    ,"Add each allowed value separately": "Добавляйте каждое допустимое значение отдельно"
+    ,"Explain what exactly the user should enter in this field.": "Подскажите, что именно пользователь должен указать в этом поле."
+    ,"Attribute preview": "Предпросмотр характеристики"
+    ,"Ready-made field for ad form": "Готовое поле для формы объявления"
+    ,"Possible values": "Возможные значения"
+    ,"No fixed options": "Без фиксированных вариантов"
+    ,"Users will simply fill in this prepared field when creating an ad.": "Пользователь будет просто заполнять это подготовленное поле при создании объявления."
+    ,"Attribute overview": "Обзор характеристики"
+    ,"Required": "Обязательна"
+    ,"Filterable": "Фильтруется"
+    ,"For children": "Для дочерних"
+    ,"Category attributes have not been created yet": "Характеристики категорий ещё не созданы"
+    ,"Create ready-made fields for categories so users only fill in the prepared ad form.": "Создайте готовые поля для категорий, чтобы пользователи только заполняли подготовленную форму объявления."
+    ,"New category attribute": "Новая характеристика категории"
+    ,"Create category attribute": "Создание характеристики"
+    ,"Edit category attribute": "Редактирование характеристики"
+    ,"View category attribute": "Просмотр характеристики"
+    ,"Attribute": "Характеристика"
+    ,"Attribute group": "Группа характеристик"
+    ,"Group": "Группа"
+    ,"Unit": "Единица измерения"
+    ,"Show in listing card": "Показывать в карточке объявления"
+    ,"Field placeholder": "Подсказка в поле"
+    ,"Field help text": "Текст помощи для поля"
+    ,"Default value": "Значение по умолчанию"
+    ,"Dependency rules": "Правила зависимости"
+    ,"Schema version": "Версия схемы"
+    ,"Description and options": "Описание и варианты"
+    ,"Delete selected": "Удалить выбранные"
+    ,"Active only": "Только активные"
+    ,"Hidden only": "Только скрытые"
+    ,"Card": "Карточка"
+    ,"Create": "Создать"
+    ,"Save changes": "Сохранить изменения"
+}

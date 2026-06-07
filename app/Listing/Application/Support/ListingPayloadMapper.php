@@ -1,0 +1,102 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Listing\Application\Support;
+
+use App\Listing\Infrastructure\Models\EloquentListing;
+use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
+use App\Media\Domain\Enums\MediaType;
+use App\Media\Infrastructure\Models\EloquentMedia;
+
+class ListingPayloadMapper
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function map(EloquentListing $listing): array
+    {
+        $category = $listing->category;
+
+        $media    = $listing->media
+            ->filter(fn(EloquentMedia $media): bool => $media->media_type === MediaType::IMAGE)
+            ->values();
+
+        return [
+            'id'             => $listing->id,
+            'userId'         => $listing->user_id,
+            'category'       => $category === null
+                ? null
+                : [
+                    'id'               => $category->id,
+                    'catalogType'      => $category->catalog_type->value,
+                    'catalogTypeLabel' => $category->catalog_type->label(),
+                    'parentId'         => $category->parent_id,
+                    'name'             => $category->name,
+                    'slug'             => $category->slug,
+                ],
+            'type'           => $listing->type->value,
+            'typeLabel'      => $listing->type->label(),
+            'status'         => $listing->status->value,
+            'statusLabel'    => $listing->status->label(),
+            'condition'      => $listing->condition->value,
+            'conditionLabel' => $listing->condition->label(),
+            'title'          => $listing->title,
+            'slug'           => $listing->slug,
+            'description'    => $listing->description,
+            'price'          => $listing->price,
+            'currency'       => $listing->currency,
+            'isNegotiable'   => $listing->is_negotiable,
+            'contactName'    => $listing->contact_name,
+            'contactPhone'   => $listing->contact_phone,
+            'contactEmail'   => $listing->contact_email,
+            'imageUrl'       => $media->first()?->getFullUrl(),
+            'imageUrls'      => $media
+                ->map(fn(EloquentMedia $media): string => $media->getFullUrl())
+                ->values()
+                ->all(),
+            'media'          => $media
+                ->map(fn(EloquentMedia $media, int $index): array => [
+                    'id'       => $media->id,
+                    'url'      => $media->getFullUrl(),
+                    'fileName' => $media->file_name,
+                    'order'    => (int) ($media->order_column ?? ($index + 1)),
+                    'isMain'   => $index === 0,
+                ])
+                ->values()
+                ->all(),
+            'viewsCount'     => $listing->views_count,
+            'isFeatured'     => $listing->is_featured,
+            'rejectionReason'=> $listing->rejection_reason,
+            'publishedAt'    => $listing->published_at?->toIso8601String(),
+            'expiresAt'      => $listing->expires_at?->toIso8601String(),
+            'attributeValues'=> $listing->attributeValues
+                ->map(
+                    fn(EloquentListingAttributeValue $attributeValue): array => [
+                        'attributeDefinitionId' => $attributeValue->attribute_definition_id,
+                        'schemaVersion'         => $attributeValue->attribute_schema_version,
+                        'name'                  => $this->attributeSnapshotValue($attributeValue, 'name', $attributeValue->attributeDefinition?->name),
+                        'slug'                  => $this->attributeSnapshotValue($attributeValue, 'slug', $attributeValue->attributeDefinition?->slug),
+                        'type'                  => $this->attributeSnapshotValue($attributeValue, 'type', $attributeValue->attributeDefinition?->type?->value),
+                        'typeLabel'             => $this->attributeSnapshotValue($attributeValue, 'typeLabel', $attributeValue->attributeDefinition?->type?->label()),
+                        'value'                 => $attributeValue->value,
+                        'displayValue'          => $attributeValue->display_value,
+                    ],
+                )
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function attributeSnapshotValue(
+        EloquentListingAttributeValue $attributeValue,
+        string $key,
+        mixed $fallback,
+    ): mixed {
+        $snapshot = $attributeValue->attribute_snapshot;
+
+        return is_array($snapshot) && array_key_exists($key, $snapshot)
+            ? $snapshot[$key]
+            : $fallback;
+    }
+}
