@@ -73,13 +73,7 @@ class CategoryAttributeDefinitionsTable
                     ->label('Attribute options')
                     ->translateLabel()
                     ->toggleable()
-                    ->formatStateUsing(fn(?array $state): string => is_array($state) && $state !== [] ? implode(', ', array_map(static function (mixed $item): string {
-                        if (is_scalar($item)) {
-                            return (string) $item;
-                        }
-
-                        return json_encode($item, JSON_UNESCAPED_UNICODE) ?: '';
-                    }, $state)) : '—')
+                    ->formatStateUsing(fn(mixed $state): string => self::formatOptionsState($state))
                     ->wrap(),
 
                 IconColumn::make('is_required')
@@ -181,5 +175,30 @@ class CategoryAttributeDefinitionsTable
             ])
             ->emptyStateHeading(__('Category attributes have not been created yet'))
             ->emptyStateDescription(__('Create ready-made fields for categories so users only fill in the prepared ad form.'));
+    }
+
+    private static function formatOptionsState(mixed $state): string
+    {
+        if (is_string($state)) {
+            $decoded = json_decode($state, true);
+
+            if (is_array($decoded)) {
+                $state = $decoded;
+            } elseif (trim($state) !== '') {
+                return $state;
+            }
+        }
+
+        if (! is_array($state) || $state === []) {
+            return '—';
+        }
+
+        return implode(', ', array_map(static function (mixed $item): string {
+            if (is_scalar($item)) {
+                return (string) $item;
+            }
+
+            return json_encode($item, JSON_UNESCAPED_UNICODE) ?: '';
+        }, $state));
     }
 }
