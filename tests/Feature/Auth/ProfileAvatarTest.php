@@ -41,7 +41,7 @@ class ProfileAvatarTest extends FeatureTestCase
         $this->assertInstanceOf(EloquentMedia::class, $media);
         $this->assertSame(MediaType::IMAGE, $media->media_type);
         $this->assertSame(MediaVisibility::PUBLIC, $media->visibility);
-        Storage::disk('public')->assertExists(MediaType::IMAGE->directory() . '/' . $media->id . '/avatar.jpg');
+        Storage::disk('public')->assertExists($this->expectedAvatarPath($media, 'avatar.jpg'));
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
             'action'   => 'auth.profile.avatar.update',
@@ -63,7 +63,7 @@ class ProfileAvatarTest extends FeatureTestCase
             ->assertOk();
 
         $media   = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
-        $oldPath = MediaType::IMAGE->directory() . '/' . $media->id . '/old-avatar.jpg';
+        $oldPath = $this->expectedAvatarPath($media, 'old-avatar.jpg');
 
         Storage::disk('public')->assertExists($oldPath);
 
@@ -79,7 +79,7 @@ class ProfileAvatarTest extends FeatureTestCase
         $media->refresh();
 
         Storage::disk('public')->assertMissing($oldPath);
-        Storage::disk('public')->assertExists(MediaType::IMAGE->directory() . '/' . $media->id . '/new-avatar.png');
+        Storage::disk('public')->assertExists($this->expectedAvatarPath($media, 'new-avatar.png'));
         $this->assertSame(1, EloquentMedia::query()->where('model_id', $user->id)->count());
     }
 
@@ -97,7 +97,7 @@ class ProfileAvatarTest extends FeatureTestCase
             ->assertOk();
 
         $media     = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
-        $mediaPath = MediaType::IMAGE->directory() . '/' . $media->id . '/avatar.jpg';
+        $mediaPath = $this->expectedAvatarPath($media, 'avatar.jpg');
 
         Storage::disk('public')->assertExists($mediaPath);
 
@@ -116,5 +116,10 @@ class ProfileAvatarTest extends FeatureTestCase
             'action'   => 'auth.profile.avatar.delete',
             'user_id'  => $user->id,
         ]);
+    }
+
+    private function expectedAvatarPath(EloquentMedia $media, string $fileName): string
+    {
+        return MediaType::IMAGE->directory() . '/avatar/' . $media->uuid . '/' . $fileName;
     }
 }

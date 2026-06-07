@@ -41,7 +41,7 @@ class MediaStorageServiceTest extends FeatureTestCase
             'description'     => 'Фото объявления',
         ]);
 
-        Storage::disk('public')->assertExists(MediaType::IMAGE->directory() . '/' . $media->id . '/photo.jpg');
+        Storage::disk('public')->assertExists($this->expectedMediaPath($media, MediaType::IMAGE, 'photo.jpg'));
         Storage::disk('local')->assertMissing('filament-media-temp/photo.jpg');
     }
 
@@ -75,8 +75,8 @@ class MediaStorageServiceTest extends FeatureTestCase
 
         $this->assertSame('document.pdf', $media->file_name);
         $this->assertSame(MediaType::DOCUMENT, $media->media_type);
-        Storage::disk('public')->assertMissing(MediaType::IMAGE->directory() . '/' . $media->id . '/photo.jpg');
-        Storage::disk('public')->assertExists(MediaType::DOCUMENT->directory() . '/' . $media->id . '/document.pdf');
+        Storage::disk('public')->assertMissing($this->expectedMediaPath($media, MediaType::IMAGE, 'photo.jpg'));
+        Storage::disk('public')->assertExists($this->expectedMediaPath($media, MediaType::DOCUMENT, 'document.pdf'));
         Storage::disk('local')->assertMissing('filament-media-temp/document.pdf');
     }
 
@@ -104,8 +104,8 @@ class MediaStorageServiceTest extends FeatureTestCase
             'disk'       => 'public',
         ]);
 
-        Storage::disk('public')->assertMissing(MediaType::IMAGE->directory() . '/' . $media->id . '/photo.jpg');
-        Storage::disk('public')->assertExists(MediaType::DOCUMENT->directory() . '/' . $media->id . '/photo.jpg');
+        Storage::disk('public')->assertMissing($this->expectedMediaPath($media, MediaType::IMAGE, 'photo.jpg'));
+        Storage::disk('public')->assertExists($this->expectedMediaPath($media, MediaType::DOCUMENT, 'photo.jpg'));
     }
 
     public function test_public_media_file_is_removed_from_storage_when_record_is_deleted(): void
@@ -126,12 +126,17 @@ class MediaStorageServiceTest extends FeatureTestCase
             'disk'            => 'public',
         ]);
 
-        $mediaPath = MediaType::IMAGE->directory() . '/' . $media->id . '/photo.jpg';
+        $mediaPath = $this->expectedMediaPath($media, MediaType::IMAGE, 'photo.jpg');
 
         Storage::disk('public')->assertExists($mediaPath);
 
         $media->delete();
 
         Storage::disk('public')->assertMissing($mediaPath);
+    }
+
+    private function expectedMediaPath(object $media, MediaType $type, string $fileName): string
+    {
+        return $type->directory() . '/listing-images/' . $media->uuid . '/' . $fileName;
     }
 }

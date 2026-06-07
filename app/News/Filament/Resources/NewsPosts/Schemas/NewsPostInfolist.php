@@ -59,7 +59,7 @@ class NewsPostInfolist
                                     ->badge()
                                     ->formatStateUsing(fn(EloquentNewsPostBlock $record): string => $record->type->label())
                                     ->color(fn(EloquentNewsPostBlock $record): string => $record->type->color()),
-                                TextEntry::make('media.file_name')->label('Медиа')->placeholder('—'),
+                                TextEntry::make('blockMedia.file_name')->label('Медиа')->placeholder('—'),
                                 TextEntry::make('data')
                                     ->label('Данные')
                                     ->formatStateUsing(fn(EloquentNewsPostBlock $record): string => json_encode($record->data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?: '{}')

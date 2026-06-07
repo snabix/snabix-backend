@@ -108,7 +108,6 @@ class CategoriesTable
             ])
             ->filters([
                 TernaryFilter::make('root_categories')
-                    ->label('Root categories')
                     ->translateLabel()
                     ->placeholder(__('All categories'))
                     ->trueLabel(__('Root categories only'))
@@ -119,7 +118,6 @@ class CategoriesTable
                         blank: fn(Builder $query): Builder => $query,
                     ),
                 SelectFilter::make('is_active')
-                    ->label('Status')
                     ->translateLabel()
                     ->options([
                         '1' => __('Active only'),
@@ -147,7 +145,10 @@ class CategoriesTable
             ->emptyStateDescription(__('Create the first root section or prepare an import from a public source.'));
     }
 
-    private static function renderTreeLabel(string $state, EloquentCategory $record): HtmlString
+    private static function renderTreeLabel(
+        string $state,
+        EloquentCategory $record
+    ): HtmlString
     {
         $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', max($record->depth, 0));
         $accent = $record->depth > 0

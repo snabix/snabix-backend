@@ -15,10 +15,6 @@ return new class extends Migration {
             $table->timestampsTz();
             $table->uuid('id')
                 ->primary();
-            $table->foreignId('cover_media_id')
-                ->nullable()
-                ->constrained('media')
-                ->nullOnDelete();
             $table->foreignId('author_admin_id')
                 ->nullable()
                 ->constrained('admins')

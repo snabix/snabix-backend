@@ -9,20 +9,25 @@ use App\News\Domain\Enums\NewsPostBlockType;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property      string               $id
  * @property      string               $news_post_id
- * @property      int|null             $media_id
  * @property      NewsPostBlockType    $type
  * @property      int                  $sort_order
  * @property      array<string, mixed> $data
  * @property-read EloquentNewsPost     $post
- * @property-read EloquentMedia|null   $media
+ * @property-read EloquentMedia|null   $blockMedia
  */
-class EloquentNewsPostBlock extends Model
+class EloquentNewsPostBlock extends Model implements HasMedia
 {
     use HasUuids;
+    use InteractsWithMedia;
+
+    public const string MEDIA_COLLECTION = 'news_block_media';
 
     public $incrementing = false;
 
@@ -34,7 +39,6 @@ class EloquentNewsPostBlock extends Model
     protected $fillable  = [
         'id',
         'news_post_id',
-        'media_id',
         'type',
         'sort_order',
         'data',
@@ -49,11 +53,21 @@ class EloquentNewsPostBlock extends Model
     }
 
     /**
-     * @return BelongsTo<EloquentMedia, $this>
+     * @return MorphOne<EloquentMedia, $this>
      */
-    public function media(): BelongsTo
+    public function blockMedia(): MorphOne
     {
-        return $this->belongsTo(EloquentMedia::class, 'media_id');
+        return $this
+            ->morphOne(EloquentMedia::class, 'model')
+            ->where('collection_name', self::MEDIA_COLLECTION)
+            ->latestOfMany();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::MEDIA_COLLECTION)
+            ->useDisk('public')
+            ->singleFile();
     }
 
     /**

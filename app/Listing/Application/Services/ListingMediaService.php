@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace App\Listing\Application\Services;
 
 use App\Listing\Infrastructure\Models\EloquentListing;
-use App\Media\Application\Services\MediaStorageService;
 use App\Media\Domain\Enums\MediaType;
-use App\Media\Domain\Enums\MediaVisibility;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 readonly class ListingMediaService
 {
@@ -21,13 +18,8 @@ readonly class ListingMediaService
 
     public const int MAX_IMAGES         = 8;
 
-    public function __construct(
-        private MediaStorageService $mediaStorageService,
-    ) {}
-
     /**
      * @param  list<UploadedFile> $images
-     * @throws Throwable
      */
     public function uploadImages(EloquentListing $listing, array $images): EloquentListing
     {
@@ -44,25 +36,15 @@ readonly class ListingMediaService
         }
 
         foreach ($images as $index => $image) {
-            $storedPath = $image->store('listing-media-temp/' . $listing->id, 'local');
-
-            if (! is_string($storedPath)) {
-                throw ValidationException::withMessages([
-                    'images.' . $index => ['Не удалось сохранить временный файл изображения.'],
-                ]);
-            }
-
-            $media      = $this->mediaStorageService->createFromStoredUpload('local', $storedPath, [
-                'model_type'      => EloquentListing::class,
-                'model_id'        => $listing->id,
-                'collection_name' => self::COLLECTION_NAME,
-                'name'            => pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME),
-                'media_type'      => MediaType::IMAGE,
-                'visibility'      => MediaVisibility::PUBLIC,
-                'description'     => 'Listing image.',
-            ]);
+            $media = $listing
+                ->addMedia($image)
+                ->usingName(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME))
+                ->usingFileName($image->getClientOriginalName())
+                ->toMediaCollection(self::COLLECTION_NAME, 'public');
 
             $media->forceFill([
+                'media_type'   => MediaType::IMAGE,
+                'description'  => 'Listing image.',
                 'order_column' => $existingImagesCount + $index + 1,
             ])->save();
         }

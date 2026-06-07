@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\News\Filament\Resources\NewsPosts\Schemas;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
-use App\Media\Domain\Enums\MediaType;
-use App\Media\Infrastructure\Models\EloquentMedia;
+use App\News\Infrastructure\Models\EloquentNewsPost;
+use App\News\Infrastructure\Models\EloquentNewsPostBlock;
 use App\News\Domain\Enums\NewsPostBlockType;
 use App\News\Domain\Enums\NewsPostStatus;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -100,20 +101,14 @@ class NewsPostForm
                             ->label('Главный материал')
                             ->default(false),
 
-                        Select::make('cover_media_id')
+                        SpatieMediaLibraryFileUpload::make('cover')
                             ->label('Обложка')
-                            ->options(fn(): array => EloquentMedia::query()
-                                ->where('media_type', MediaType::IMAGE)
-                                ->latest('created_at')
-                                ->limit(100)
-                                ->get(['id', 'name', 'file_name'])
-                                ->mapWithKeys(fn(EloquentMedia $media): array => [
-                                    $media->id => $media->name . ' · ' . $media->file_name,
-                                ])
-                                ->all())
-                            ->searchable()
-                            ->preload()
-                            ->native(false),
+                            ->collection(EloquentNewsPost::COVER_COLLECTION)
+                            ->image()
+                            ->disk('public')
+                            ->downloadable()
+                            ->openable()
+                            ->maxSize(1024 * 3),
 
                         Select::make('author_admin_id')
                             ->label('Автор')
@@ -157,19 +152,13 @@ class NewsPostForm
                                             ->minValue(1)
                                             ->required(),
 
-                                        Select::make('media_id')
+                                        SpatieMediaLibraryFileUpload::make('attachment')
                                             ->label('Медиа')
-                                            ->options(fn(): array => EloquentMedia::query()
-                                                ->latest('created_at')
-                                                ->limit(100)
-                                                ->get(['id', 'name', 'file_name'])
-                                                ->mapWithKeys(fn(EloquentMedia $media): array => [
-                                                    $media->id => $media->name . ' · ' . $media->file_name,
-                                                ])
-                                                ->all())
-                                            ->searchable()
-                                            ->preload()
-                                            ->native(false),
+                                            ->collection(EloquentNewsPostBlock::MEDIA_COLLECTION)
+                                            ->disk('public')
+                                            ->downloadable()
+                                            ->openable()
+                                            ->maxSize(1024 * 3),
                                     ]),
 
                                 Textarea::make('data')

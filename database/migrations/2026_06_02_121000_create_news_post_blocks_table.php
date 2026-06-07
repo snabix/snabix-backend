@@ -16,10 +16,6 @@ return new class extends Migration {
             $table->foreignUuid('news_post_id')
                 ->constrained('news_posts')
                 ->cascadeOnDelete();
-            $table->foreignId('media_id')
-                ->nullable()
-                ->constrained('media')
-                ->nullOnDelete();
             $table->unsignedTinyInteger('type')
                 ->index();
             $table->unsignedInteger('sort_order')
