@@ -33,6 +33,7 @@ use App\Listing\Http\ListPublicListings\ListPublicListingsController;
 use App\Listing\Http\RemoveListingFavorite\RemoveListingFavoriteController;
 use App\Listing\Http\ReorderListingMedia\ReorderListingMediaController;
 use App\Listing\Http\SetMainListingMedia\SetMainListingMediaController;
+use App\Listing\Http\ShowPublicListing\ShowPublicListingController;
 use App\Listing\Http\ShowListing\ShowListingController;
 use App\Listing\Http\SubmitListingForReview\SubmitListingForReviewController;
 use App\Listing\Http\UpdateListing\UpdateListingController;
@@ -96,6 +97,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/{slug}', ShowPublishedNewsPostController::class);
     });
     Route::get('public/listings', ListPublicListingsController::class);
+    Route::get('public/listings/{listingId}', ShowPublicListingController::class);
     Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
         Route::get('/', ListListingsController::class);
         Route::get('/favorites', ListFavoriteListingsController::class);

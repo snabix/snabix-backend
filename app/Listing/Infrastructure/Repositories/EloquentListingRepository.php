@@ -167,6 +167,15 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ->first();
     }
 
+    public function findPublicPublishedById(string $listingId): ?EloquentListing
+    {
+        return EloquentListing::query()
+            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->whereKey($listingId)
+            ->where('status', ListingStatus::PUBLISHED)
+            ->first();
+    }
+
     /**
      * @throws Throwable
      */
