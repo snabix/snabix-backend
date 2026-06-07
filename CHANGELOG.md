@@ -18,6 +18,14 @@
 - Переход `categories` и `listings` на UUID доведен до совместимого состояния в Filament, CLI и feature-тестах.
 - Модели категорий и объявлений получили нативную Spatie media-интеграцию поверх UUID и полиморфных media-связей.
 - `migrate:refresh` снова совместим с Postgres self-reference для `categories.parent_id` и со старыми окружениями, где миграция `icon_media_id` уже была записана в истории.
+- Filament-форма категории переведена на `SpatieMediaLibraryFileUpload`, поэтому иконка теперь редактируется через media collection без временного `local` upload state.
+- `User` и `News` переведены с ручных `media_id`/`cover_media_id` на полноценные Spatie media collections, чтобы все owner-модели работали через единый полиморфный media flow.
+- Загрузка аватара пользователя, иконки категории и изображений объявления теперь использует нативный Spatie API (`addMedia` / `addMediaFromDisk`) вместо ручного сохранения файлов через временные записи.
+- Структура путей медиа в storage стала человекочитаемой: файлы раскладываются по типу и коллекции (`images`, `documents`, `videos`, `files`) с UUID-директорией вместо числового `media_id`.
+- Локальный `public/storage` symlink перепривязан на текущий проект, поэтому URL из `public` disk снова совпадают с реальным путём файлов.
+
+### Removed
+- Из схемы новостей убраны legacy-колонки `news_posts.cover_media_id` и `news_post_blocks.media_id`; связь с медиа теперь полностью полиморфная через таблицу `media`.
 
 ## [0.6.28] - 2026-06-01
 

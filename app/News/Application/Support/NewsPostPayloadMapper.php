@@ -65,15 +65,15 @@ class NewsPostPayloadMapper
     {
         $data = $block->data;
 
-        if ($block->media !== null) {
+        if ($block->blockMedia !== null) {
             $data['media'] = [
-                'id'       => $block->media->id,
-                'url'      => $block->media->getFullUrl(),
-                'fileName' => $block->media->file_name,
-                'mimeType' => $block->media->mime_type,
+                'id'       => $block->blockMedia->id,
+                'url'      => $block->blockMedia->getFullUrl(),
+                'fileName' => $block->blockMedia->file_name,
+                'mimeType' => $block->blockMedia->mime_type,
             ];
 
-            $data['imageUrl'] ??= $block->media->getFullUrl();
+            $data['imageUrl'] ??= $block->blockMedia->getFullUrl();
         }
 
         return [
