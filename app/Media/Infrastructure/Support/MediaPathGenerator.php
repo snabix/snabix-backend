@@ -43,7 +43,7 @@ class MediaPathGenerator implements PathGenerator
 
     private function resolveMediaIdentity(Media $media): string
     {
-        $uuid = $media->uuid;
+        $uuid     = $media->uuid;
 
         if ($uuid !== '') {
             return $uuid;

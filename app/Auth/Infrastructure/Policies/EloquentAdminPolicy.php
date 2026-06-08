@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Auth\Infrastructure\Policies;
 
-use Illuminate\Foundation\Auth\User as AuthUser;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentAdminPolicy
 {
     use HandlesAuthorization;
-    
+
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:EloquentAdmin');
@@ -68,5 +70,4 @@ class EloquentAdminPolicy
     {
         return $authUser->can('Reorder:EloquentAdmin');
     }
-
 }

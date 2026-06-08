@@ -38,7 +38,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         ?string $categoryId = null,
     ): LengthAwarePaginator {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->where('user_id', $userId)
             ->when($status !== null, fn($query) => $query->where('status', $status))
             ->when($type !== null, fn($query) => $query->where('type', $type))
@@ -64,7 +64,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         string $sort = 'newest',
     ): LengthAwarePaginator {
         $query = EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->where('status', ListingStatus::PUBLISHED)
             ->when($type !== null, fn($query) => $query->where('type', $type))
             ->when($minPrice !== null, fn($query) => $query->where('price', '>=', $minPrice))
@@ -107,7 +107,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 attributeValues: $attributeValues,
             );
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
         });
 
         return $listing;
@@ -144,7 +144,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 attributeValues: $attributeValues,
             );
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
         });
 
         return $updatedListing;
@@ -153,7 +153,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findOwnedByUser(string $listingId, string $userId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->whereKey($listingId)
             ->where('user_id', $userId)
             ->first();
@@ -162,7 +162,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findById(string $listingId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->whereKey($listingId)
             ->first();
     }
@@ -170,7 +170,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findPublicPublishedById(string $listingId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->whereKey($listingId)
             ->where('status', ListingStatus::PUBLISHED)
             ->first();
@@ -195,7 +195,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ]);
             $listing->save();
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
         });
 
         return $updatedListing;

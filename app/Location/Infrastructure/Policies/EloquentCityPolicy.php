@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Location\Infrastructure\Policies;
 
-use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Location\Infrastructure\Models\EloquentCity;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentCityPolicy
 {
     use HandlesAuthorization;
-    
+
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:EloquentCity');
@@ -71,5 +71,4 @@ class EloquentCityPolicy
     {
         return $authUser->can('Reorder:EloquentCity');
     }
-
 }

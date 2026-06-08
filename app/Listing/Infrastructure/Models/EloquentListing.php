@@ -22,26 +22,27 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
- * @property string           $id
- * @property string           $user_id
- * @property string           $category_id
- * @property ListingType      $type
- * @property ListingStatus    $status
- * @property ListingCondition $condition
- * @property string           $title
- * @property string           $slug
- * @property string           $description
- * @property int|null         $price
- * @property string           $currency
- * @property bool             $is_negotiable
- * @property string|null      $contact_name
- * @property string|null      $contact_phone
- * @property string|null      $contact_email
- * @property int              $views_count
- * @property bool             $is_featured
- * @property string|null      $rejection_reason
- * @property Carbon|null      $published_at
- * @property Carbon|null      $expires_at
+ * @property      string                                                       $id
+ * @property      string                                                       $user_id
+ * @property      string                                                       $category_id
+ * @property      ListingType                                                  $type
+ * @property      ListingStatus                                                $status
+ * @property      ListingCondition                                             $condition
+ * @property      string                                                       $title
+ * @property      string                                                       $slug
+ * @property      string                                                       $description
+ * @property      int|null                                                     $price
+ * @property      string                                                       $currency
+ * @property      bool                                                         $is_negotiable
+ * @property      string|null                                                  $contact_name
+ * @property      string|null                                                  $contact_phone
+ * @property      string|null                                                  $contact_email
+ * @property      int                                                          $views_count
+ * @property      bool                                                         $is_featured
+ * @property      string|null                                                  $rejection_reason
+ * @property      Carbon|null                                                  $published_at
+ * @property      Carbon|null                                                  $expires_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, EloquentMedia> $orderedMedia
  */
 class EloquentListing extends Model implements HasMedia
 {
@@ -121,10 +122,11 @@ class EloquentListing extends Model implements HasMedia
     /**
      * @return MorphMany<EloquentMedia, $this>
      */
-    public function media(): MorphMany
+    public function orderedMedia(): MorphMany
     {
         return $this
             ->morphMany(EloquentMedia::class, 'model')
+            ->where('collection_name', 'listing-images')
             ->orderBy('order_column')
             ->orderBy('id');
     }

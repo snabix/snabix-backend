@@ -7,6 +7,7 @@ namespace Tests\Feature\Media;
 use App\Media\Application\Services\MediaStorageService;
 use App\Media\Domain\Enums\MediaType;
 use App\Media\Domain\Enums\MediaVisibility;
+use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 
@@ -135,7 +136,7 @@ class MediaStorageServiceTest extends FeatureTestCase
         Storage::disk('public')->assertMissing($mediaPath);
     }
 
-    private function expectedMediaPath(object $media, MediaType $type, string $fileName): string
+    private function expectedMediaPath(EloquentMedia $media, MediaType $type, string $fileName): string
     {
         return $type->directory() . '/listing-images/' . $media->uuid . '/' . $fileName;
     }

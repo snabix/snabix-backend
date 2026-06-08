@@ -17,7 +17,7 @@ class PublicListingPayloadMapper
     public function map(EloquentListing $listing): array
     {
         $category = $listing->category;
-        $media    = $listing->media
+        $media    = $listing->orderedMedia
             ->filter(fn(EloquentMedia $media): bool => $media->media_type === MediaType::IMAGE)
             ->values();
 

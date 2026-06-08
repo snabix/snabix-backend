@@ -18,7 +18,7 @@ class ListingPayloadMapper
     {
         $category = $listing->category;
 
-        $media    = $listing->media
+        $media    = $listing->orderedMedia
             ->filter(fn(EloquentMedia $media): bool => $media->media_type === MediaType::IMAGE)
             ->values();
 
