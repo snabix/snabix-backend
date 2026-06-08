@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listing\Application\UseCases\UpdateListing;
 
+use App\Listing\Application\Services\ListingAddressSnapshotService;
 use App\Listing\Application\Services\ListingRequiredAttributeValidator;
 use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingRepositoryInterface;
@@ -20,6 +21,7 @@ readonly class UpdateListingHandler
         private ListingPayloadMapper $listingPayloadMapper,
         private ListingPublicationPolicy $listingPublicationPolicy,
         private ListingRequiredAttributeValidator $listingRequiredAttributeValidator,
+        private ListingAddressSnapshotService $listingAddressSnapshotService,
     ) {}
 
     public function execute(UpdateListingInput $input): UpdateListingOutput
@@ -41,6 +43,14 @@ readonly class UpdateListingHandler
 
         $beforeChanges = $this->listingSnapshot($listing);
 
+        $address       = $this->listingAddressSnapshotService->resolve($input->userId, [
+            'addressMode'      => $input->addressMode,
+            'profileAddressId' => $input->profileAddressId,
+            'regionId'         => $input->regionId,
+            'cityId'           => $input->cityId,
+            'addressLine'      => $input->addressLine,
+        ]);
+
         $listing       = $this->listingRepository->update(
             $listing,
             attributes: [
@@ -55,6 +65,7 @@ readonly class UpdateListingHandler
                 'contact_name'     => $input->contactName,
                 'contact_phone'    => $input->contactPhone,
                 'contact_email'    => $input->contactEmail,
+                ...$address,
             ],
             attributeValues: $input->attributeValues,
         );
@@ -76,17 +87,21 @@ readonly class UpdateListingHandler
     private function listingSnapshot(EloquentListing $listing): array
     {
         return [
-            'category_id'   => $listing->category_id,
-            'type'          => $listing->type->value,
-            'condition'     => $listing->condition->value,
-            'title'         => $listing->title,
-            'description'   => $listing->description,
-            'price'         => $listing->price,
-            'currency'      => $listing->currency,
-            'is_negotiable' => $listing->is_negotiable,
-            'contact_name'  => $listing->contact_name,
-            'contact_phone' => $listing->contact_phone,
-            'contact_email' => $listing->contact_email,
+            'category_id'       => $listing->category_id,
+            'type'              => $listing->type->value,
+            'condition'         => $listing->condition->value,
+            'title'             => $listing->title,
+            'description'       => $listing->description,
+            'price'             => $listing->price,
+            'currency'          => $listing->currency,
+            'is_negotiable'     => $listing->is_negotiable,
+            'contact_name'      => $listing->contact_name,
+            'contact_phone'     => $listing->contact_phone,
+            'contact_email'     => $listing->contact_email,
+            'profile_address_id'=> $listing->profile_address_id,
+            'region_id'         => $listing->region_id,
+            'city_id'           => $listing->city_id,
+            'address_snapshot'  => $listing->address_snapshot,
         ];
     }
 

@@ -31,6 +31,11 @@ class UpdateListingRequest extends FormRequest
             'contactName'      => ['nullable', 'string', 'max:120'],
             'contactPhone'     => ['nullable', 'string', 'max:32'],
             'contactEmail'     => ['nullable', 'email', 'max:255'],
+            'addressMode'      => ['nullable', 'string', Rule::in(['profile', 'custom', 'none'])],
+            'profileAddressId' => ['nullable', 'uuid'],
+            'regionId'         => ['nullable', 'integer', 'min:1'],
+            'cityId'           => ['nullable', 'integer', 'min:1'],
+            'addressLine'      => ['nullable', 'string', 'max:255'],
             'attributeValues'  => ['nullable', 'array'],
         ];
     }
@@ -41,20 +46,25 @@ class UpdateListingRequest extends FormRequest
     public function inputData(): array
     {
         return [
-            'userId'         => $this->userId(),
-            'listingId'      => $this->listingId(),
-            'categoryId'     => $this->string('categoryId')->toString(),
-            'type'           => $this->integer('type'),
-            'condition'      => $this->nullableIntegerInput('condition'),
-            'title'          => $this->string('title')->toString(),
-            'description'    => $this->string('description')->toString(),
-            'price'          => $this->nullableIntegerInput('price'),
-            'currency'       => $this->nullableUppercaseString('currency'),
-            'isNegotiable'   => $this->boolean('isNegotiable', false),
-            'contactName'    => $this->nullableStringInput('contactName'),
-            'contactPhone'   => $this->nullableStringInput('contactPhone'),
-            'contactEmail'   => $this->nullableStringInput('contactEmail'),
-            'attributeValues'=> $this->attributeValues(),
+            'userId'          => $this->userId(),
+            'listingId'       => $this->listingId(),
+            'categoryId'      => $this->string('categoryId')->toString(),
+            'type'            => $this->integer('type'),
+            'condition'       => $this->nullableIntegerInput('condition'),
+            'title'           => $this->string('title')->toString(),
+            'description'     => $this->string('description')->toString(),
+            'price'           => $this->nullableIntegerInput('price'),
+            'currency'        => $this->nullableUppercaseString('currency'),
+            'isNegotiable'    => $this->boolean('isNegotiable', false),
+            'contactName'     => $this->nullableStringInput('contactName'),
+            'contactPhone'    => $this->nullableStringInput('contactPhone'),
+            'contactEmail'    => $this->nullableStringInput('contactEmail'),
+            'addressMode'     => $this->nullableStringInput('addressMode') ?? 'none',
+            'profileAddressId'=> $this->nullableStringInput('profileAddressId'),
+            'regionId'        => $this->nullableIntegerInput('regionId'),
+            'cityId'          => $this->nullableIntegerInput('cityId'),
+            'addressLine'     => $this->nullableStringInput('addressLine'),
+            'attributeValues' => $this->attributeValues(),
         ];
     }
 

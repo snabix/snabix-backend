@@ -20,6 +20,7 @@ class PublicListingPayloadMapper
         $media    = $listing->orderedMedia
             ->filter(fn(EloquentMedia $media): bool => $media->media_type === MediaType::IMAGE)
             ->values();
+        $location = $this->locationPayload($listing);
 
         return [
             'id'             => $listing->id,
@@ -45,6 +46,11 @@ class PublicListingPayloadMapper
             'price'          => $listing->price,
             'currency'       => $listing->currency,
             'isNegotiable'   => $listing->is_negotiable,
+            'location'       => $location,
+            'region'         => $this->locationNestedString($location, 'region', 'name'),
+            'city'           => $this->locationNestedString($location, 'city', 'name'),
+            'addressLine'    => $this->locationString($location, 'addressLine'),
+            'fullLocation'   => $this->locationString($location, 'display'),
             'imageUrl'       => $media->first()?->getFullUrl(),
             'imageUrls'      => $media
                 ->map(fn(EloquentMedia $media): string => $media->getFullUrl())
@@ -73,6 +79,42 @@ class PublicListingPayloadMapper
                 ->values()
                 ->all(),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function locationPayload(EloquentListing $listing): ?array
+    {
+        $snapshot = $listing->address_snapshot;
+
+        return is_array($snapshot) ? $snapshot : null;
+    }
+
+    /**
+     * @param array<string, mixed>|null $location
+     */
+    private function locationString(?array $location, string $key): ?string
+    {
+        $value = $location[$key] ?? null;
+
+        return is_string($value) ? $value : null;
+    }
+
+    /**
+     * @param array<string, mixed>|null $location
+     */
+    private function locationNestedString(?array $location, string $parentKey, string $key): ?string
+    {
+        $parent = $location[$parentKey] ?? null;
+
+        if (! is_array($parent)) {
+            return null;
+        }
+
+        $value  = $parent[$key] ?? null;
+
+        return is_string($value) ? $value : null;
     }
 
     private function attributeSnapshotValue(

@@ -35,22 +35,26 @@ readonly class ListingInputNormalizer
         return new NormalizedListingData(
             category: $category,
             attributes: [
-                'user_id'          => $this->resolveUserId($attributes['user_id'] ?? null),
-                'category_id'      => $category->id,
-                'type'             => $type,
-                'status'           => $this->resolveStatus($attributes['status'] ?? null),
-                'condition'        => $condition,
-                'title'            => $this->resolveTitle($attributes['title'] ?? null),
-                'description'      => $this->resolveDescription($attributes['description'] ?? null),
-                'price'            => $this->resolvePrice($attributes['price'] ?? null),
-                'currency'         => $this->resolveCurrency($attributes['currency'] ?? null),
-                'is_negotiable'    => (bool) ($attributes['is_negotiable'] ?? false),
-                'contact_name'     => $this->resolveNullableString($attributes['contact_name'] ?? null, 120),
-                'contact_phone'    => $this->resolveNullableString($attributes['contact_phone'] ?? null, 32),
-                'contact_email'    => $this->resolveEmail($attributes['contact_email'] ?? null),
-                'views_count'      => $this->resolveViewsCount($attributes['views_count'] ?? 0),
-                'is_featured'      => (bool) ($attributes['is_featured'] ?? false),
-                'rejection_reason' => $this->resolveNullableString($attributes['rejection_reason'] ?? null, 5000),
+                'user_id'            => $this->resolveUserId($attributes['user_id'] ?? null),
+                'category_id'        => $category->id,
+                'type'               => $type,
+                'status'             => $this->resolveStatus($attributes['status'] ?? null),
+                'condition'          => $condition,
+                'title'              => $this->resolveTitle($attributes['title'] ?? null),
+                'description'        => $this->resolveDescription($attributes['description'] ?? null),
+                'price'              => $this->resolvePrice($attributes['price'] ?? null),
+                'currency'           => $this->resolveCurrency($attributes['currency'] ?? null),
+                'is_negotiable'      => (bool) ($attributes['is_negotiable'] ?? false),
+                'contact_name'       => $this->resolveNullableString($attributes['contact_name'] ?? null, 120),
+                'contact_phone'      => $this->resolveNullableString($attributes['contact_phone'] ?? null, 32),
+                'contact_email'      => $this->resolveEmail($attributes['contact_email'] ?? null),
+                'profile_address_id' => $this->resolveNullableString($attributes['profile_address_id'] ?? null),
+                'region_id'          => $this->resolveNullableInteger($attributes['region_id'] ?? null),
+                'city_id'            => $this->resolveNullableInteger($attributes['city_id'] ?? null),
+                'address_snapshot'   => $this->resolveNullableArray($attributes['address_snapshot'] ?? null),
+                'views_count'        => $this->resolveViewsCount($attributes['views_count'] ?? 0),
+                'is_featured'        => (bool) ($attributes['is_featured'] ?? false),
+                'rejection_reason'   => $this->resolveNullableString($attributes['rejection_reason'] ?? null, 5000),
             ],
         );
     }
@@ -71,28 +75,32 @@ readonly class ListingInputNormalizer
         return new NormalizedListingData(
             category: $category,
             attributes: [
-                'category_id'      => $category->id,
-                'type'             => $type,
-                'status'           => $this->resolveStatus($attributes['status'] ?? $listing->status),
-                'condition'        => $condition,
-                'title'            => $this->resolveTitle($attributes['title'] ?? $listing->title),
-                'description'      => $this->resolveDescription($attributes['description'] ?? $listing->description),
-                'price'            => $this->resolvePrice($attributes['price'] ?? $listing->price),
-                'currency'         => $this->resolveCurrency($attributes['currency'] ?? $listing->currency),
-                'is_negotiable'    => (bool) ($attributes['is_negotiable'] ?? $listing->is_negotiable),
-                'contact_name'     => $this->resolveNullableString($attributes['contact_name'] ?? $listing->contact_name, 120),
-                'contact_phone'    => $this->resolveNullableString($attributes['contact_phone'] ?? $listing->contact_phone, 32),
-                'contact_email'    => $this->resolveEmail($attributes['contact_email'] ?? $listing->contact_email),
-                'views_count'      => $this->resolveViewsCount($attributes['views_count'] ?? $listing->views_count),
-                'is_featured'      => (bool) ($attributes['is_featured'] ?? $listing->is_featured),
-                'rejection_reason' => $this->resolveNullableString($attributes['rejection_reason'] ?? $listing->rejection_reason, 5000),
+                'category_id'        => $category->id,
+                'type'               => $type,
+                'status'             => $this->resolveStatus($attributes['status'] ?? $listing->status),
+                'condition'          => $condition,
+                'title'              => $this->resolveTitle($attributes['title'] ?? $listing->title),
+                'description'        => $this->resolveDescription($attributes['description'] ?? $listing->description),
+                'price'              => $this->resolvePrice($attributes['price'] ?? $listing->price),
+                'currency'           => $this->resolveCurrency($attributes['currency'] ?? $listing->currency),
+                'is_negotiable'      => (bool) ($attributes['is_negotiable'] ?? $listing->is_negotiable),
+                'contact_name'       => $this->resolveNullableString($attributes['contact_name'] ?? $listing->contact_name, 120),
+                'contact_phone'      => $this->resolveNullableString($attributes['contact_phone'] ?? $listing->contact_phone, 32),
+                'contact_email'      => $this->resolveEmail($attributes['contact_email'] ?? $listing->contact_email),
+                'profile_address_id' => $this->resolveNullableString($attributes['profile_address_id'] ?? $listing->profile_address_id),
+                'region_id'          => $this->resolveNullableInteger($attributes['region_id'] ?? $listing->region_id),
+                'city_id'            => $this->resolveNullableInteger($attributes['city_id'] ?? $listing->city_id),
+                'address_snapshot'   => $this->resolveNullableArray($attributes['address_snapshot'] ?? $listing->address_snapshot),
+                'views_count'        => $this->resolveViewsCount($attributes['views_count'] ?? $listing->views_count),
+                'is_featured'        => (bool) ($attributes['is_featured'] ?? $listing->is_featured),
+                'rejection_reason'   => $this->resolveNullableString($attributes['rejection_reason'] ?? $listing->rejection_reason, 5000),
             ],
         );
     }
 
     private function resolveCategory(mixed $categoryId): EloquentCategory
     {
-        if (! is_string($categoryId) || ! Str::isUuid($categoryId)) {
+        if (!is_string($categoryId) || !Str::isUuid($categoryId)) {
             throw ValidationException::withMessages([
                 'categoryId' => ['Категория объявления обязательна.'],
             ]);
@@ -248,7 +256,7 @@ readonly class ListingInputNormalizer
 
     private function resolveUserId(mixed $userId): string
     {
-        if (! is_string($userId) || trim($userId) === '') {
+        if (!is_string($userId) || trim($userId) === '') {
             throw ValidationException::withMessages([
                 'userId' => ['Пользователь объявления не определён.'],
             ]);
@@ -261,7 +269,7 @@ readonly class ListingInputNormalizer
         mixed $value,
         int   $limit = 255,
     ): ?string {
-        if (! is_string($value)) {
+        if (!is_string($value)) {
             return null;
         }
 
@@ -285,6 +293,41 @@ readonly class ListingInputNormalizer
         return mb_strtolower($resolvedEmail);
     }
 
+    private function resolveNullableInteger(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_int($value)) {
+            return $value;
+        }
+
+        return is_string($value) && is_numeric($value) ? (int) $value : null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function resolveNullableArray(mixed $value): ?array
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $resolvedValue = [];
+
+        foreach ($value as $key => $item) {
+            if (!is_string($key)) {
+                return null;
+            }
+
+            $resolvedValue[$key] = $item;
+        }
+
+        return $resolvedValue;
+    }
+
     private function resolveViewsCount(mixed $viewsCount): int
     {
         return is_numeric($viewsCount)
@@ -292,8 +335,10 @@ readonly class ListingInputNormalizer
             : 0;
     }
 
-    private function assertTypeMatchesCategory(ListingType $type, EloquentCategory $category): void
-    {
+    private function assertTypeMatchesCategory(
+        ListingType      $type,
+        EloquentCategory $category,
+    ): void {
         $categoryType = $category->catalog_type;
 
         if (

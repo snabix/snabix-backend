@@ -25,6 +25,11 @@ class UpdateListingInput extends Input
         public readonly ?string $contactName,
         public readonly ?string $contactPhone,
         public readonly ?string $contactEmail,
+        public readonly string $addressMode,
+        public readonly ?string $profileAddressId,
+        public readonly ?int $regionId,
+        public readonly ?int $cityId,
+        public readonly ?string $addressLine,
         public readonly array $attributeValues,
     ) {}
 }

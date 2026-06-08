@@ -37,6 +37,10 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property      string|null                                                  $contact_name
  * @property      string|null                                                  $contact_phone
  * @property      string|null                                                  $contact_email
+ * @property      string|null                                                  $profile_address_id
+ * @property      int|null                                                     $region_id
+ * @property      int|null                                                     $city_id
+ * @property      array<string, mixed>|null                                    $address_snapshot
  * @property      int                                                          $views_count
  * @property      bool                                                         $is_featured
  * @property      string|null                                                  $rejection_reason
@@ -75,6 +79,10 @@ class EloquentListing extends Model implements HasMedia
         'contact_name',
         'contact_phone',
         'contact_email',
+        'profile_address_id',
+        'region_id',
+        'city_id',
+        'address_snapshot',
         'views_count',
         'is_featured',
         'rejection_reason',
@@ -144,17 +152,20 @@ class EloquentListing extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'type'          => ListingType::class,
-            'status'        => ListingStatus::class,
-            'condition'     => ListingCondition::class,
-            'price'         => 'integer',
-            'is_negotiable' => 'boolean',
-            'views_count'   => 'integer',
-            'is_featured'   => 'boolean',
-            'published_at'  => 'datetime',
-            'expires_at'    => 'datetime',
-            'created_at'    => 'datetime',
-            'updated_at'    => 'datetime',
+            'type'            => ListingType::class,
+            'status'          => ListingStatus::class,
+            'condition'       => ListingCondition::class,
+            'price'           => 'integer',
+            'is_negotiable'   => 'boolean',
+            'views_count'     => 'integer',
+            'is_featured'     => 'boolean',
+            'region_id'       => 'integer',
+            'city_id'         => 'integer',
+            'address_snapshot'=> 'array',
+            'published_at'    => 'datetime',
+            'expires_at'      => 'datetime',
+            'created_at'      => 'datetime',
+            'updated_at'      => 'datetime',
         ];
     }
 }
