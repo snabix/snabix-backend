@@ -24,6 +24,7 @@ use App\Catalog\Http\GetCategoryAttributes\GetCategoryAttributesController;
 use App\Catalog\Http\ListRootCategories\ListRootCategoriesController;
 use App\Catalog\Http\ShowCategoryBranch\ShowCategoryBranchController;
 use App\Listing\Http\AddListingFavorite\AddListingFavoriteController;
+use App\Listing\Http\ArchiveListing\ArchiveListingController;
 use App\Listing\Http\CreateListing\CreateListingController;
 use App\Listing\Http\DeleteListing\DeleteListingController;
 use App\Listing\Http\DeleteListingMedia\DeleteListingMediaController;
@@ -102,6 +103,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/', ListListingsController::class);
         Route::get('/favorites', ListFavoriteListingsController::class);
         Route::post('/', CreateListingController::class);
+        Route::post('/{listingId}/archive', ArchiveListingController::class);
         Route::post('/{listingId}/submit-for-review', SubmitListingForReviewController::class);
         Route::post('/{listingId}/media', UploadListingMediaController::class);
         Route::patch('/{listingId}/media/reorder', ReorderListingMediaController::class);
