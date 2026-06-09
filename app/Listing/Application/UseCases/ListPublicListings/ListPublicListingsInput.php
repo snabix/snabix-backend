@@ -15,6 +15,10 @@ class ListPublicListingsInput extends Input
         public readonly ?int $type = null,
         public readonly ?int $minPrice = null,
         public readonly ?int $maxPrice = null,
+        public readonly ?int $regionId = null,
+        public readonly ?int $cityId = null,
+        public readonly ?string $regionQuery = null,
+        public readonly ?string $cityQuery = null,
         public readonly string $sort = 'newest',
     ) {}
 }

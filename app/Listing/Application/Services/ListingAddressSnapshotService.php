@@ -25,15 +25,14 @@ class ListingAddressSnapshotService
      */
     public function resolve(
         string $userId,
-        array  $input
-    ): array
-    {
+        array  $input,
+    ): array {
         $mode = $this->normalizeMode(Arr::get($input, 'addressMode', 'none'));
 
         return match ($mode) {
             'profile' => $this->fromProfileAddress($userId, Arr::get($input, 'profileAddressId')),
-            'custom' => $this->fromCustomAddress($input),
-            default => $this->emptyAddress(),
+            'custom'  => $this->fromCustomAddress($input),
+            default   => $this->emptyAddress(),
         };
     }
 
@@ -47,9 +46,8 @@ class ListingAddressSnapshotService
      */
     private function fromProfileAddress(
         string $userId,
-        mixed  $profileAddressId
-    ): array
-    {
+        mixed  $profileAddressId,
+    ): array {
         if (!is_string($profileAddressId) || !Str::isUuid($profileAddressId)) {
             throw ValidationException::withMessages([
                 'profileAddressId' => ['Выберите адрес из профиля.'],
@@ -70,9 +68,9 @@ class ListingAddressSnapshotService
 
         return [
             'profile_address_id' => $address->id,
-            'region_id' => $address->region_id,
-            'city_id' => $address->city_id,
-            'address_snapshot' => $this->snapshot(
+            'region_id'          => $address->region_id,
+            'city_id'            => $address->city_id,
+            'address_snapshot'   => $this->snapshot(
                 source: 'profile',
                 profileAddressId: $address->id,
                 label: $address->label,
@@ -94,13 +92,12 @@ class ListingAddressSnapshotService
      * }
      */
     private function fromCustomAddress(
-        array $input
-    ): array
-    {
+        array $input,
+    ): array {
         $regionId = $this->integerValue(Arr::get($input, 'regionId'));
-        $cityId = $this->nullableIntegerValue(Arr::get($input, 'cityId'));
+        $cityId   = $this->nullableIntegerValue(Arr::get($input, 'cityId'));
 
-        $region = EloquentRegion::query()
+        $region   = EloquentRegion::query()
             ->whereKey($regionId)
             ->where('is_active', true)
             ->first();
@@ -111,7 +108,7 @@ class ListingAddressSnapshotService
             ]);
         }
 
-        $city = null;
+        $city     = null;
 
         if ($cityId !== null) {
             $city = EloquentCity::query()
@@ -129,9 +126,9 @@ class ListingAddressSnapshotService
 
         return [
             'profile_address_id' => null,
-            'region_id' => $region->id,
-            'city_id' => $city?->id,
-            'address_snapshot' => $this->snapshot(
+            'region_id'          => $region->id,
+            'city_id'            => $city?->id,
+            'address_snapshot'   => $this->snapshot(
                 source: 'custom',
                 profileAddressId: null,
                 label: null,
@@ -154,9 +151,9 @@ class ListingAddressSnapshotService
     {
         return [
             'profile_address_id' => null,
-            'region_id' => null,
-            'city_id' => null,
-            'address_snapshot' => null,
+            'region_id'          => null,
+            'city_id'            => null,
+            'address_snapshot'   => null,
         ];
     }
 
@@ -170,45 +167,44 @@ class ListingAddressSnapshotService
         EloquentRegion $region,
         ?EloquentCity  $city,
         ?string        $addressLine,
-    ): array
-    {
+    ): array {
         $parts = array_values(
             array_filter(
                 [
                     $city?->name,
                     $addressLine,
                 ],
-                fn(?string $value): bool => $value !== null && $value !== ''
-            )
+                fn(?string $value): bool => $value !== null && $value !== '',
+            ),
         );
 
         return [
-            'source' => $source,
+            'source'           => $source,
             'profileAddressId' => $profileAddressId,
-            'label' => $label,
-            'region' => [
-                'id' => $region->id,
-                'name' => $region->name,
+            'label'            => $label,
+            'region'           => [
+                'id'       => $region->id,
+                'name'     => $region->name,
                 'fullName' => $region->fullname ?? $region->name,
-                'label' => $region->label,
+                'label'    => $region->label,
             ],
-            'city' => $city === null
+            'city'             => $city === null
                 ? null
                 : [
-                    'id' => $city->id,
-                    'name' => $city->name,
+                    'id'    => $city->id,
+                    'name'  => $city->name,
                     'label' => $city->label,
-                    'lat' => $city->lat,
-                    'lon' => $city->lon,
+                    'lat'   => $city->lat,
+                    'lon'   => $city->lon,
                 ],
-            'addressLine' => $addressLine,
-            'display' => $parts === [] ? $region->name : implode(', ', $parts),
-            'coordinates' => [
+            'addressLine'      => $addressLine,
+            'display'          => $parts === [] ? $region->name : implode(', ', $parts),
+            'coordinates'      => [
                 'lat' => null,
                 'lng' => null,
             ],
-            'mapProvider' => null,
-            'mapPlaceId' => null,
+            'mapProvider'      => null,
+            'mapPlaceId'       => null,
         ];
     }
 
@@ -226,7 +222,7 @@ class ListingAddressSnapshotService
         }
 
         if (is_string($value) && ctype_digit($value)) {
-            return (int)$value;
+            return (int) $value;
         }
 
         throw ValidationException::withMessages([
@@ -244,7 +240,7 @@ class ListingAddressSnapshotService
             return $value;
         }
 
-        return is_string($value) && ctype_digit($value) ? (int)$value : null;
+        return is_string($value) && ctype_digit($value) ? (int) $value : null;
     }
 
     private function nullableString(mixed $value): ?string

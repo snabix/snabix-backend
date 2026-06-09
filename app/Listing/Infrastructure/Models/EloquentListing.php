@@ -9,6 +9,8 @@ use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Location\Infrastructure\Models\EloquentCity;
+use App\Location\Infrastructure\Models\EloquentRegion;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Database\Factories\EloquentListingFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -47,6 +49,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property      Carbon|null                                                  $published_at
  * @property      Carbon|null                                                  $expires_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, EloquentMedia> $orderedMedia
+ * @property-read EloquentRegion|null                                          $region
+ * @property-read EloquentCity|null                                            $city
  */
 class EloquentListing extends Model implements HasMedia
 {
@@ -109,6 +113,22 @@ class EloquentListing extends Model implements HasMedia
     public function category(): BelongsTo
     {
         return $this->belongsTo(EloquentCategory::class, 'category_id');
+    }
+
+    /**
+     * @return BelongsTo<EloquentRegion, $this>
+     */
+    public function region(): BelongsTo
+    {
+        return $this->belongsTo(EloquentRegion::class, 'region_id');
+    }
+
+    /**
+     * @return BelongsTo<EloquentCity, $this>
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(EloquentCity::class, 'city_id');
     }
 
     /**
