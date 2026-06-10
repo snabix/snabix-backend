@@ -227,7 +227,7 @@ class CategoryAttributeDefinitionForm
     }
 
     /**
-     * @return array<int, string>
+     * @return array<string, string>
      */
     private static function categoryOptions(): array
     {

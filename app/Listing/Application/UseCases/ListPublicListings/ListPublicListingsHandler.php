@@ -26,6 +26,10 @@ readonly class ListPublicListingsHandler
             type: $input->type,
             minPrice: $input->minPrice,
             maxPrice: $input->maxPrice,
+            regionId: $input->regionId,
+            cityId: $input->cityId,
+            regionQuery: $input->regionQuery,
+            cityQuery: $input->cityQuery,
             sort: $input->sort,
         );
 

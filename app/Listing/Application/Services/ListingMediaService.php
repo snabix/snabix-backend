@@ -19,7 +19,7 @@ readonly class ListingMediaService
     public const int MAX_IMAGES         = 8;
 
     /**
-     * @param  list<UploadedFile> $images
+     * @param list<UploadedFile> $images
      */
     public function uploadImages(EloquentListing $listing, array $images): EloquentListing
     {
@@ -49,7 +49,7 @@ readonly class ListingMediaService
             ])->save();
         }
 
-        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
     }
 
     public function deleteImage(EloquentListing $listing, int $mediaId): EloquentListing
@@ -65,7 +65,7 @@ readonly class ListingMediaService
         $media->delete();
         $this->normalizeOrder($listing);
 
-        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
     }
 
     /**
@@ -97,7 +97,7 @@ readonly class ListingMediaService
                     ->update(['order_column' => $index + 1]);
             }
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
         });
     }
 

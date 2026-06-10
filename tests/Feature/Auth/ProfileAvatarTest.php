@@ -24,13 +24,13 @@ class ProfileAvatarTest extends FeatureTestCase
         $response = $this
             ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
-                'avatar' => UploadedFile::fake()->create('avatar.jpg', 256, 'image/jpeg'),
+                'avatar' => $this->fakeImage('avatar.jpg'),
             ]);
 
         $response
             ->assertOk()
             ->assertJsonPath('data.avatar.fileName', 'avatar.jpg')
-            ->assertJsonPath('data.avatar.mimeType', 'image/jpeg');
+            ->assertJsonPath('data.avatar.mimeType', 'image/png');
 
         $media    = EloquentMedia::query()
             ->where('model_type', EloquentUser::class)
@@ -53,33 +53,33 @@ class ProfileAvatarTest extends FeatureTestCase
     {
         Storage::fake('public');
 
-        $user    = EloquentUser::factory()->create();
+        $user     = EloquentUser::factory()->create();
 
         $this
             ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
-                'avatar' => UploadedFile::fake()->create('old-avatar.jpg', 256, 'image/jpeg'),
+                'avatar' => $this->fakeImage('old-avatar.jpg'),
             ])
             ->assertOk();
 
-        $media   = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
-        $oldPath = $this->expectedAvatarPath($media, 'old-avatar.jpg');
+        $media    = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
+        $oldPath  = $this->expectedAvatarPath($media, 'old-avatar.jpg');
 
         Storage::disk('public')->assertExists($oldPath);
 
         $this
             ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
-                'avatar' => UploadedFile::fake()->create('new-avatar.png', 256, 'image/png'),
+                'avatar' => $this->fakeImage('new-avatar.png'),
             ])
             ->assertOk()
             ->assertJsonPath('data.avatar.fileName', 'new-avatar.png')
             ->assertJsonPath('data.avatar.mimeType', 'image/png');
 
-        $media->refresh();
+        $newMedia = EloquentMedia::query()->where('model_id', $user->id)->firstOrFail();
 
         Storage::disk('public')->assertMissing($oldPath);
-        Storage::disk('public')->assertExists($this->expectedAvatarPath($media, 'new-avatar.png'));
+        Storage::disk('public')->assertExists($this->expectedAvatarPath($newMedia, 'new-avatar.png'));
         $this->assertSame(1, EloquentMedia::query()->where('model_id', $user->id)->count());
     }
 
@@ -92,7 +92,7 @@ class ProfileAvatarTest extends FeatureTestCase
         $this
             ->actingAs($user)
             ->postJson('/api/v1/auth/me/avatar', [
-                'avatar' => UploadedFile::fake()->create('avatar.jpg', 256, 'image/jpeg'),
+                'avatar' => $this->fakeImage('avatar.jpg'),
             ])
             ->assertOk();
 
@@ -121,5 +121,13 @@ class ProfileAvatarTest extends FeatureTestCase
     private function expectedAvatarPath(EloquentMedia $media, string $fileName): string
     {
         return MediaType::IMAGE->directory() . '/avatar/' . $media->uuid . '/' . $fileName;
+    }
+
+    private function fakeImage(string $name): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', true) ?: '',
+        );
     }
 }

@@ -8,8 +8,8 @@ use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Database\Factories\EloquentCategoryFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,12 +46,12 @@ class EloquentCategory extends Model implements HasMedia
 
     public $incrementing = false;
 
-    protected $table    = 'categories';
+    protected $table     = 'categories';
 
     protected $keyType   = 'string';
 
     /** @var list<string> */
-    protected $fillable = [
+    protected $fillable  = [
         'id',
         'parent_id',
         'catalog_type',

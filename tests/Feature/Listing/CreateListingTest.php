@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Listing;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
+use App\Auth\Infrastructure\Models\EloquentUserAddress;
 use App\Catalog\Domain\Contracts\CategoryAttributeDefinitionRepositoryInterface;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Listing\Domain\Enums\ListingStatus;
+use App\Listing\Infrastructure\Models\EloquentListing;
+use App\Location\Infrastructure\Models\EloquentCity;
+use App\Location\Infrastructure\Models\EloquentRegion;
 use Tests\Feature\FeatureTestCase;
 
 class CreateListingTest extends FeatureTestCase
@@ -148,6 +152,95 @@ class CreateListingTest extends FeatureTestCase
             ->assertJsonPath('data.attributeValues', []);
     }
 
+    public function test_user_can_create_listing_with_profile_address_snapshot(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $region             = $this->createRegion('0200000000000', 'Республика Башкортостан');
+        $city               = $this->createCity($region, '0200000100000', 'Уфа');
+        $address            = EloquentUserAddress::query()->create([
+            'user_id'      => $user->id,
+            'region_id'    => $region->id,
+            'city_id'      => $city->id,
+            'label'        => 'Дом',
+            'address_line' => 'Проспект Октября',
+            'is_primary'   => true,
+            'sort_order'   => 0,
+        ]);
+        $category           = $categoryRepository->save([
+            'name'         => 'Велосипеды',
+            'slug'         => 'velosipedy',
+            'catalog_type' => 1,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/listings', [
+                'categoryId'       => $category->id,
+                'type'             => 1,
+                'condition'        => 2,
+                'title'            => 'Горный велосипед',
+                'description'      => 'Велосипед в хорошем состоянии.',
+                'price'            => 20000,
+                'currency'         => 'RUB',
+                'addressMode'      => 'profile',
+                'profileAddressId' => $address->id,
+                'attributeValues'  => [],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.location.source', 'profile')
+            ->assertJsonPath('data.location.profileAddressId', $address->id)
+            ->assertJsonPath('data.region', 'Республика Башкортостан')
+            ->assertJsonPath('data.city', 'Уфа')
+            ->assertJsonPath('data.addressLine', 'Проспект Октября')
+            ->assertJsonPath('data.fullLocation', 'Уфа, Проспект Октября');
+
+        $listing            = EloquentListing::query()->where('title', 'Горный велосипед')->firstOrFail();
+
+        $this->assertSame($address->id, $listing->profile_address_id);
+        $this->assertSame($region->id, $listing->region_id);
+        $this->assertSame($city->id, $listing->city_id);
+        $this->assertSame('profile', $listing->address_snapshot['source'] ?? null);
+    }
+
+    public function test_user_cannot_use_another_users_profile_address(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $anotherUser        = EloquentUser::factory()->create();
+        $region             = $this->createRegion('1600000000000', 'Республика Татарстан');
+        $city               = $this->createCity($region, '1600000100000', 'Казань');
+        $address            = EloquentUserAddress::query()->create([
+            'user_id'    => $anotherUser->id,
+            'region_id'  => $region->id,
+            'city_id'    => $city->id,
+            'is_primary' => true,
+            'sort_order' => 0,
+        ]);
+        $category           = $categoryRepository->save([
+            'name'         => 'Самокаты',
+            'slug'         => 'samokaty',
+            'catalog_type' => 1,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/listings', [
+                'categoryId'       => $category->id,
+                'type'             => 1,
+                'condition'        => 2,
+                'title'            => 'Электросамокат',
+                'description'      => 'Почти новый.',
+                'price'            => 18000,
+                'currency'         => 'RUB',
+                'addressMode'      => 'profile',
+                'profileAddressId' => $address->id,
+                'attributeValues'  => [],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['profileAddressId']);
+    }
+
     public function test_required_category_attribute_must_be_present(): void
     {
         $categoryRepository            = app(CategoryRepositoryInterface::class);
@@ -185,5 +278,32 @@ class CreateListingTest extends FeatureTestCase
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['attributeValues.' . $attribute->id]);
+    }
+
+    private function createRegion(string $kladrId, string $name): EloquentRegion
+    {
+        return EloquentRegion::query()->create([
+            'kladr_id'   => $kladrId,
+            'name'       => $name,
+            'slug'       => str($name)->slug()->toString(),
+            'label'      => $name,
+            'type'       => 'region',
+            'type_short' => 'рег',
+            'sort_order' => 1,
+        ]);
+    }
+
+    private function createCity(EloquentRegion $region, string $kladrId, string $name): EloquentCity
+    {
+        return EloquentCity::query()->create([
+            'region_id'  => $region->id,
+            'kladr_id'   => $kladrId,
+            'name'       => $name,
+            'slug'       => str($name)->slug()->toString(),
+            'label'      => $name,
+            'type'       => 'city',
+            'type_short' => 'г',
+            'sort_order' => 1,
+        ]);
     }
 }
