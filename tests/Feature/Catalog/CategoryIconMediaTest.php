@@ -7,6 +7,7 @@ namespace Tests\Feature\Catalog;
 use App\Catalog\Application\Services\CategoryIconMediaService;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Media\Domain\Enums\MediaType;
+use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 
@@ -56,7 +57,7 @@ class CategoryIconMediaTest extends FeatureTestCase
         Storage::disk('public')->assertExists($this->expectedMediaPath($secondIcon, 'electronics-new.png'));
     }
 
-    private function expectedMediaPath(object $media, string $fileName): string
+    private function expectedMediaPath(EloquentMedia $media, string $fileName): string
     {
         return MediaType::IMAGE->directory() . '/category-icons/' . $media->uuid . '/' . $fileName;
     }

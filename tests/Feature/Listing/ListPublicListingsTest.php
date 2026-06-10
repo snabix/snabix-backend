@@ -11,6 +11,8 @@ use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
 use App\Listing\Infrastructure\Models\EloquentListing;
+use App\Location\Infrastructure\Models\EloquentCity;
+use App\Location\Infrastructure\Models\EloquentRegion;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
@@ -187,12 +189,99 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonPath('data.items.0.id', $matchedListing->id);
     }
 
+    public function test_public_listings_can_be_filtered_by_region_and_city(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Инструменты',
+            'slug'         => 'instrumenty',
+            'catalog_type' => 1,
+        ]);
+        $region             = EloquentRegion::query()->create([
+            'kladr_id'     => '2300000000000',
+            'name'         => 'Краснодарский край',
+            'slug'         => 'krasnodarskij-kraj',
+            'label'        => 'Краснодарский край',
+            'content_type' => 'region',
+            'is_active'    => true,
+            'sort_order'   => 1,
+        ]);
+        $city               = EloquentCity::query()->create([
+            'region_id'    => $region->id,
+            'kladr_id'     => '2300000100000',
+            'name'         => 'Краснодар',
+            'slug'         => 'krasnodar',
+            'label'        => 'Краснодар',
+            'content_type' => 'city',
+            'is_active'    => true,
+            'sort_order'   => 1,
+        ]);
+        $otherRegion        = EloquentRegion::query()->create([
+            'kladr_id'     => '7700000000000',
+            'name'         => 'Москва',
+            'slug'         => 'moskva',
+            'label'        => 'Москва',
+            'content_type' => 'region',
+            'is_active'    => true,
+            'sort_order'   => 2,
+        ]);
+
+        $matchedListing     = $this->createPublishedListing(
+            $user->id,
+            $category->id,
+            'Перфоратор в Краснодаре',
+            'perforator-v-krasnodare',
+            now(),
+            [
+                'region_id'        => $region->id,
+                'city_id'          => $city->id,
+                'address_snapshot' => [
+                    'region' => [
+                        'id'       => $region->id,
+                        'name'     => $region->name,
+                        'fullName' => $region->fullname ?? $region->name,
+                        'label'    => $region->label,
+                    ],
+                    'city'   => [
+                        'id'    => $city->id,
+                        'name'  => $city->name,
+                        'label' => $city->label,
+                    ],
+                ],
+            ],
+        );
+
+        $this->createPublishedListing(
+            $user->id,
+            $category->id,
+            'Перфоратор в Москве',
+            'perforator-v-moskve',
+            now(),
+            [
+                'region_id' => $otherRegion->id,
+            ],
+        );
+
+        $this
+            ->getJson('/api/v1/public/listings?regionQuery=краснодарский&cityQuery=краснодар')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $matchedListing->id);
+
+        $this
+            ->getJson('/api/v1/public/listings?regionId=' . $region->id . '&cityId=' . $city->id)
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $matchedListing->id);
+    }
+
     public function test_public_listings_validate_filter_values(): void
     {
         $this
-            ->getJson('/api/v1/public/listings?minPrice=90000&maxPrice=1000&sort=unknown')
+            ->getJson('/api/v1/public/listings?minPrice=90000&maxPrice=1000&sort=unknown&regionQuery=' . str_repeat('x', 121))
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['maxPrice', 'sort']);
+            ->assertJsonValidationErrors(['maxPrice', 'sort', 'regionQuery']);
     }
 
     /**

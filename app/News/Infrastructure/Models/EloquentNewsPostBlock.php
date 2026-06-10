@@ -29,14 +29,14 @@ class EloquentNewsPostBlock extends Model implements HasMedia
 
     public const string MEDIA_COLLECTION = 'news_block_media';
 
-    public $incrementing = false;
+    public $incrementing                 = false;
 
-    protected $table     = 'news_post_blocks';
+    protected $table                     = 'news_post_blocks';
 
-    protected $keyType   = 'string';
+    protected $keyType                   = 'string';
 
     /** @var list<string> */
-    protected $fillable  = [
+    protected $fillable                  = [
         'id',
         'news_post_id',
         'type',

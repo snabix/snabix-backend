@@ -34,9 +34,9 @@ readonly class UploadListingMediaHandler
 
         Gate::authorize('update', $listing);
 
-        $previousMediaIds = $this->normalizeIntegerIds($listing->media->pluck('id')->all());
+        $previousMediaIds = $this->normalizeIntegerIds($listing->orderedMedia->pluck('id')->all());
         $listing          = $this->listingMediaService->uploadImages($listing, $input->images);
-        $uploadedMediaIds = collect($this->normalizeIntegerIds($listing->media->pluck('id')->all()))
+        $uploadedMediaIds = collect($this->normalizeIntegerIds($listing->orderedMedia->pluck('id')->all()))
             ->diff($previousMediaIds)
             ->values()
             ->all();

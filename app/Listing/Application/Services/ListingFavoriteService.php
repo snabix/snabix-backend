@@ -12,8 +12,10 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ListingFavoriteService
 {
-    public function add(string $userId, string $listingId): EloquentListing
-    {
+    public function add(
+        string $userId,
+        string $listingId,
+    ): EloquentListing {
         $listing = $this->findPublishedListing($listingId);
 
         EloquentListingFavorite::query()->firstOrCreate([
@@ -21,11 +23,13 @@ class ListingFavoriteService
             'listing_id' => $listing->id,
         ]);
 
-        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
     }
 
-    public function remove(string $userId, string $listingId): EloquentListing
-    {
+    public function remove(
+        string $userId,
+        string $listingId,
+    ): EloquentListing {
         $listing = $this->findPublishedListing($listingId);
 
         EloquentListingFavorite::query()
@@ -33,16 +37,19 @@ class ListingFavoriteService
             ->where('listing_id', $listing->id)
             ->delete();
 
-        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
     }
 
     /**
      * @return LengthAwarePaginator<int, EloquentListing>
      */
-    public function list(string $userId, int $page = 1, int $perPage = 12): LengthAwarePaginator
-    {
+    public function list(
+        string $userId,
+        int $page = 1,
+        int $perPage = 12,
+    ): LengthAwarePaginator {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->where('status', ListingStatus::PUBLISHED)
             ->whereHas(
                 'favorites',
@@ -62,10 +69,11 @@ class ListingFavoriteService
             );
     }
 
-    private function findPublishedListing(string $listingId): EloquentListing
-    {
+    private function findPublishedListing(
+        string $listingId,
+    ): EloquentListing {
         $listing = EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->whereKey($listingId)
             ->where('status', ListingStatus::PUBLISHED)
             ->first();

@@ -46,14 +46,14 @@ class EloquentNewsPost extends Model implements HasMedia
 
     public const string COVER_COLLECTION = 'news_covers';
 
-    public $incrementing = false;
+    public $incrementing                 = false;
 
-    protected $table     = 'news_posts';
+    protected $table                     = 'news_posts';
 
-    protected $keyType   = 'string';
+    protected $keyType                   = 'string';
 
     /** @var list<string> */
-    protected $fillable  = [
+    protected $fillable                  = [
         'id',
         'author_admin_id',
         'status',

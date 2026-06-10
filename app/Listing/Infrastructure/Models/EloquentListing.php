@@ -9,6 +9,8 @@ use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Location\Infrastructure\Models\EloquentCity;
+use App\Location\Infrastructure\Models\EloquentRegion;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Database\Factories\EloquentListingFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -22,26 +24,33 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
- * @property string           $id
- * @property string           $user_id
- * @property string           $category_id
- * @property ListingType      $type
- * @property ListingStatus    $status
- * @property ListingCondition $condition
- * @property string           $title
- * @property string           $slug
- * @property string           $description
- * @property int|null         $price
- * @property string           $currency
- * @property bool             $is_negotiable
- * @property string|null      $contact_name
- * @property string|null      $contact_phone
- * @property string|null      $contact_email
- * @property int              $views_count
- * @property bool             $is_featured
- * @property string|null      $rejection_reason
- * @property Carbon|null      $published_at
- * @property Carbon|null      $expires_at
+ * @property      string                                                       $id
+ * @property      string                                                       $user_id
+ * @property      string                                                       $category_id
+ * @property      ListingType                                                  $type
+ * @property      ListingStatus                                                $status
+ * @property      ListingCondition                                             $condition
+ * @property      string                                                       $title
+ * @property      string                                                       $slug
+ * @property      string                                                       $description
+ * @property      int|null                                                     $price
+ * @property      string                                                       $currency
+ * @property      bool                                                         $is_negotiable
+ * @property      string|null                                                  $contact_name
+ * @property      string|null                                                  $contact_phone
+ * @property      string|null                                                  $contact_email
+ * @property      string|null                                                  $profile_address_id
+ * @property      int|null                                                     $region_id
+ * @property      int|null                                                     $city_id
+ * @property      array<string, mixed>|null                                    $address_snapshot
+ * @property      int                                                          $views_count
+ * @property      bool                                                         $is_featured
+ * @property      string|null                                                  $rejection_reason
+ * @property      Carbon|null                                                  $published_at
+ * @property      Carbon|null                                                  $expires_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, EloquentMedia> $orderedMedia
+ * @property-read EloquentRegion|null                                          $region
+ * @property-read EloquentCity|null                                            $city
  */
 class EloquentListing extends Model implements HasMedia
 {
@@ -74,6 +83,10 @@ class EloquentListing extends Model implements HasMedia
         'contact_name',
         'contact_phone',
         'contact_email',
+        'profile_address_id',
+        'region_id',
+        'city_id',
+        'address_snapshot',
         'views_count',
         'is_featured',
         'rejection_reason',
@@ -103,6 +116,22 @@ class EloquentListing extends Model implements HasMedia
     }
 
     /**
+     * @return BelongsTo<EloquentRegion, $this>
+     */
+    public function region(): BelongsTo
+    {
+        return $this->belongsTo(EloquentRegion::class, 'region_id');
+    }
+
+    /**
+     * @return BelongsTo<EloquentCity, $this>
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(EloquentCity::class, 'city_id');
+    }
+
+    /**
      * @return HasMany<EloquentListingAttributeValue, $this>
      */
     public function attributeValues(): HasMany
@@ -121,10 +150,11 @@ class EloquentListing extends Model implements HasMedia
     /**
      * @return MorphMany<EloquentMedia, $this>
      */
-    public function media(): MorphMany
+    public function orderedMedia(): MorphMany
     {
         return $this
             ->morphMany(EloquentMedia::class, 'model')
+            ->where('collection_name', 'listing-images')
             ->orderBy('order_column')
             ->orderBy('id');
     }
@@ -142,17 +172,20 @@ class EloquentListing extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'type'          => ListingType::class,
-            'status'        => ListingStatus::class,
-            'condition'     => ListingCondition::class,
-            'price'         => 'integer',
-            'is_negotiable' => 'boolean',
-            'views_count'   => 'integer',
-            'is_featured'   => 'boolean',
-            'published_at'  => 'datetime',
-            'expires_at'    => 'datetime',
-            'created_at'    => 'datetime',
-            'updated_at'    => 'datetime',
+            'type'            => ListingType::class,
+            'status'          => ListingStatus::class,
+            'condition'       => ListingCondition::class,
+            'price'           => 'integer',
+            'is_negotiable'   => 'boolean',
+            'views_count'     => 'integer',
+            'is_featured'     => 'boolean',
+            'region_id'       => 'integer',
+            'city_id'         => 'integer',
+            'address_snapshot'=> 'array',
+            'published_at'    => 'datetime',
+            'expires_at'      => 'datetime',
+            'created_at'      => 'datetime',
+            'updated_at'      => 'datetime',
         ];
     }
 }

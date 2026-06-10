@@ -38,7 +38,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         ?string $categoryId = null,
     ): LengthAwarePaginator {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->where('user_id', $userId)
             ->when($status !== null, fn($query) => $query->where('status', $status))
             ->when($type !== null, fn($query) => $query->where('type', $type))
@@ -61,16 +61,24 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         ?int $type = null,
         ?int $minPrice = null,
         ?int $maxPrice = null,
+        ?int $regionId = null,
+        ?int $cityId = null,
+        ?string $regionQuery = null,
+        ?string $cityQuery = null,
         string $sort = 'newest',
     ): LengthAwarePaginator {
         $query = EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'region', 'city'])
             ->where('status', ListingStatus::PUBLISHED)
             ->when($type !== null, fn($query) => $query->where('type', $type))
             ->when($minPrice !== null, fn($query) => $query->where('price', '>=', $minPrice))
-            ->when($maxPrice !== null, fn($query) => $query->where('price', '<=', $maxPrice));
+            ->when($maxPrice !== null, fn($query) => $query->where('price', '<=', $maxPrice))
+            ->when($regionId !== null, fn($query) => $query->where('region_id', $regionId))
+            ->when($cityId !== null, fn($query) => $query->where('city_id', $cityId));
 
         $this->applyCategoryFilter($query, $categoryId);
+        $this->applyLocationSearchFilter($query, 'region', $regionQuery);
+        $this->applyLocationSearchFilter($query, 'city', $cityQuery);
         $this->applyPublicSort($query, $sort);
 
         return $query
@@ -107,7 +115,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 attributeValues: $attributeValues,
             );
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
         });
 
         return $listing;
@@ -144,7 +152,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
                 attributeValues: $attributeValues,
             );
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
         });
 
         return $updatedListing;
@@ -153,7 +161,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findOwnedByUser(string $listingId, string $userId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->whereKey($listingId)
             ->where('user_id', $userId)
             ->first();
@@ -162,7 +170,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findById(string $listingId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->whereKey($listingId)
             ->first();
     }
@@ -170,7 +178,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
     public function findPublicPublishedById(string $listingId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'media'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
             ->whereKey($listingId)
             ->where('status', ListingStatus::PUBLISHED)
             ->first();
@@ -195,7 +203,7 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
             ]);
             $listing->save();
 
-            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'media']) ?? $listing;
+            return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
         });
 
         return $updatedListing;
@@ -209,6 +217,47 @@ readonly class EloquentListingRepository implements ListingRepositoryInterface
         DB::transaction(function () use ($listing): void {
             $listing->attributeValues()->delete();
             $listing->delete();
+        });
+    }
+
+    /**
+     * @param Builder<EloquentListing> $query
+     */
+    private function applyLocationSearchFilter(Builder $query, string $relation, ?string $search): void
+    {
+        $term      = trim((string) $search);
+
+        if ($term === '') {
+            return;
+        }
+
+        $likeValue = '%' . str_replace(['%', '_'], ['\%', '\_'], $term) . '%';
+
+        $query->where(function (Builder $locationQuery) use ($relation, $likeValue): void {
+            $locationQuery->whereHas(
+                $relation,
+                function (Builder $relatedQuery) use ($relation, $likeValue): void {
+                    $relatedQuery->where('name', 'ilike', $likeValue)
+                        ->orWhere('label', 'ilike', $likeValue);
+
+                    if ($relation === 'region') {
+                        $relatedQuery->orWhere('fullname', 'ilike', $likeValue);
+                    }
+                },
+            );
+
+            if ($relation === 'region') {
+                $locationQuery
+                    ->orWhere('address_snapshot->region->name', 'ilike', $likeValue)
+                    ->orWhere('address_snapshot->region->fullName', 'ilike', $likeValue)
+                    ->orWhere('address_snapshot->region->label', 'ilike', $likeValue);
+
+                return;
+            }
+
+            $locationQuery
+                ->orWhere('address_snapshot->city->name', 'ilike', $likeValue)
+                ->orWhere('address_snapshot->city->label', 'ilike', $likeValue);
         });
     }
 

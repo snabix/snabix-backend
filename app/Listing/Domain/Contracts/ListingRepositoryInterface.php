@@ -32,6 +32,10 @@ interface ListingRepositoryInterface
         ?int $type = null,
         ?int $minPrice = null,
         ?int $maxPrice = null,
+        ?int $regionId = null,
+        ?int $cityId = null,
+        ?string $regionQuery = null,
+        ?string $cityQuery = null,
         string $sort = 'newest',
     ): LengthAwarePaginator;
 

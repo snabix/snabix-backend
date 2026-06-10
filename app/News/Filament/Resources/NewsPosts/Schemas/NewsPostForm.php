@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\News\Filament\Resources\NewsPosts\Schemas;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
-use App\News\Infrastructure\Models\EloquentNewsPost;
-use App\News\Infrastructure\Models\EloquentNewsPostBlock;
 use App\News\Domain\Enums\NewsPostBlockType;
 use App\News\Domain\Enums\NewsPostStatus;
+use App\News\Infrastructure\Models\EloquentNewsPost;
+use App\News\Infrastructure\Models\EloquentNewsPostBlock;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;

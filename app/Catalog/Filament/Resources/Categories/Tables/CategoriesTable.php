@@ -147,9 +147,8 @@ class CategoriesTable
 
     private static function renderTreeLabel(
         string $state,
-        EloquentCategory $record
-    ): HtmlString
-    {
+        EloquentCategory $record,
+    ): HtmlString {
         $indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', max($record->depth, 0));
         $accent = $record->depth > 0
             ? '<span style="display:inline-flex; width:24px; color:#9ca3af; font-weight:700;">└</span>'

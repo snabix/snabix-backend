@@ -123,6 +123,42 @@ class ShowAndUpdateListingTest extends FeatureTestCase
             ->assertJsonPath('data.rejectionReason', null);
     }
 
+    public function test_user_can_archive_own_listing(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Кресла',
+            'slug'         => 'kresla',
+            'catalog_type' => 1,
+        ]);
+        $listing            = EloquentListing::query()->create([
+            'user_id'       => $user->id,
+            'category_id'   => $category->id,
+            'type'          => ListingType::PRODUCT,
+            'status'        => ListingStatus::PUBLISHED,
+            'condition'     => ListingCondition::USED,
+            'title'         => 'Офисное кресло',
+            'slug'          => 'ofisnoe-kreslo',
+            'description'   => 'Кресло в хорошем состоянии.',
+            'price'         => 7000,
+            'currency'      => 'RUB',
+            'is_negotiable' => true,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson('/api/v1/listings/' . $listing->id . '/archive')
+            ->assertOk()
+            ->assertJsonPath('data.status', ListingStatus::ARCHIVED->value)
+            ->assertJsonPath('data.statusLabel', 'В архиве');
+
+        $this->assertDatabaseHas('listings', [
+            'id'     => $listing->id,
+            'status' => ListingStatus::ARCHIVED->value,
+        ]);
+    }
+
     public function test_required_category_attribute_must_be_present_when_updating_non_draft_listing(): void
     {
         $categoryRepository            = app(CategoryRepositoryInterface::class);
