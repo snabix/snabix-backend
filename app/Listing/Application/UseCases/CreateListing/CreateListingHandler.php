@@ -7,14 +7,14 @@ namespace App\Listing\Application\UseCases\CreateListing;
 use App\Listing\Application\Services\ListingAddressSnapshotService;
 use App\Listing\Application\Services\ListingRequiredAttributeValidator;
 use App\Listing\Application\Support\ListingPayloadMapper;
-use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingWriterInterface;
 use App\Listing\Domain\Events\ListingCreated;
 use App\Listing\Domain\Services\ListingPublicationPolicy;
 
 readonly class CreateListingHandler
 {
     public function __construct(
-        private ListingRepositoryInterface        $listingRepository,
+        private ListingWriterInterface            $listingWriter,
         private ListingPayloadMapper              $listingPayloadMapper,
         private ListingPublicationPolicy          $listingPublicationPolicy,
         private ListingRequiredAttributeValidator $listingRequiredAttributeValidator,
@@ -43,7 +43,7 @@ readonly class CreateListingHandler
             ],
         );
 
-        $listing = $this->listingRepository->create(
+        $listing = $this->listingWriter->create(
             attributes: [
                 'user_id'       => $input->userId,
                 'category_id'   => $input->categoryId,

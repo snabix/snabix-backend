@@ -6,7 +6,7 @@ namespace App\Listing\Application\UseCases\UploadListingMedia;
 
 use App\Listing\Application\Services\ListingMediaService;
 use App\Listing\Application\Support\ListingPayloadMapper;
-use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingReadRepositoryInterface;
 use App\Listing\Domain\Events\ListingMediaChanged;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -16,7 +16,7 @@ use Throwable;
 readonly class UploadListingMediaHandler
 {
     public function __construct(
-        private ListingRepositoryInterface $listingRepository,
+        private ListingReadRepositoryInterface $listingReader,
         private ListingMediaService $listingMediaService,
         private ListingPayloadMapper $listingPayloadMapper,
     ) {}
@@ -26,7 +26,7 @@ readonly class UploadListingMediaHandler
      */
     public function execute(UploadListingMediaInput $input): UploadListingMediaOutput
     {
-        $listing          = $this->listingRepository->findById($input->listingId);
+        $listing          = $this->listingReader->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
