@@ -7,7 +7,8 @@ namespace App\Listing\Application\UseCases\UpdateListing;
 use App\Listing\Application\Services\ListingAddressSnapshotService;
 use App\Listing\Application\Services\ListingRequiredAttributeValidator;
 use App\Listing\Application\Support\ListingPayloadMapper;
-use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingReadRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingWriterInterface;
 use App\Listing\Domain\Events\ListingUpdated;
 use App\Listing\Domain\Services\ListingPublicationPolicy;
 use App\Listing\Infrastructure\Models\EloquentListing;
@@ -17,7 +18,8 @@ use Illuminate\Support\Facades\Gate;
 readonly class UpdateListingHandler
 {
     public function __construct(
-        private ListingRepositoryInterface $listingRepository,
+        private ListingReadRepositoryInterface $listingReader,
+        private ListingWriterInterface $listingWriter,
         private ListingPayloadMapper $listingPayloadMapper,
         private ListingPublicationPolicy $listingPublicationPolicy,
         private ListingRequiredAttributeValidator $listingRequiredAttributeValidator,
@@ -26,7 +28,7 @@ readonly class UpdateListingHandler
 
     public function execute(UpdateListingInput $input): UpdateListingOutput
     {
-        $listing       = $this->listingRepository->findById($input->listingId);
+        $listing       = $this->listingReader->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
@@ -51,7 +53,7 @@ readonly class UpdateListingHandler
             'addressLine'      => $input->addressLine,
         ]);
 
-        $listing       = $this->listingRepository->update(
+        $listing       = $this->listingWriter->update(
             $listing,
             attributes: [
                 'category_id'      => $input->categoryId,

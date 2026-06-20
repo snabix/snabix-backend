@@ -6,7 +6,8 @@ namespace App\Listing\Application\UseCases\SubmitListingForReview;
 
 use App\Listing\Application\Services\ListingRequiredAttributeValidator;
 use App\Listing\Application\Support\ListingPayloadMapper;
-use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingReadRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingWriterInterface;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Events\ListingSubmittedForReview;
 use App\Listing\Domain\Exceptions\InvalidListingStatusTransitionException;
@@ -19,7 +20,8 @@ use Illuminate\Validation\ValidationException;
 readonly class SubmitListingForReviewHandler
 {
     public function __construct(
-        private ListingRepositoryInterface $listingRepository,
+        private ListingReadRepositoryInterface $listingReader,
+        private ListingWriterInterface $listingWriter,
         private ListingPayloadMapper $listingPayloadMapper,
         private ListingRequiredAttributeValidator $listingRequiredAttributeValidator,
         private ListingStatusTransitionPolicy $listingStatusTransitionPolicy,
@@ -27,7 +29,7 @@ readonly class SubmitListingForReviewHandler
 
     public function execute(SubmitListingForReviewInput $input): SubmitListingForReviewOutput
     {
-        $listing = $this->listingRepository->findById($input->listingId);
+        $listing = $this->listingReader->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
@@ -51,7 +53,7 @@ readonly class SubmitListingForReviewHandler
             categoryId: $listing->category_id,
         );
 
-        $listing = $this->listingRepository->transitionStatus($listing, ListingStatus::PENDING_REVIEW);
+        $listing = $this->listingWriter->transitionStatus($listing, ListingStatus::PENDING_REVIEW);
 
         event(new ListingSubmittedForReview($listing));
 

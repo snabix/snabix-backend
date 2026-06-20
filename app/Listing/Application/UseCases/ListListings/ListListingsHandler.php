@@ -6,21 +6,21 @@ namespace App\Listing\Application\UseCases\ListListings;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Application\Support\PaginationPayloadMapper;
-use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Contracts\OwnedListingQueryInterface;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Infrastructure\Models\EloquentListing;
 
 readonly class ListListingsHandler
 {
     public function __construct(
-        private ListingRepositoryInterface $listingRepository,
+        private OwnedListingQueryInterface $ownedListingQuery,
         private ListingPayloadMapper $listingPayloadMapper,
         private PaginationPayloadMapper $paginationPayloadMapper,
     ) {}
 
     public function execute(ListListingsInput $input): ListListingsOutput
     {
-        $paginator = $this->listingRepository->listOwnedByUser(
+        $paginator = $this->ownedListingQuery->listOwnedByUser(
             userId: $input->userId,
             page: $input->page,
             perPage: $input->perPage,

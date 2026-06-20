@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Listing\Application\UseCases\ArchiveListing;
 
 use App\Listing\Application\Support\ListingPayloadMapper;
-use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingReadRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingWriterInterface;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Events\ListingUpdated;
 use App\Listing\Domain\Exceptions\InvalidListingStatusTransitionException;
@@ -18,14 +19,15 @@ use Illuminate\Validation\ValidationException;
 readonly class ArchiveListingHandler
 {
     public function __construct(
-        private ListingRepositoryInterface $listingRepository,
+        private ListingReadRepositoryInterface $listingReader,
+        private ListingWriterInterface $listingWriter,
         private ListingPayloadMapper $listingPayloadMapper,
         private ListingStatusTransitionPolicy $listingStatusTransitionPolicy,
     ) {}
 
     public function execute(ArchiveListingInput $input): ArchiveListingOutput
     {
-        $listing        = $this->listingRepository->findById($input->listingId);
+        $listing        = $this->listingReader->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
@@ -45,7 +47,7 @@ readonly class ArchiveListingHandler
         }
 
         $previousStatus = $listing->status;
-        $listing        = $this->listingRepository->transitionStatus($listing, ListingStatus::ARCHIVED);
+        $listing        = $this->listingWriter->transitionStatus($listing, ListingStatus::ARCHIVED);
 
         event(new ListingUpdated($listing, [
             'status' => [
