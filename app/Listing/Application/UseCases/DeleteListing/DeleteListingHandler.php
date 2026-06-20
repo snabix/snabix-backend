@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listing\Application\UseCases\DeleteListing;
 
-use App\Listing\Domain\Contracts\ListingRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingReadRepositoryInterface;
+use App\Listing\Domain\Contracts\ListingWriterInterface;
 use App\Listing\Domain\Events\ListingDeleted;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -13,12 +14,13 @@ use Illuminate\Support\Facades\Gate;
 readonly class DeleteListingHandler
 {
     public function __construct(
-        private ListingRepositoryInterface $listingRepository,
+        private ListingReadRepositoryInterface $listingReader,
+        private ListingWriterInterface $listingWriter,
     ) {}
 
     public function execute(DeleteListingInput $input): DeleteListingOutput
     {
-        $listing = $this->listingRepository->findById($input->listingId);
+        $listing = $this->listingReader->findById($input->listingId);
 
         if ($listing === null) {
             throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$input->listingId]);
@@ -34,7 +36,7 @@ readonly class DeleteListingHandler
             categoryId: $listing->category_id,
         );
 
-        $this->listingRepository->delete($listing);
+        $this->listingWriter->delete($listing);
 
         event($event);
 
