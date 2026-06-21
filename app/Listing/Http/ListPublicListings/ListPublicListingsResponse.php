@@ -5,22 +5,20 @@ declare(strict_types=1);
 namespace App\Listing\Http\ListPublicListings;
 
 use App\Listing\Application\UseCases\ListPublicListings\ListPublicListingsOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ListPublicListingsOutput
  */
-class ListPublicListingsResponse extends JsonResource
+class ListPublicListingsResponse extends OutputResource
 {
     /**
-     * @return array<string, mixed>
+     * @return array{items: array<int, array<string, mixed>>, meta: array<string, int>}
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'items' => $this->items,
-            'meta'  => $this->meta,
-        ];
+        return parent::toArray($request);
     }
 }

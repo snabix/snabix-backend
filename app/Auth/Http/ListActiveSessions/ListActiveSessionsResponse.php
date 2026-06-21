@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace App\Auth\Http\ListActiveSessions;
 
 use App\Auth\Application\UseCases\ListActiveSessions\ListActiveSessionsOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ListActiveSessionsOutput
  */
-class ListActiveSessionsResponse extends JsonResource
+class ListActiveSessionsResponse extends OutputResource
 {
     /**
      * @return array{items: list<array<string, mixed>>}
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'items' => $this->items,
-        ];
+        return parent::toArray($request);
     }
 }

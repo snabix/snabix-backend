@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace App\Location\Http\ListRegions;
 
 use App\Location\Application\UseCases\ListRegions\ListRegionsOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ListRegionsOutput
  */
-class ListRegionsResponse extends JsonResource
+class ListRegionsResponse extends OutputResource
 {
     /**
      * @return array{regions: list<array<string, mixed>>}
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'regions' => $this->regions,
-        ];
+        return parent::toArray($request);
     }
 }

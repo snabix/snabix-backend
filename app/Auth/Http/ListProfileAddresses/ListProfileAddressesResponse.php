@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace App\Auth\Http\ListProfileAddresses;
 
 use App\Auth\Application\UseCases\ListProfileAddresses\ListProfileAddressesOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ListProfileAddressesOutput
  */
-class ListProfileAddressesResponse extends JsonResource
+class ListProfileAddressesResponse extends OutputResource
 {
     /**
      * @return array{addresses: list<array<array-key, mixed>>}
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'addresses' => $this->addresses,
-        ];
+        return parent::toArray($request);
     }
 }

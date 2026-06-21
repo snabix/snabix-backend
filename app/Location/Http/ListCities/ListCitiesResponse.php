@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace App\Location\Http\ListCities;
 
 use App\Location\Application\UseCases\ListCities\ListCitiesOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ListCitiesOutput
  */
-class ListCitiesResponse extends JsonResource
+class ListCitiesResponse extends OutputResource
 {
     /**
      * @return array{cities: list<array<string, mixed>>}
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'cities' => $this->cities,
-        ];
+        return parent::toArray($request);
     }
 }
