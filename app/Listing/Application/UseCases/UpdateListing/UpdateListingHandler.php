@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listing\Application\UseCases\UpdateListing;
 
+use App\Listing\Application\Normalizers\ListingUpdateNormalizer;
 use App\Listing\Application\Services\ListingAddressSnapshotService;
 use App\Listing\Application\Services\ListingRequiredAttributeValidator;
 use App\Listing\Application\Support\ListingPayloadMapper;
@@ -24,6 +25,7 @@ readonly class UpdateListingHandler
         private ListingPublicationPolicy $listingPublicationPolicy,
         private ListingRequiredAttributeValidator $listingRequiredAttributeValidator,
         private ListingAddressSnapshotService $listingAddressSnapshotService,
+        private ListingUpdateNormalizer $listingUpdateNormalizer,
     ) {}
 
     public function execute(UpdateListingInput $input): UpdateListingOutput
@@ -55,20 +57,7 @@ readonly class UpdateListingHandler
 
         $listing       = $this->listingWriter->update(
             $listing,
-            attributes: [
-                'category_id'      => $input->categoryId,
-                'type'             => $input->type,
-                'condition'        => $input->condition,
-                'title'            => $input->title,
-                'description'      => $input->description,
-                'price'            => $input->price,
-                'currency'         => $input->currency,
-                'is_negotiable'    => $input->isNegotiable,
-                'contact_name'     => $input->contactName,
-                'contact_phone'    => $input->contactPhone,
-                'contact_email'    => $input->contactEmail,
-                ...$address,
-            ],
+            data: $this->listingUpdateNormalizer->normalize($input, $address),
             attributeValues: $input->attributeValues,
         );
 
