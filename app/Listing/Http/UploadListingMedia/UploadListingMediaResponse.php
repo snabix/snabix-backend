@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Listing\Http\UploadListingMedia;
 
 use App\Listing\Application\UseCases\UploadListingMedia\UploadListingMediaOutput;
+use App\Shared\Http\Resources\ItemOutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin UploadListingMediaOutput
  */
-class UploadListingMediaResponse extends JsonResource
+class UploadListingMediaResponse extends ItemOutputResource
 {
     /**
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return $this->item;
+        return parent::toArray($request);
     }
 }

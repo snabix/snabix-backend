@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listing\Application\UseCases\CreateListing;
 
+use App\Listing\Application\Normalizers\ListingCreateNormalizer;
 use App\Listing\Application\Services\ListingAddressSnapshotService;
 use App\Listing\Application\Services\ListingRequiredAttributeValidator;
 use App\Listing\Application\Support\ListingPayloadMapper;
@@ -19,6 +20,7 @@ readonly class CreateListingHandler
         private ListingPublicationPolicy          $listingPublicationPolicy,
         private ListingRequiredAttributeValidator $listingRequiredAttributeValidator,
         private ListingAddressSnapshotService     $listingAddressSnapshotService,
+        private ListingCreateNormalizer            $listingCreateNormalizer,
     ) {}
 
     public function execute(CreateListingInput $input): CreateListingOutput
@@ -44,22 +46,7 @@ readonly class CreateListingHandler
         );
 
         $listing = $this->listingWriter->create(
-            attributes: [
-                'user_id'       => $input->userId,
-                'category_id'   => $input->categoryId,
-                'type'          => $input->type,
-                'status'        => $status,
-                'condition'     => $input->condition,
-                'title'         => $input->title,
-                'description'   => $input->description,
-                'price'         => $input->price,
-                'currency'      => $input->currency,
-                'is_negotiable' => $input->isNegotiable,
-                'contact_name'  => $input->contactName,
-                'contact_phone' => $input->contactPhone,
-                'contact_email' => $input->contactEmail,
-                ...$address,
-            ],
+            data: $this->listingCreateNormalizer->normalize($input, $status, $address),
             attributeValues: $input->attributeValues,
         );
 

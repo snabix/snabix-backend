@@ -63,7 +63,7 @@
 | `PATCH /api/v1/listings/{listingId}` | Обновление объявления текущего пользователя |
 | `POST /api/v1/listings/{listingId}/submit-for-review` | Отправка черновика на проверку |
 
-Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`.
+Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media`.
 
 ```json
 {
@@ -170,7 +170,7 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 
 Поддерживаемые query-фильтры: `categoryId`, `type`, `minPrice`, `maxPrice`, `sort`. Значения `sort`: `newest`, `oldest`, `price_asc`, `price_desc`, `popular`.
 
-Поля `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason` в public DTO не возвращаются. В `attributeValues` попадают только характеристики с `showInCard = true`.
+Поля `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media` в public DTO не возвращаются. В `attributeValues` попадают только характеристики с `showInCard = true`.
 
 ```json
 {

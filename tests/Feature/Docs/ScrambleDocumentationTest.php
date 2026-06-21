@@ -29,4 +29,21 @@ class ScrambleDocumentationTest extends TestCase
             ->assertOk()
             ->assertSee('api', escape: false);
     }
+
+    public function test_shared_output_resources_keep_explicit_response_schemas(): void
+    {
+        $this->withoutMiddleware(RestrictedDocsAccess::class);
+
+        $schemas = $this->get('/docs/api.json')
+            ->assertOk()
+            ->json('components.schemas');
+
+        $this->assertIsArray($schemas);
+        $this->assertSame('object', data_get($schemas, 'ListListingsResponse.type'));
+        $this->assertSame(['items', 'meta'], data_get($schemas, 'ListListingsResponse.required'));
+        $this->assertSame('array', data_get($schemas, 'ListListingsResponse.properties.items.type'));
+        $this->assertSame('object', data_get($schemas, 'ListListingsResponse.properties.meta.type'));
+        $this->assertSame(['string', 'null'], data_get($schemas, 'ProfileResponse.properties.phoneNumber.type'));
+        $this->assertSame('object', data_get($schemas, 'CreateListingResponse.type'));
+    }
 }

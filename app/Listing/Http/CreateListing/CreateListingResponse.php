@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Listing\Http\CreateListing;
 
 use App\Listing\Application\UseCases\CreateListing\CreateListingOutput;
+use App\Shared\Http\Resources\ItemOutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin CreateListingOutput
  */
-class CreateListingResponse extends JsonResource
+class CreateListingResponse extends ItemOutputResource
 {
     /**
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return $this->item;
+        return parent::toArray($request);
     }
 }

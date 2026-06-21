@@ -5,22 +5,20 @@ declare(strict_types=1);
 namespace App\News\Http\ListPublishedNewsPosts;
 
 use App\News\Application\UseCases\ListPublishedNewsPosts\ListPublishedNewsPostsOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ListPublishedNewsPostsOutput
  */
-class ListPublishedNewsPostsResponse extends JsonResource
+class ListPublishedNewsPostsResponse extends OutputResource
 {
     /**
-     * @return array<string, mixed>
+     * @return array{items: array<int, array<string, mixed>>, meta: array<string, int>}
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'items' => $this->items,
-            'meta'  => $this->meta,
-        ];
+        return parent::toArray($request);
     }
 }

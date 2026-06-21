@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Infrastructure\Providers;
 
+use App\Catalog\Application\Services\CategoryBreadcrumbService;
 use App\Catalog\Application\Support\CategoryAttributeDefinitionPayloadMapper;
 use App\Catalog\Domain\Contracts\CategoryAttributeDefinitionRepositoryInterface;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
@@ -31,6 +32,7 @@ class CatalogServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(CategoryAttributeDefinitionPayloadMapper::class);
+        $this->app->scoped(CategoryBreadcrumbService::class);
     }
 
     public function boot(): void
