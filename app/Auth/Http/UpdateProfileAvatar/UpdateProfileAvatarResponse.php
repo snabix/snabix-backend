@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Auth\Http\UpdateProfileAvatar;
 
 use App\Auth\Application\UseCases\Profile\ProfileOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ProfileOutput
  */
-class UpdateProfileAvatarResponse extends JsonResource
+class UpdateProfileAvatarResponse extends OutputResource
 {
     /**
      * @return array{
@@ -19,25 +19,16 @@ class UpdateProfileAvatarResponse extends JsonResource
      *     firstName: string,
      *     lastName: string,
      *     email: string,
-     *     phoneNumber: ?string,
+     *     phoneNumber: string|null,
      *     isActive: bool,
-     *     emailVerifiedAt: ?string,
+     *     emailVerifiedAt: string|null,
      *     avatar: array<string, mixed>|null,
      *     addresses: list<array<string, mixed>>
      * }
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'id'              => $this->id,
-            'firstName'       => $this->firstName,
-            'lastName'        => $this->lastName,
-            'email'           => $this->email,
-            'phoneNumber'     => $this->phoneNumber,
-            'isActive'        => $this->isActive,
-            'emailVerifiedAt' => $this->emailVerifiedAt,
-            'avatar'          => $this->avatar,
-            'addresses'       => $this->addresses,
-        ];
+        return parent::toArray($request);
     }
 }

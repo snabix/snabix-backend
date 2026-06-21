@@ -26,8 +26,8 @@ class ApiDtoContractsDocumentationTest extends TestCase
 
         $this->assertStringContainsString('## Private Listing DTO', $contents);
         $this->assertStringContainsString('## Public Listing DTO', $contents);
-        $this->assertStringContainsString('Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`.', $contents);
-        $this->assertStringContainsString('Поля `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason` в public DTO не возвращаются.', $contents);
+        $this->assertStringContainsString('Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media`.', $contents);
+        $this->assertStringContainsString('Поля `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media` в public DTO не возвращаются.', $contents);
     }
 
     public function test_api_dto_contracts_document_complex_response_examples(): void

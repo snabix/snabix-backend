@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Listing\Http\ReorderListingMedia;
 
 use App\Listing\Application\UseCases\ReorderListingMedia\ReorderListingMediaOutput;
+use App\Shared\Http\Resources\ItemOutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin ReorderListingMediaOutput
  */
-class ReorderListingMediaResponse extends JsonResource
+class ReorderListingMediaResponse extends ItemOutputResource
 {
     /**
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return $this->item;
+        return parent::toArray($request);
     }
 }

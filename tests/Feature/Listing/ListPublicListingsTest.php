@@ -58,7 +58,9 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonMissingPath('data.items.0.userId')
             ->assertJsonMissingPath('data.items.0.contactName')
             ->assertJsonMissingPath('data.items.0.contactPhone')
-            ->assertJsonMissingPath('data.items.0.contactEmail');
+            ->assertJsonMissingPath('data.items.0.contactEmail')
+            ->assertJsonMissingPath('data.items.0.rejectionReason')
+            ->assertJsonMissingPath('data.items.0.media');
     }
 
     public function test_public_listings_are_paginated(): void

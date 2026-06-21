@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Listing\Http\UpdateListing;
 
 use App\Listing\Application\UseCases\UpdateListing\UpdateListingOutput;
+use App\Shared\Http\Resources\ItemOutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin UpdateListingOutput
  */
-class UpdateListingResponse extends JsonResource
+class UpdateListingResponse extends ItemOutputResource
 {
     /**
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return $this->item;
+        return parent::toArray($request);
     }
 }

@@ -5,22 +5,20 @@ declare(strict_types=1);
 namespace App\Auth\Http\Logout;
 
 use App\Auth\Application\UseCases\Logout\LogoutOutput;
+use App\Shared\Http\Resources\OutputResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin LogoutOutput
  */
-class LogoutResponse extends JsonResource
+class LogoutResponse extends OutputResource
 {
     /**
      * @return array{loggedOut: bool, message: string}
+     * @phpstan-return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
-        return [
-            'loggedOut' => $this->loggedOut,
-            'message'   => $this->message,
-        ];
+        return parent::toArray($request);
     }
 }
