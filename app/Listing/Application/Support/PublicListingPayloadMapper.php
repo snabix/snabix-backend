@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listing\Application\Support;
 
+use App\Catalog\Application\Services\CategoryBreadcrumbService;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
@@ -12,6 +13,10 @@ use App\Media\Infrastructure\Models\EloquentMedia;
 
 class PublicListingPayloadMapper
 {
+    public function __construct(
+        private readonly CategoryBreadcrumbService $categoryBreadcrumbService,
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -82,6 +87,8 @@ class PublicListingPayloadMapper
             return null;
         }
 
+        $breadcrumbTrail = $this->categoryBreadcrumbService->resolve($category);
+
         return [
             'id'               => $category->id,
             'catalogType'      => $category->catalog_type->value,
@@ -89,31 +96,10 @@ class PublicListingPayloadMapper
             'parentId'         => $category->parent_id,
             'name'             => $category->name,
             'slug'             => $category->slug,
-            'fullName'         => $category->full_name,
+            'fullName'         => $breadcrumbTrail['fullName'],
             'path'             => $category->path,
-            'breadcrumbs'      => $this->categoryBreadcrumbs($category),
+            'breadcrumbs'      => $breadcrumbTrail['breadcrumbs'],
         ];
-    }
-
-    /**
-     * @return list<array{id: string, name: string, slug: string}>
-     */
-    private function categoryBreadcrumbs(EloquentCategory $category): array
-    {
-        $breadcrumbs = [];
-        $current     = $category;
-
-        while ($current instanceof EloquentCategory) {
-            array_unshift($breadcrumbs, [
-                'id'   => $current->id,
-                'name' => $current->name,
-                'slug' => $current->slug,
-            ]);
-
-            $current = $current->parentCategory()->first();
-        }
-
-        return $breadcrumbs;
     }
 
     /**
