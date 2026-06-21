@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listing\Infrastructure\Providers;
 
+use App\Listing\Application\Support\ListingPayloadAssembler;
 use App\Listing\Application\Support\ListingPayloadMapper;
+use App\Listing\Application\Support\ListingPayloadVisibilityPolicy;
 use App\Listing\Application\Support\PaginationPayloadMapper;
 use App\Listing\Application\Support\PublicListingPayloadMapper;
 use App\Listing\Domain\Contracts\ListingReadRepositoryInterface;
@@ -40,8 +42,10 @@ class ListingServiceProvider extends ServiceProvider
             PublicListingQueryInterface::class,
             PublicListingQuery::class,
         );
+        $this->app->scoped(ListingPayloadAssembler::class);
         $this->app->scoped(ListingPayloadMapper::class);
         $this->app->scoped(PublicListingPayloadMapper::class);
+        $this->app->singleton(ListingPayloadVisibilityPolicy::class);
         $this->app->singleton(PaginationPayloadMapper::class);
     }
 
