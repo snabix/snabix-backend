@@ -13,6 +13,11 @@ use App\Shared\Infrastructure\Policies\EloquentSystemLogPolicy;
 use App\Shared\Infrastructure\Services\HasherService;
 use App\Shared\Infrastructure\Services\SessionAuthenticatorService;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Console\Migrations\FreshCommand;
+use Illuminate\Database\Console\Migrations\RefreshCommand;
+use Illuminate\Database\Console\Migrations\ResetCommand;
+use Illuminate\Database\Console\Migrations\RollbackCommand;
+use Illuminate\Database\Console\WipeCommand;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -44,8 +49,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->protectPersistentDatabase();
+
         CreateRecord::disableCreateAnother();
 
         Gate::policy(EloquentSystemLog::class, EloquentSystemLogPolicy::class);
+    }
+
+    private function protectPersistentDatabase(): void
+    {
+        $connection     = config('database.default');
+        $isTestDatabase = $this->app->environment('testing')
+            && $connection === 'pgsql'
+            && config("database.connections.{$connection}.host") === 'db-test'
+            && config("database.connections.{$connection}.database") === 'snabix_test';
+
+        FreshCommand::prohibit(! $isTestDatabase);
+        RefreshCommand::prohibit(! $isTestDatabase);
+        ResetCommand::prohibit(! $isTestDatabase);
+        RollbackCommand::prohibit(! $isTestDatabase);
+        WipeCommand::prohibit(! $isTestDatabase);
     }
 }

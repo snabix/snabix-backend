@@ -38,6 +38,14 @@ class CategoryForm
                             ->required()
                             ->maxLength(255),
 
+                        TextInput::make('slug')
+                            ->translateLabel()
+                            ->placeholder(__('Will be generated automatically if left empty'))
+                            ->prefixIcon(Heroicon::OutlinedLink)
+                            ->maxLength(255)
+                            ->helperText(__('Used in URLs and category path building.')),
+
+
                         Select::make('parent_id')
                             ->label('Parent category')
                             ->translateLabel()
@@ -47,12 +55,6 @@ class CategoryForm
                             ->preload()
                             ->native(false),
 
-                        TextInput::make('slug')
-                            ->translateLabel()
-                            ->placeholder(__('Will be generated automatically if left empty'))
-                            ->prefixIcon(Heroicon::OutlinedLink)
-                            ->maxLength(255)
-                            ->helperText(__('Used in URLs and category path building.')),
 
                         SpatieMediaLibraryFileUpload::make('iconMedia')
                             ->label('Icon')

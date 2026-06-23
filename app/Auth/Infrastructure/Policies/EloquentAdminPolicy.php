@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Auth\Infrastructure\Policies;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Foundation\Auth\User as AuthUser;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class EloquentAdminPolicy
 {
@@ -70,4 +68,5 @@ class EloquentAdminPolicy
     {
         return $authUser->can('Reorder:EloquentAdmin');
     }
+
 }

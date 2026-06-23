@@ -19,10 +19,15 @@ readonly class SendEmailVerificationNotification
         UserRegistered | UserEmailVerificationRequested $event,
     ): void {
         $user = $event->user;
-        $code = $this->emailVerificationCodeService->issue(
-            $user->id->value(),
-            $user->email->value(),
-        );
+        $code = $event instanceof UserEmailVerificationRequested
+            ? $this->emailVerificationCodeService->reuseOrIssue(
+                $user->id->value(),
+                $user->email->value(),
+            )
+            : $this->emailVerificationCodeService->issue(
+                $user->id->value(),
+                $user->email->value(),
+            );
 
         SendEmailVerificationJob::dispatch(
             userId: $user->id->value(),

@@ -22,6 +22,7 @@ use App\Listing\Domain\Events\ListingDeleted;
 use App\Listing\Domain\Events\ListingMediaChanged;
 use App\Listing\Domain\Events\ListingSubmittedForReview;
 use App\Listing\Domain\Events\ListingUpdated;
+use App\Notification\Application\Listeners\SendSecurityLoginNotification;
 use App\Shared\Infrastructure\Listeners\PersistLoggableEventListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -37,6 +38,7 @@ class EventServiceProvider extends ServiceProvider
             PersistLoggableEventListener::class,
         ],
         UserSignedIn::class                   => [
+            SendSecurityLoginNotification::class,
             PersistLoggableEventListener::class,
         ],
         AuthenticationFailed::class           => [

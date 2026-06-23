@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Location\Infrastructure\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Location\Infrastructure\Models\EloquentRegion;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentRegionPolicy
 {
@@ -71,4 +71,5 @@ class EloquentRegionPolicy
     {
         return $authUser->can('Reorder:EloquentRegion');
     }
+
 }

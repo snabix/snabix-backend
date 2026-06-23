@@ -13,6 +13,7 @@ use App\Location\Infrastructure\Models\EloquentCity;
 use App\Location\Infrastructure\Models\EloquentRegion;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Database\Factories\EloquentListingFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -48,7 +49,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property      string|null                                                  $rejection_reason
  * @property      Carbon|null                                                  $published_at
  * @property      Carbon|null                                                  $expires_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, EloquentMedia> $orderedMedia
+ * @property-read Collection<int, EloquentMedia> $orderedMedia
  * @property-read EloquentRegion|null                                          $region
  * @property-read EloquentCity|null                                            $city
  */

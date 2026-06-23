@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\News\Infrastructure\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\News\Infrastructure\Models\EloquentNewsPost;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentNewsPostPolicy
 {
@@ -71,4 +71,5 @@ class EloquentNewsPostPolicy
     {
         return $authUser->can('Reorder:EloquentNewsPost');
     }
+
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Catalog\Infrastructure\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentCategoryPolicy
 {
@@ -71,4 +71,5 @@ class EloquentCategoryPolicy
     {
         return $authUser->can('Reorder:EloquentCategory');
     }
+
 }
