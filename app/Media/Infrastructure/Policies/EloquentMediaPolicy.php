@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Media\Infrastructure\Policies;
 
-use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentMediaPolicy
 {
@@ -71,5 +71,4 @@ class EloquentMediaPolicy
     {
         return $authUser->can('Reorder:EloquentMedia');
     }
-
 }

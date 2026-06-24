@@ -25,33 +25,33 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
- * @property      string                                                       $id
- * @property      string                                                       $user_id
- * @property      string                                                       $category_id
- * @property      ListingType                                                  $type
- * @property      ListingStatus                                                $status
- * @property      ListingCondition                                             $condition
- * @property      string                                                       $title
- * @property      string                                                       $slug
- * @property      string                                                       $description
- * @property      int|null                                                     $price
- * @property      string                                                       $currency
- * @property      bool                                                         $is_negotiable
- * @property      string|null                                                  $contact_name
- * @property      string|null                                                  $contact_phone
- * @property      string|null                                                  $contact_email
- * @property      string|null                                                  $profile_address_id
- * @property      int|null                                                     $region_id
- * @property      int|null                                                     $city_id
- * @property      array<string, mixed>|null                                    $address_snapshot
- * @property      int                                                          $views_count
- * @property      bool                                                         $is_featured
- * @property      string|null                                                  $rejection_reason
- * @property      Carbon|null                                                  $published_at
- * @property      Carbon|null                                                  $expires_at
+ * @property      string                         $id
+ * @property      string                         $user_id
+ * @property      string                         $category_id
+ * @property      ListingType                    $type
+ * @property      ListingStatus                  $status
+ * @property      ListingCondition               $condition
+ * @property      string                         $title
+ * @property      string                         $slug
+ * @property      string                         $description
+ * @property      int|null                       $price
+ * @property      string                         $currency
+ * @property      bool                           $is_negotiable
+ * @property      string|null                    $contact_name
+ * @property      string|null                    $contact_phone
+ * @property      string|null                    $contact_email
+ * @property      string|null                    $profile_address_id
+ * @property      int|null                       $region_id
+ * @property      int|null                       $city_id
+ * @property      array<string, mixed>|null      $address_snapshot
+ * @property      int                            $views_count
+ * @property      bool                           $is_featured
+ * @property      string|null                    $rejection_reason
+ * @property      Carbon|null                    $published_at
+ * @property      Carbon|null                    $expires_at
  * @property-read Collection<int, EloquentMedia> $orderedMedia
- * @property-read EloquentRegion|null                                          $region
- * @property-read EloquentCity|null                                            $city
+ * @property-read EloquentRegion|null            $region
+ * @property-read EloquentCity|null              $city
  */
 class EloquentListing extends Model implements HasMedia
 {

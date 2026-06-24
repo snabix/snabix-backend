@@ -10,6 +10,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * Class EloquentAdmin
+ *
+ * @property int    $id
+ * @property string $name
+ * @property string $email
+ */
 class EloquentAdmin extends Authenticatable implements FilamentUser
 {
     use HasRoles;

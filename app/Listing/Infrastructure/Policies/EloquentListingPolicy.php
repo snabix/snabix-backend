@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listing\Infrastructure\Policies;
 
-use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentListingPolicy
 {
@@ -71,5 +71,4 @@ class EloquentListingPolicy
     {
         return $authUser->can('Reorder:EloquentListing');
     }
-
 }

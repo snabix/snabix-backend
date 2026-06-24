@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Policies;
 
-use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Shared\Infrastructure\Models\EloquentSystemLog;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class EloquentSystemLogPolicy
 {
@@ -71,5 +71,4 @@ class EloquentSystemLogPolicy
     {
         return $authUser->can('Reorder:EloquentSystemLog');
     }
-
 }
