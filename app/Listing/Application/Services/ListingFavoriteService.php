@@ -10,6 +10,7 @@ use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingFavorite;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Throwable;
 
 class ListingFavoriteService
 {
@@ -17,15 +18,19 @@ class ListingFavoriteService
         string $userId,
         string $listingId,
     ): EloquentListing {
-        $listing = $this->findPublishedListing($listingId);
+        $listing  = $this->findPublishedListing($listingId);
 
         $favorite = EloquentListingFavorite::query()->firstOrCreate([
-            'user_id' => $userId,
+            'user_id'    => $userId,
             'listing_id' => $listing->id,
         ]);
 
         if ($favorite->wasRecentlyCreated && $listing->user_id !== $userId) {
-            event(new ListingFavorited($listing, $userId));
+            try {
+                event(new ListingFavorited($listing, $userId));
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
 
         return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
@@ -58,7 +63,7 @@ class ListingFavoriteService
             ->where('status', ListingStatus::PUBLISHED)
             ->whereHas(
                 'favorites',
-                fn ($query) => $query->where('user_id', $userId),
+                fn($query) => $query->where('user_id', $userId),
             )
             ->orderByDesc(
                 EloquentListingFavorite::query()
@@ -84,7 +89,7 @@ class ListingFavoriteService
             ->first();
 
         if (! $listing instanceof EloquentListing) {
-            throw (new ModelNotFoundException)->setModel(EloquentListing::class, [$listingId]);
+            throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$listingId]);
         }
 
         return $listing;

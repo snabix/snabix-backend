@@ -16,13 +16,13 @@ class PlatformNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public int $tries = 3;
+    public int $tries              = 3;
 
     /** @var list<string>|null */
     private ?array $forcedChannels = null;
 
     /**
-     * @param  array<string, mixed>  $context
+     * @param array<string, mixed> $context
      */
     public function __construct(
         public NotificationEventType $eventType,
@@ -60,11 +60,11 @@ class PlatformNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * @param  list<string>  $channels
+     * @param list<string> $channels
      */
     public function forChannels(array $channels): self
     {
-        $notification = clone $this;
+        $notification                 = clone $this;
         $notification->forcedChannels = $channels;
 
         return $notification;
@@ -76,18 +76,18 @@ class PlatformNotification extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'eventKey' => $this->eventType->value,
-            'category' => $this->eventType->category(),
-            'title' => $this->title,
-            'body' => $this->body,
+            'eventKey'  => $this->eventType->value,
+            'category'  => $this->eventType->category(),
+            'title'     => $this->title,
+            'body'      => $this->body,
             'actionUrl' => $this->actionUrl,
-            'context' => $this->context === [] ? (object) [] : $this->context,
+            'context'   => $this->context === [] ? (object) [] : $this->context,
         ];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        $message = (new MailMessage)
+        $message = (new MailMessage())
             ->subject($this->title)
             ->greeting('Здравствуйте!')
             ->line($this->body);
