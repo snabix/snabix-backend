@@ -10,6 +10,7 @@ use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingFavorite;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Throwable;
 
 class ListingFavoriteService
 {
@@ -25,7 +26,11 @@ class ListingFavoriteService
         ]);
 
         if ($favorite->wasRecentlyCreated && $listing->user_id !== $userId) {
-            event(new ListingFavorited($listing, $userId));
+            try {
+                event(new ListingFavorited($listing, $userId));
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
 
         return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
