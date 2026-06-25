@@ -44,7 +44,7 @@ class ResendEmailVerificationTest extends FeatureTestCase
     {
         Queue::fake();
 
-        $user = EloquentUser::factory()->unverified()->create([
+        $user              = EloquentUser::factory()->unverified()->create([
             'email' => 'cooldown@example.com',
         ]);
 
@@ -66,10 +66,19 @@ class ResendEmailVerificationTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonPath('data.sent', true);
 
-        $jobs = Queue::pushed(SendEmailVerificationJob::class);
+        $verificationCodes = [];
 
-        $this->assertCount(2, $jobs);
-        $this->assertSame($jobs[0]->verificationCode, $jobs[1]->verificationCode);
+        Queue::assertPushed(
+            SendEmailVerificationJob::class,
+            function (SendEmailVerificationJob $job) use (&$verificationCodes): bool {
+                $verificationCodes[] = $job->verificationCode;
+
+                return true;
+            },
+        );
+
+        $this->assertCount(2, $verificationCodes);
+        $this->assertSame($verificationCodes[0], $verificationCodes[1]);
     }
 
     public function test_verified_user_does_not_receive_new_verification_email(): void

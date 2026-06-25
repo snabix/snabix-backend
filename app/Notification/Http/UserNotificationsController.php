@@ -16,7 +16,7 @@ class UserNotificationsController
      */
     private static function payload(DatabaseNotification $notification): array
     {
-        $data = is_array($notification->data) ? $notification->data : [];
+        $data = $notification->data;
 
         return [
             'id'        => $notification->id,
