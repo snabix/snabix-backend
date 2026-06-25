@@ -15,4 +15,9 @@ abstract class FeatureTestCase extends TestCase
     protected bool $seed     = true;
 
     protected string $seeder = TestDatabaseSeeder::class;
+
+    protected function beforeRefreshingDatabase(): void
+    {
+        $this->ensureSafeTestDatabaseConfiguration();
+    }
 }

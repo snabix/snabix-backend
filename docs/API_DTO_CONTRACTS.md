@@ -10,58 +10,58 @@
 
 ### ListingType
 
-| Case | Value | Label |
-| --- | ---: | --- |
-| PRODUCT | 1 | Товар |
-| SERVICE | 2 | Услуга |
+| Case    | Value | Label  |
+|---------|------:|--------|
+| PRODUCT |     1 | Товар  |
+| SERVICE |     2 | Услуга |
 
 ### ListingStatus
 
-| Case | Value | Label |
-| --- | ---: | --- |
-| DRAFT | 1 | Черновик |
-| PENDING_REVIEW | 2 | На проверке |
-| PUBLISHED | 3 | Опубликовано |
-| REJECTED | 4 | Отклонено |
-| ARCHIVED | 5 | В архиве |
+| Case           | Value | Label        |
+|----------------|------:|--------------|
+| DRAFT          |     1 | Черновик     |
+| PENDING_REVIEW |     2 | На проверке  |
+| PUBLISHED      |     3 | Опубликовано |
+| REJECTED       |     4 | Отклонено    |
+| ARCHIVED       |     5 | В архиве     |
 
 ### ListingCondition
 
-| Case | Value | Label |
-| --- | ---: | --- |
-| NEW | 1 | Новый |
-| USED | 2 | Б/у |
-| NOT_APPLICABLE | 3 | Не применяется |
+| Case           | Value | Label          |
+|----------------|------:|----------------|
+| NEW            |     1 | Новый          |
+| USED           |     2 | Б/у            |
+| NOT_APPLICABLE |     3 | Не применяется |
 
 ### CategoryCatalogType
 
-| Case | Value | Label |
-| --- | ---: | --- |
-| PRODUCT | 1 | Товары |
-| SERVICE | 2 | Услуги |
+| Case    | Value | Label  |
+|---------|------:|--------|
+| PRODUCT |     1 | Товары |
+| SERVICE |     2 | Услуги |
 
 ### CategoryAttributeType
 
-| Case | Value | Label |
-| --- | ---: | --- |
-| TEXT | 1 | Текст |
-| NUMBER | 2 | Число |
-| BOOLEAN | 3 | Да/Нет |
-| SELECT | 4 | Выбор одного значения |
-| MULTISELECT | 5 | Выбор нескольких значений |
-| DATE | 6 | Дата |
+| Case        | Value | Label                     |
+|-------------|------:|---------------------------|
+| TEXT        |     1 | Текст                     |
+| NUMBER      |     2 | Число                     |
+| BOOLEAN     |     3 | Да/Нет                    |
+| SELECT      |     4 | Выбор одного значения     |
+| MULTISELECT |     5 | Выбор нескольких значений |
+| DATE        |     6 | Дата                      |
 
 ## Private Listing DTO
 
 Используется в пользовательском кабинете и owner-сценариях:
 
-| Endpoint | Назначение |
-| --- | --- |
-| `POST /api/v1/listings` | Создание объявления |
-| `GET /api/v1/listings` | Список объявлений текущего пользователя |
-| `GET /api/v1/listings/{listingId}` | Просмотр объявления текущего пользователя |
-| `PATCH /api/v1/listings/{listingId}` | Обновление объявления текущего пользователя |
-| `POST /api/v1/listings/{listingId}/submit-for-review` | Отправка черновика на проверку |
+| Endpoint                                              | Назначение                                  |
+|-------------------------------------------------------|---------------------------------------------|
+| `POST /api/v1/listings`                               | Создание объявления                         |
+| `GET /api/v1/listings`                                | Список объявлений текущего пользователя     |
+| `GET /api/v1/listings/{listingId}`                    | Просмотр объявления текущего пользователя   |
+| `PATCH /api/v1/listings/{listingId}`                  | Обновление объявления текущего пользователя |
+| `POST /api/v1/listings/{listingId}/submit-for-review` | Отправка черновика на проверку              |
 
 Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media`.
 
@@ -164,8 +164,8 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 
 Используется для публичной витрины и карточек объявлений:
 
-| Endpoint | Назначение |
-| --- | --- |
+| Endpoint                      | Назначение                                 |
+|-------------------------------|--------------------------------------------|
 | `GET /api/v1/public/listings` | Публичный список опубликованных объявлений |
 
 Поддерживаемые query-фильтры: `categoryId`, `type`, `minPrice`, `maxPrice`, `sort`. Значения `sort`: `newest`, `oldest`, `price_asc`, `price_desc`, `popular`.
@@ -229,8 +229,8 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 
 Используется для динамической формы объявления:
 
-| Endpoint | Назначение |
-| --- | --- |
+| Endpoint                                         | Назначение                                              |
+|--------------------------------------------------|---------------------------------------------------------|
 | `GET /api/v1/categories/{categoryId}/attributes` | Получение характеристик категории с учетом наследования |
 
 Frontend должен учитывать `placeholder`, `helpText`, `defaultValue`, `groupName`, `showInCard`, `isRequired`, `isFilterable`, `options` и `typeLabel`.

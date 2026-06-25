@@ -59,7 +59,17 @@ class ResendEmailVerificationTest extends FeatureTestCase
             ->assertJsonPath('data.sent', false)
             ->assertJsonPath('data.message', 'Новый код пока запрашивать рано. Попробуйте чуть позже.');
 
-        Queue::assertPushed(SendEmailVerificationJob::class, 1);
+        $this->travel(61)->seconds();
+
+        $this->actingAs($user)
+            ->postJson('/api/v1/auth/email-verification-notification')
+            ->assertOk()
+            ->assertJsonPath('data.sent', true);
+
+        $jobs = Queue::pushed(SendEmailVerificationJob::class);
+
+        $this->assertCount(2, $jobs);
+        $this->assertSame($jobs[0]->verificationCode, $jobs[1]->verificationCode);
     }
 
     public function test_verified_user_does_not_receive_new_verification_email(): void
