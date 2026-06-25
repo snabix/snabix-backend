@@ -43,6 +43,8 @@ use App\Location\Http\ListCities\ListCitiesController;
 use App\Location\Http\ListRegions\ListRegionsController;
 use App\News\Http\ListPublishedNewsPosts\ListPublishedNewsPostsController;
 use App\News\Http\ShowPublishedNewsPost\ShowPublishedNewsPostController;
+use App\Notification\Http\NotificationPreferencesController;
+use App\Notification\Http\UserNotificationsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -84,21 +86,26 @@ Route::prefix('v1')->group(function () {
         Route::post('logout', LogoutController::class)
             ->middleware('auth:sanctum');
     });
+
     Route::prefix('categories')->group(function () {
         Route::get('/list', ListRootCategoriesController::class);
         Route::get('/{categoryId}/branch', ShowCategoryBranchController::class);
         Route::get('/{categoryId}/attributes', GetCategoryAttributesController::class);
     });
+
     Route::prefix('locations')->group(function () {
         Route::get('/regions', ListRegionsController::class);
         Route::get('/cities', ListCitiesController::class);
     });
+
     Route::prefix('news')->group(function () {
         Route::get('/', ListPublishedNewsPostsController::class);
         Route::get('/{slug}', ShowPublishedNewsPostController::class);
     });
+
     Route::get('public/listings', ListPublicListingsController::class);
     Route::get('public/listings/{listingId}', ShowPublicListingController::class);
+
     Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
         Route::get('/', ListListingsController::class);
         Route::get('/favorites', ListFavoriteListingsController::class);
@@ -114,5 +121,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/{listingId}', ShowListingController::class);
         Route::patch('/{listingId}', UpdateListingController::class);
         Route::delete('/{listingId}', DeleteListingController::class);
+    });
+
+    Route::prefix('notifications')->middleware('auth:sanctum')->group(function () {
+        Route::get('/', [UserNotificationsController::class, 'index']);
+        Route::patch('/read-all', [UserNotificationsController::class, 'markAllRead']);
+        Route::patch('/{notificationId}/read', [UserNotificationsController::class, 'markRead']);
+        Route::get('/preferences', [NotificationPreferencesController::class, 'show']);
+        Route::put('/preferences', [NotificationPreferencesController::class, 'update']);
+        Route::delete('/preferences', [NotificationPreferencesController::class, 'reset']);
     });
 });

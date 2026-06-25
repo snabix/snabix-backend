@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listing\Application\Services;
 
 use App\Listing\Domain\Enums\ListingStatus;
+use App\Listing\Domain\Events\ListingFavorited;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingFavorite;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,10 +19,14 @@ class ListingFavoriteService
     ): EloquentListing {
         $listing = $this->findPublishedListing($listingId);
 
-        EloquentListingFavorite::query()->firstOrCreate([
-            'user_id'    => $userId,
+        $favorite = EloquentListingFavorite::query()->firstOrCreate([
+            'user_id' => $userId,
             'listing_id' => $listing->id,
         ]);
+
+        if ($favorite->wasRecentlyCreated && $listing->user_id !== $userId) {
+            event(new ListingFavorited($listing, $userId));
+        }
 
         return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
     }
@@ -53,7 +58,7 @@ class ListingFavoriteService
             ->where('status', ListingStatus::PUBLISHED)
             ->whereHas(
                 'favorites',
-                fn($query) => $query->where('user_id', $userId),
+                fn ($query) => $query->where('user_id', $userId),
             )
             ->orderByDesc(
                 EloquentListingFavorite::query()
@@ -79,7 +84,7 @@ class ListingFavoriteService
             ->first();
 
         if (! $listing instanceof EloquentListing) {
-            throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$listingId]);
+            throw (new ModelNotFoundException)->setModel(EloquentListing::class, [$listingId]);
         }
 
         return $listing;

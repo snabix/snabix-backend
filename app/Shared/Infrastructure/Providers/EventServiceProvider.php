@@ -19,16 +19,19 @@ use App\Auth\Domain\Events\UserRegistered;
 use App\Auth\Domain\Events\UserSignedIn;
 use App\Listing\Domain\Events\ListingCreated;
 use App\Listing\Domain\Events\ListingDeleted;
+use App\Listing\Domain\Events\ListingFavorited;
 use App\Listing\Domain\Events\ListingMediaChanged;
 use App\Listing\Domain\Events\ListingSubmittedForReview;
 use App\Listing\Domain\Events\ListingUpdated;
+use App\Notification\Application\Listeners\SendListingFavoritedNotification;
+use App\Notification\Application\Listeners\SendSecurityLoginNotification;
 use App\Shared\Infrastructure\Listeners\PersistLoggableEventListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        UserRegistered::class                 => [
+        UserRegistered::class => [
             SendEmailVerificationNotification::class,
             PersistLoggableEventListener::class,
         ],
@@ -36,49 +39,54 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
             PersistLoggableEventListener::class,
         ],
-        UserSignedIn::class                   => [
+        UserSignedIn::class => [
+            SendSecurityLoginNotification::class,
             PersistLoggableEventListener::class,
         ],
-        AuthenticationFailed::class           => [
+        AuthenticationFailed::class => [
             PersistLoggableEventListener::class,
         ],
-        UserLoggedOut::class                  => [
+        UserLoggedOut::class => [
             PersistLoggableEventListener::class,
         ],
-        UserEmailVerified::class              => [
+        UserEmailVerified::class => [
             PersistLoggableEventListener::class,
         ],
-        PasswordResetRequested::class         => [
+        PasswordResetRequested::class => [
             PersistLoggableEventListener::class,
         ],
-        PasswordResetCompleted::class         => [
+        PasswordResetCompleted::class => [
             PersistLoggableEventListener::class,
         ],
-        UserPasswordChanged::class            => [
+        UserPasswordChanged::class => [
             PersistLoggableEventListener::class,
         ],
-        UserProfileUpdated::class             => [
+        UserProfileUpdated::class => [
             PersistLoggableEventListener::class,
         ],
-        UserAvatarUpdated::class              => [
+        UserAvatarUpdated::class => [
             PersistLoggableEventListener::class,
         ],
-        UserAvatarDeleted::class              => [
+        UserAvatarDeleted::class => [
             PersistLoggableEventListener::class,
         ],
-        ListingCreated::class                 => [
+        ListingCreated::class => [
             PersistLoggableEventListener::class,
         ],
-        ListingSubmittedForReview::class      => [
+        ListingSubmittedForReview::class => [
             PersistLoggableEventListener::class,
         ],
-        ListingDeleted::class                 => [
+        ListingDeleted::class => [
             PersistLoggableEventListener::class,
         ],
-        ListingUpdated::class                 => [
+        ListingUpdated::class => [
             PersistLoggableEventListener::class,
         ],
-        ListingMediaChanged::class            => [
+        ListingMediaChanged::class => [
+            PersistLoggableEventListener::class,
+        ],
+        ListingFavorited::class => [
+            SendListingFavoritedNotification::class,
             PersistLoggableEventListener::class,
         ],
     ];

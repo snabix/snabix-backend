@@ -79,7 +79,7 @@ tasks:
     desc: Запустить RabbitMQ worker для очередей проекта
     cmds:
       - docker compose exec -T app php artisan app:rabbitmq-declare-topology
-      - 'docker compose exec -T app sh -c ''php artisan queue:work rabbitmq --queue="${QUEUE_WORK_QUEUES:-notifications,media,images,default}" --tries=3 --backoff=10 --timeout=120'''
+      - 'docker compose exec -T app sh -c ''php artisan queue:work rabbitmq --queue="${QUEUE_WORK_QUEUES:-notifications}" --tries=3 --backoff=10 --timeout=120'''
 
   queue:setup:
     desc: Объявить RabbitMQ exchange, очереди и bindings проекта
