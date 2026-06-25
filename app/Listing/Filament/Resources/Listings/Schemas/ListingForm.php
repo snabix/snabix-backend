@@ -40,7 +40,7 @@ class ListingForm
                             ->description('Каркас объявления: владелец, категория, статус и ключевая информация для публикации.')
                             ->columnSpan([
                                 'default' => 12,
-                                'lg' => 6,
+                                'lg'      => 6,
                             ])
                             ->schema([
                                 TextInput::make('title')
@@ -56,11 +56,11 @@ class ListingForm
 
                                 Select::make('category_id')
                                     ->label('Категория')
-                                    ->options(fn (): array => EloquentCategory::query()
+                                    ->options(fn(): array => EloquentCategory::query()
                                         ->orderBy('path')
                                         ->get()
-                                        ->mapWithKeys(fn (EloquentCategory $category): array => [
-                                            $category->id => $category->full_name.' ['.$category->catalog_type->label().']',
+                                        ->mapWithKeys(fn(EloquentCategory $category): array => [
+                                            $category->id => $category->full_name . ' [' . $category->catalog_type->label() . ']',
                                         ])
                                         ->all())
                                     ->searchable()
@@ -71,11 +71,11 @@ class ListingForm
                                     ->schema([
                                         Select::make('user_id')
                                             ->label('Пользователь')
-                                            ->options(fn (): array => EloquentUser::query()
+                                            ->options(fn(): array => EloquentUser::query()
                                                 ->orderBy('first_name')
                                                 ->get()
-                                                ->mapWithKeys(fn (EloquentUser $user): array => [
-                                                    $user->id => trim($user->first_name.' '.$user->last_name).' ['.$user->email.']',
+                                                ->mapWithKeys(fn(EloquentUser $user): array => [
+                                                    $user->id => trim($user->first_name . ' ' . $user->last_name) . ' [' . $user->email . ']',
                                                 ])
                                                 ->all())
                                             ->searchable()
@@ -100,8 +100,8 @@ class ListingForm
                                             ->options(ListingCondition::options())
                                             ->default(ListingCondition::USED->value)
                                             ->native(false)
-                                            ->visible(fn (Get $get): bool => self::nullableInt($get('type')) !== ListingType::SERVICE->value)
-                                            ->required(fn (Get $get): bool => self::nullableInt($get('type')) !== ListingType::SERVICE->value),
+                                            ->visible(fn(Get $get): bool => self::nullableInt($get('type')) !== ListingType::SERVICE->value)
+                                            ->required(fn(Get $get): bool => self::nullableInt($get('type')) !== ListingType::SERVICE->value),
 
                                         TextInput::make('views_count')
                                             ->label('Просмотры')
@@ -115,7 +115,7 @@ class ListingForm
                                             ->required()
                                             ->disabled()
                                             ->maxLength(255)
-                                            ->dehydrateStateUsing(fn (?string $state, Get $get): string => Str::slug($state ?: self::nullableString($get('title')) ?? '')),
+                                            ->dehydrateStateUsing(fn(?string $state, Get $get): string => Str::slug($state ?: self::nullableString($get('title')) ?? '')),
 
                                     ]),
                             ]),
@@ -124,7 +124,7 @@ class ListingForm
                             ->icon(Heroicon::OutlinedClipboardDocumentList)
                             ->columnSpan([
                                 'default' => 12,
-                                'lg' => 6,
+                                'lg'      => 6,
                             ])
                             ->schema([
                                 Textarea::make('description')
@@ -159,7 +159,7 @@ class ListingForm
                             ->icon(Heroicon::OutlinedPhone)
                             ->columnSpan([
                                 'default' => 12,
-                                'lg' => 6,
+                                'lg'      => 6,
                             ])
                             ->columns()
                             ->schema([
@@ -189,7 +189,7 @@ class ListingForm
                             ->description('При необходимости администратор может вручную указать значения подготовленных характеристик.')
                             ->columnSpan([
                                 'default' => 12,
-                                'lg' => 6,
+                                'lg'      => 6,
                             ])
                             ->schema([
                                 Placeholder::make('attributes_hint')
@@ -204,18 +204,18 @@ class ListingForm
                                                 Select::make('attribute_definition_id')
                                                     ->label('Характеристика')
                                                     ->options(function (Get $get, ?EloquentListing $record): array {
-                                                        $categoryId = $get('../../category_id');
+                                                        $categoryId         = $get('../../category_id');
                                                         $resolvedCategoryId = is_string($categoryId) && Str::isUuid($categoryId)
                                                             ? $categoryId
                                                             : $record?->category_id;
 
                                                         return EloquentCategoryAttributeDefinition::query()
-                                                            ->when($resolvedCategoryId !== null, fn ($query) => $query->where('category_id', $resolvedCategoryId))
+                                                            ->when($resolvedCategoryId !== null, fn($query) => $query->where('category_id', $resolvedCategoryId))
                                                             ->orderBy('sort_order')
                                                             ->orderBy('name')
                                                             ->get()
-                                                            ->mapWithKeys(fn (EloquentCategoryAttributeDefinition $definition): array => [
-                                                                $definition->id => $definition->name.' ['.$definition->type->label().']',
+                                                            ->mapWithKeys(fn(EloquentCategoryAttributeDefinition $definition): array => [
+                                                                $definition->id => $definition->name . ' [' . $definition->type->label() . ']',
                                                             ])
                                                             ->all();
                                                     })
@@ -228,7 +228,7 @@ class ListingForm
                                         Textarea::make('value')
                                             ->label('Сырое значение (JSON)')
                                             ->rows(3)
-                                            ->formatStateUsing(fn (mixed $state): string => is_array($state) ? json_encode($state, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?: '' : self::nullableString($state) ?? '')
+                                            ->formatStateUsing(fn(mixed $state): string => is_array($state) ? json_encode($state, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?: '' : self::nullableString($state) ?? '')
                                             ->dehydrateStateUsing(function (?string $state): ?array {
                                                 if ($state === null || trim($state) === '') {
                                                     return null;

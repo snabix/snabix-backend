@@ -17,10 +17,10 @@ class ListingFavoriteService
         string $userId,
         string $listingId,
     ): EloquentListing {
-        $listing = $this->findPublishedListing($listingId);
+        $listing  = $this->findPublishedListing($listingId);
 
         $favorite = EloquentListingFavorite::query()->firstOrCreate([
-            'user_id' => $userId,
+            'user_id'    => $userId,
             'listing_id' => $listing->id,
         ]);
 
@@ -58,7 +58,7 @@ class ListingFavoriteService
             ->where('status', ListingStatus::PUBLISHED)
             ->whereHas(
                 'favorites',
-                fn ($query) => $query->where('user_id', $userId),
+                fn($query) => $query->where('user_id', $userId),
             )
             ->orderByDesc(
                 EloquentListingFavorite::query()
@@ -84,7 +84,7 @@ class ListingFavoriteService
             ->first();
 
         if (! $listing instanceof EloquentListing) {
-            throw (new ModelNotFoundException)->setModel(EloquentListing::class, [$listingId]);
+            throw (new ModelNotFoundException())->setModel(EloquentListing::class, [$listingId]);
         }
 
         return $listing;

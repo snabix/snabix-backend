@@ -28,10 +28,10 @@ readonly class SendListingFavoritedNotification
             eventType: NotificationEventType::FAVORITE_LISTINGS,
             title: 'Объявление добавили в избранное',
             body: sprintf('Ваше объявление «%s» добавили в избранное.', $event->listing->title),
-            actionUrl: '/account/listings/'.$event->listing->id,
+            actionUrl: '/account/listings/' . $event->listing->id,
             context: [
-                'listingId' => $event->listing->id,
-                'listingTitle' => $event->listing->title,
+                'listingId'         => $event->listing->id,
+                'listingTitle'      => $event->listing->title,
                 'favoritedByUserId' => $event->favoritedByUserId,
             ],
         ));

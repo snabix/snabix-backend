@@ -62,7 +62,7 @@ class NewsPostForm
                                     ->dehydrated()
                                     ->maxLength(255)
                                     ->unique(ignoreRecord: true)
-                                    ->dehydrateStateUsing(fn (?string $state, Get $get): string => Str::slug($state ?: self::nullableString($get('title')) ?? '')),
+                                    ->dehydrateStateUsing(fn(?string $state, Get $get): string => Str::slug($state ?: self::nullableString($get('title')) ?? '')),
 
                                 TextInput::make('category')
                                     ->label('Категория')
@@ -101,7 +101,7 @@ class NewsPostForm
                             ->icon(Heroicon::OutlinedCalendarDays)
                             ->columnSpan([
                                 'default' => 12,
-                                'lg' => 4,
+                                'lg'      => 4,
                             ])
                             ->schema([
                                 Select::make('status')
@@ -127,11 +127,11 @@ class NewsPostForm
 
                                 Select::make('author_admin_id')
                                     ->label('Автор')
-                                    ->options(fn (): array => EloquentAdmin::query()
+                                    ->options(fn(): array => EloquentAdmin::query()
                                         ->orderBy('email')
                                         ->get(['id', 'name', 'email'])
-                                        ->mapWithKeys(fn (EloquentAdmin $admin): array => [
-                                            $admin->id => $admin->name.' · '.$admin->email,
+                                        ->mapWithKeys(fn(EloquentAdmin $admin): array => [
+                                            $admin->id => $admin->name . ' · ' . $admin->email,
                                         ])
                                         ->all())
                                     ->searchable()
@@ -183,7 +183,7 @@ class NewsPostForm
                                     ->disk('public')
                                     ->downloadable()
                                     ->openable()
-                                    ->visible(fn (Get $get): bool => (int) $get('type') === NewsPostBlockType::IMAGE->value)
+                                    ->visible(fn(Get $get): bool => (int) $get('type') === NewsPostBlockType::IMAGE->value)
                                     ->maxSize(1024 * 3),
 
                                 CodeEditor::make('data')
@@ -191,13 +191,13 @@ class NewsPostForm
                                     ->language(Language::Json)
                                     ->required()
                                     ->columnSpanFull()
-                                    ->formatStateUsing(fn (mixed $state): string => self::jsonEncode($state))
-                                    ->dehydrateStateUsing(fn (?string $state): array => self::jsonDecode($state))
+                                    ->formatStateUsing(fn(mixed $state): string => self::jsonEncode($state))
+                                    ->dehydrateStateUsing(fn(?string $state): array => self::jsonDecode($state))
                                     ->helperText('Редактор поддерживает подсветку JSON. Набор ключей зависит от выбранного типа блока.')
                                     ->rules(['json']),
                             ])
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => self::blockItemLabel($state))
+                            ->itemLabel(fn(array $state): ?string => self::blockItemLabel($state))
                             ->reorderable()
                             ->defaultItems(0),
                     ]),
@@ -206,38 +206,38 @@ class NewsPostForm
 
     private static function examples(): HtmlString
     {
-        $json = json_encode([
-            'lead' => [
+        $json        = json_encode([
+            'lead'      => [
                 'text' => 'Крупный вводный текст материала',
             ],
             'paragraph' => [
                 'text' => 'Обычный абзац',
             ],
-            'quote' => [
-                'text' => 'Цитата',
+            'quote'     => [
+                'text'   => 'Цитата',
                 'author' => 'Snabix',
             ],
-            'split' => [
+            'split'     => [
                 'items' => [
                     [
                         'title' => 'Первый тезис',
-                        'text' => 'Описание первого тезиса',
+                        'text'  => 'Описание первого тезиса',
                     ],
                     [
                         'title' => 'Второй тезис',
-                        'text' => 'Описание второго тезиса',
+                        'text'  => 'Описание второго тезиса',
                     ],
                 ],
             ],
-            'steps' => [
+            'steps'     => [
                 'items' => [
                     [
                         'title' => 'Заголовок шага',
-                        'text' => 'Описание шага',
+                        'text'  => 'Описание шага',
                     ],
                 ],
             ],
-            'metrics' => [
+            'metrics'   => [
                 'items' => [
                     [
                         'label' => 'показатель',
@@ -245,39 +245,39 @@ class NewsPostForm
                     ],
                 ],
             ],
-            'image' => [
-                'caption' => 'Подпись к изображению',
+            'image'     => [
+                'caption'  => 'Подпись к изображению',
                 'imageUrl' => 'https://example.com/image.jpg',
             ],
-            'gallery' => [
+            'gallery'   => [
                 'items' => [
                     [
                         'imageUrl' => 'https://example.com/gallery-1.jpg',
-                        'caption' => 'Первое изображение',
+                        'caption'  => 'Первое изображение',
                     ],
                 ],
             ],
-            'table' => [
+            'table'     => [
                 'columns' => ['Поле', 'Значение'],
-                'rows' => [
+                'rows'    => [
                     ['Статус', 'Опубликовано'],
                 ],
             ],
             'imageGrid' => [
                 'items' => [
                     [
-                        'title' => 'Карточка с изображением',
-                        'text' => 'Описание карточки',
+                        'title'    => 'Карточка с изображением',
+                        'text'     => 'Описание карточки',
                         'imageUrl' => 'https://example.com/grid.jpg',
-                        'caption' => 'Подпись',
+                        'caption'  => 'Подпись',
                     ],
                 ],
             ],
-            'cta' => [
-                'title' => 'Готовы начать?',
-                'text' => 'Создайте объявление',
+            'cta'       => [
+                'title'       => 'Готовы начать?',
+                'text'        => 'Создайте объявление',
                 'buttonLabel' => 'Разместить',
-                'href' => '/account/listings/create',
+                'href'        => '/account/listings/create',
             ],
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
@@ -297,7 +297,7 @@ class NewsPostForm
     }
 
     /**
-     * @param  array<string, mixed>  $state
+     * @param array<string, mixed> $state
      */
     private static function blockItemLabel(array $state): ?string
     {
