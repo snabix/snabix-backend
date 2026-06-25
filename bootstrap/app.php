@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
+use App\Bot\Infrastructure\Middleware\EnsureBotServiceToken;
 use App\Shared\Infrastructure\Middleware\LogRequestActivity;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
         $middleware->appendToGroup('api', LogRequestActivity::class);
+        $middleware->alias([
+            'bot.service' => EnsureBotServiceToken::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $exception, Request $request): ?JsonResponse {

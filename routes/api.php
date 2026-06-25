@@ -20,6 +20,7 @@ use App\Auth\Http\TerminateSession\TerminateSessionController;
 use App\Auth\Http\UpdateProfile\UpdateProfileController;
 use App\Auth\Http\UpdateProfileAvatar\UpdateProfileAvatarController;
 use App\Auth\Http\VerifyEmail\VerifyEmailController;
+use App\Bot\Http\BotServiceController;
 use App\Catalog\Http\GetCategoryAttributes\GetCategoryAttributesController;
 use App\Catalog\Http\ListRootCategories\ListRootCategoriesController;
 use App\Catalog\Http\ShowCategoryBranch\ShowCategoryBranchController;
@@ -130,5 +131,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/preferences', [NotificationPreferencesController::class, 'show']);
         Route::put('/preferences', [NotificationPreferencesController::class, 'update']);
         Route::delete('/preferences', [NotificationPreferencesController::class, 'reset']);
+    });
+
+    Route::prefix('service/bot')->middleware('bot.service')->group(function () {
+        Route::get('/health', [BotServiceController::class, 'health']);
+        Route::get('/me', [BotServiceController::class, 'me']);
+        Route::get('/stats', [BotServiceController::class, 'stats']);
     });
 });
