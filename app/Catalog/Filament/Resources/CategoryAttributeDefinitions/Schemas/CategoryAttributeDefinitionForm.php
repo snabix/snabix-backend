@@ -34,7 +34,7 @@ class CategoryAttributeDefinitionForm
                             ->description('Создайте готовое поле, которое пользователь будет заполнять при создании объявления в выбранной категории.')
                             ->columnSpan([
                                 'default' => 12,
-                                'lg' => 8,
+                                'lg'      => 8,
                             ])
                             ->schema([
                                 TextInput::make('name')
@@ -122,7 +122,7 @@ class CategoryAttributeDefinitionForm
                             ->description('Эти настройки определяют поведение характеристики в пользовательской форме объявления.')
                             ->columnSpan([
                                 'default' => 12,
-                                'lg' => 4,
+                                'lg'      => 4,
                             ])
                             ->columns()
                             ->schema([
@@ -176,7 +176,7 @@ class CategoryAttributeDefinitionForm
                                             ->translateLabel()
                                             ->placeholder('Добавляйте каждое допустимое значение отдельно')
                                             ->visible(function (Get $get): bool {
-                                                $type = $get('type');
+                                                $type      = $get('type');
 
                                                 $typeValue = is_int($type)
                                                     ? $type
@@ -231,7 +231,7 @@ class CategoryAttributeDefinitionForm
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
-            ->mapWithKeys(fn (EloquentCategory $category): array => [
+            ->mapWithKeys(fn(EloquentCategory $category): array => [
                 $category->id => sprintf('%s [%s]', $category->full_name, $category->catalog_type->label()),
             ])
             ->all();

@@ -83,32 +83,32 @@ class NewsPostPayloadMapper
 
         return match ($block->type) {
             NewsPostBlockType::LEAD,
-            NewsPostBlockType::PARAGRAPH => [
+            NewsPostBlockType::PARAGRAPH  => [
                 'text' => $this->stringValue($data['text'] ?? null),
             ],
-            NewsPostBlockType::QUOTE => [
+            NewsPostBlockType::QUOTE      => [
                 'text'   => $this->stringValue($data['text'] ?? null),
                 'author' => $this->optionalStringValue($data['author'] ?? null),
             ],
             NewsPostBlockType::SPLIT,
-            NewsPostBlockType::STEPS => [
+            NewsPostBlockType::STEPS      => [
                 'items' => $this->textItems($data['items'] ?? null),
             ],
-            NewsPostBlockType::METRICS => [
+            NewsPostBlockType::METRICS    => [
                 'items' => $this->metricItems($data['items'] ?? null),
             ],
-            NewsPostBlockType::IMAGE => $this->imageBlockData($block, $data),
-            NewsPostBlockType::GALLERY => [
+            NewsPostBlockType::IMAGE      => $this->imageBlockData($block, $data),
+            NewsPostBlockType::GALLERY    => [
                 'items' => $this->imageItems($data['items'] ?? null),
             ],
-            NewsPostBlockType::TABLE => [
+            NewsPostBlockType::TABLE      => [
                 'columns' => $this->stringList($data['columns'] ?? null),
                 'rows'    => $this->tableRows($data['rows'] ?? null),
             ],
             NewsPostBlockType::IMAGE_GRID => [
                 'items' => $this->imageGridItems($data['items'] ?? null),
             ],
-            NewsPostBlockType::CTA => [
+            NewsPostBlockType::CTA        => [
                 'title'       => $this->optionalStringValue($data['title'] ?? null),
                 'text'        => $this->optionalStringValue($data['text'] ?? null),
                 'buttonLabel' => $this->optionalStringValue($data['buttonLabel'] ?? null),
@@ -118,7 +118,7 @@ class NewsPostPayloadMapper
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed> $data
      * @return array<string, mixed>
      */
     private function imageBlockData(EloquentNewsPostBlock $block, array $data): array
@@ -257,7 +257,7 @@ class NewsPostPayloadMapper
         ));
     }
 
-    private function tableCellValue(mixed $value): string|int|float|bool|null
+    private function tableCellValue(mixed $value): string | int | float | bool | null
     {
         if (is_string($value) || is_int($value) || is_float($value) || is_bool($value) || $value === null) {
             return $value;

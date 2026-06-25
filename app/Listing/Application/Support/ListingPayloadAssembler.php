@@ -125,9 +125,104 @@ final readonly class ListingPayloadAssembler
      */
     private function locationPayload(EloquentListing $listing): ?array
     {
-        $snapshot = $listing->address_snapshot;
+        $snapshot    = $listing->address_snapshot;
 
-        return is_array($snapshot) ? $snapshot : null;
+        if (! is_array($snapshot)) {
+            return null;
+        }
+
+        $region      = $snapshot['region'] ?? null;
+
+        if (! is_array($region)) {
+            return null;
+        }
+
+        $regionId    = $region['id'] ?? null;
+        $regionName  = $region['name'] ?? null;
+        $regionLabel = $region['label'] ?? $regionName;
+
+        if (! is_numeric($regionId) || ! is_string($regionName) || ! is_string($regionLabel)) {
+            return null;
+        }
+
+        $city        = $this->cityPayload($snapshot['city'] ?? null);
+
+        return [
+            'source'           => $this->stringValue($snapshot['source'] ?? null, 'custom'),
+            'profileAddressId' => $this->nullableStringValue($snapshot['profileAddressId'] ?? null),
+            'label'            => $this->nullableStringValue($snapshot['label'] ?? null),
+            'region'           => [
+                'id'       => (int) $regionId,
+                'name'     => $regionName,
+                'fullName' => $this->nullableStringValue($region['fullName'] ?? null),
+                'label'    => $regionLabel,
+            ],
+            'city'             => $city,
+            'addressLine'      => $this->nullableStringValue($snapshot['addressLine'] ?? null),
+            'display'          => $this->nullableStringValue($snapshot['display'] ?? null),
+            'coordinates'      => $this->coordinatesPayload($snapshot['coordinates'] ?? null),
+            'mapProvider'      => $this->nullableStringValue($snapshot['mapProvider'] ?? null),
+            'mapPlaceId'       => $this->nullableStringValue($snapshot['mapPlaceId'] ?? null),
+        ];
+    }
+
+    /**
+     * @return array{id: int, name: string, label: string, lat?: string|null, lon?: string|null}|null
+     */
+    private function cityPayload(mixed $city): ?array
+    {
+        if (! is_array($city)) {
+            return null;
+        }
+
+        $cityId    = $city['id'] ?? null;
+        $cityName  = $city['name'] ?? null;
+        $cityLabel = $city['label'] ?? $cityName;
+
+        if (! is_numeric($cityId) || ! is_string($cityName) || ! is_string($cityLabel)) {
+            return null;
+        }
+
+        return [
+            'id'    => (int) $cityId,
+            'name'  => $cityName,
+            'label' => $cityLabel,
+            'lat'   => $this->nullableStringValue($city['lat'] ?? null),
+            'lon'   => $this->nullableStringValue($city['lon'] ?? null),
+        ];
+    }
+
+    /**
+     * @return array{lat: int|float|string|null, lng: int|float|string|null}
+     */
+    private function coordinatesPayload(mixed $coordinates): array
+    {
+        if (! is_array($coordinates)) {
+            return [
+                'lat' => null,
+                'lng' => null,
+            ];
+        }
+
+        return [
+            'lat' => $this->nullableCoordinateValue($coordinates['lat'] ?? null),
+            'lng' => $this->nullableCoordinateValue($coordinates['lng'] ?? null),
+        ];
+    }
+
+    private function nullableCoordinateValue(mixed $value): int | float | string | null
+    {
+        return is_int($value) || is_float($value) || is_string($value) ? $value : null;
+    }
+
+    private function stringValue(mixed $value, string $fallback): string
+    {
+        return is_string($value) && $value !== '' ? $value : $fallback;
+    }
+
+    private function nullableStringValue(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     /**

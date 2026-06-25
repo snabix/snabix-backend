@@ -26,7 +26,7 @@ class CategoryAttributeDefinitionInfolist
                         TextEntry::make('type')
                             ->label('Attribute type')
                             ->translateLabel()
-                            ->formatStateUsing(fn (EloquentCategoryAttributeDefinition $record): string => $record->type->label()),
+                            ->formatStateUsing(fn(EloquentCategoryAttributeDefinition $record): string => $record->type->label()),
                         TextEntry::make('name')
                             ->translateLabel(),
                         TextEntry::make('slug')

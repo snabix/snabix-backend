@@ -15,7 +15,7 @@ readonly class PlatformNotificationDispatcher
 
     public function dispatch(EloquentUser $user, PlatformNotification $notification): void
     {
-        $userId = $user->getKey();
+        $userId   = $user->getKey();
 
         if (! is_string($userId)) {
             return;
