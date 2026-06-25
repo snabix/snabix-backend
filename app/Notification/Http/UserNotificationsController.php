@@ -92,6 +92,21 @@ class UserNotificationsController
         return response()->json(['data' => ['markedRead' => true]]);
     }
 
+    public function delete(Request $request, string $notificationId): JsonResponse
+    {
+        $notification = $this->user($request)->notifications()->findOrFail($notificationId);
+        $notification->delete();
+
+        return response()->json(['data' => ['deleted' => true]]);
+    }
+
+    public function deleteAll(Request $request): JsonResponse
+    {
+        $this->user($request)->notifications()->delete();
+
+        return response()->json(['data' => ['deleted' => true]]);
+    }
+
     private function user(Request $request): EloquentUser
     {
         $user = $request->user();
