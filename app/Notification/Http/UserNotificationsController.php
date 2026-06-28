@@ -16,7 +16,7 @@ class UserNotificationsController
      */
     private static function payload(DatabaseNotification $notification): array
     {
-        $data = is_array($notification->data) ? $notification->data : [];
+        $data = $notification->data;
 
         return [
             'id'        => $notification->id,
@@ -90,6 +90,21 @@ class UserNotificationsController
         $this->user($request)->unreadNotifications->markAsRead();
 
         return response()->json(['data' => ['markedRead' => true]]);
+    }
+
+    public function delete(Request $request, string $notificationId): JsonResponse
+    {
+        $notification = $this->user($request)->notifications()->findOrFail($notificationId);
+        $notification->delete();
+
+        return response()->json(['data' => ['deleted' => true]]);
+    }
+
+    public function deleteAll(Request $request): JsonResponse
+    {
+        $this->user($request)->notifications()->delete();
+
+        return response()->json(['data' => ['deleted' => true]]);
     }
 
     private function user(Request $request): EloquentUser

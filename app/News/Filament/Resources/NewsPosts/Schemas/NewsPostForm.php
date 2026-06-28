@@ -183,7 +183,7 @@ class NewsPostForm
                                     ->disk('public')
                                     ->downloadable()
                                     ->openable()
-                                    ->visible(fn(Get $get): bool => (int) $get('type') === NewsPostBlockType::IMAGE->value)
+                                    ->visible(fn(Get $get): bool => self::isImageBlockType($get('type')))
                                     ->maxSize(1024 * 3),
 
                                 CodeEditor::make('data')
@@ -317,6 +317,11 @@ class NewsPostForm
         }
 
         return is_string($state) && $state !== '' ? $state : '{}';
+    }
+
+    private static function isImageBlockType(mixed $value): bool
+    {
+        return is_numeric($value) && (int) $value === NewsPostBlockType::IMAGE->value;
     }
 
     /**
