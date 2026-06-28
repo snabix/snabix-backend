@@ -8,11 +8,42 @@ use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Notification\Application\Notifications\PlatformNotification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use InvalidArgumentException;
 use Laravel\Sanctum\Sanctum;
 use Tests\Feature\FeatureTestCase;
 
 class NotificationApiTest extends FeatureTestCase
 {
+    /**
+     * @return list<array{key: string, siteEnabled: bool, emailEnabled: bool}>
+     */
+    private static function preferenceItems(mixed $items): array
+    {
+        if (! is_array($items)) {
+            throw new InvalidArgumentException('Notification preferences response items must be an array.');
+        }
+
+        return array_values(array_map(
+            static function (mixed $item): array {
+                if (
+                    ! is_array($item)
+                    || ! is_string($item['key'] ?? null)
+                    || ! is_bool($item['siteEnabled'] ?? null)
+                    || ! is_bool($item['emailEnabled'] ?? null)
+                ) {
+                    throw new InvalidArgumentException('Notification preference item has invalid shape.');
+                }
+
+                return [
+                    'key'          => $item['key'],
+                    'siteEnabled'  => $item['siteEnabled'],
+                    'emailEnabled' => $item['emailEnabled'],
+                ];
+            },
+            $items,
+        ));
+    }
+
     public function test_user_can_read_and_update_delivery_preferences(): void
     {
         $user     = EloquentUser::factory()->create();
@@ -22,9 +53,10 @@ class NotificationApiTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonCount(10, 'data.items');
 
-        $items    = $response->json('data.items');
+        $items    = self::preferenceItems($response->json('data.items'));
         $security = collect($items)->firstWhere('key', 'security_login');
 
+        $this->assertNotNull($security);
         $this->assertTrue($security['siteEnabled']);
 
         $this->putJson('/api/v1/notifications/preferences', [
@@ -56,6 +88,7 @@ class NotificationApiTest extends FeatureTestCase
             ->assertJsonPath('data.unreadCount', 1)
             ->assertJsonPath('data.items.0.title', 'Цена изменилась')
             ->json('data.items.0.id');
+        $this->assertIsString($id);
 
         $this->patchJson("/api/v1/notifications/{$id}/read")
             ->assertOk()
@@ -79,8 +112,9 @@ class NotificationApiTest extends FeatureTestCase
         ])->assertOk();
 
         $response    = $this->deleteJson('/api/v1/notifications/preferences')->assertOk();
-        $priceChange = collect($response->json('data.items'))->firstWhere('key', 'price_changes');
+        $priceChange = collect(self::preferenceItems($response->json('data.items')))->firstWhere('key', 'price_changes');
 
+        $this->assertNotNull($priceChange);
         $this->assertTrue($priceChange['siteEnabled']);
         $this->assertTrue($priceChange['emailEnabled']);
 

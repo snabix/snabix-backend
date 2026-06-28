@@ -79,7 +79,7 @@ class NewsPostPayloadMapper
      */
     private function mapBlockData(EloquentNewsPostBlock $block): array
     {
-        $data = is_array($block->data) ? $block->data : [];
+        $data = $block->data;
 
         return match ($block->type) {
             NewsPostBlockType::LEAD,
@@ -263,7 +263,7 @@ class NewsPostPayloadMapper
             return $value;
         }
 
-        return (string) $value;
+        return null;
     }
 
     private function stringValue(mixed $value): string
