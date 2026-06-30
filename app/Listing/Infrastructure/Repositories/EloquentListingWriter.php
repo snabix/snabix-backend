@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listing\Infrastructure\Repositories;
 
 use App\Listing\Application\Normalizers\ListingModerationNormalizer;
+use App\Listing\Application\Services\ListingMediaService;
 use App\Listing\Application\Support\NormalizedListingData;
 use App\Listing\Domain\Contracts\ListingWriterInterface;
 use App\Listing\Domain\Enums\ListingStatus;
@@ -107,6 +108,7 @@ final readonly class EloquentListingWriter implements ListingWriterInterface
     {
         DB::transaction(function () use ($listing): void {
             $listing->attributeValues()->delete();
+            $listing->clearMediaCollection(ListingMediaService::COLLECTION_NAME);
             $listing->delete();
         });
     }

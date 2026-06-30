@@ -10,7 +10,7 @@ use App\Catalog\Infrastructure\Models\EloquentCategoryAttributeDefinition;
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
-use App\Listing\Infrastructure\Models\EloquentListing;
+use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -203,11 +203,11 @@ class ListingForm
                                             ->schema([
                                                 Select::make('attribute_definition_id')
                                                     ->label('Характеристика')
-                                                    ->options(function (Get $get, ?EloquentListing $record): array {
+                                                    ->options(function (Get $get, ?EloquentListingAttributeValue $record): array {
                                                         $categoryId         = $get('../../category_id');
                                                         $resolvedCategoryId = is_string($categoryId) && Str::isUuid($categoryId)
                                                             ? $categoryId
-                                                            : $record?->category_id;
+                                                            : $record?->listing?->category_id;
 
                                                         return EloquentCategoryAttributeDefinition::query()
                                                             ->when($resolvedCategoryId !== null, fn($query) => $query->where('category_id', $resolvedCategoryId))
