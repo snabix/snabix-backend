@@ -14,6 +14,8 @@
 ### Added
 - Добавлен защищенный service API для Telegram-бота: health, service identity и базовая статистика.
 - Добавлены API-действия для удаления одного уведомления и очистки всех уведомлений пользователя.
+- Добавлена команда `shared:cleanup-storage` и ежедневный scheduler retention для `storage/logs`, generated API docs, временных uploads, media-library temp и debugbar-файлов.
+- Добавлена безопасная команда `media:cleanup-orphans` для поиска и ручного удаления постоянных media-файлов без записей в таблице `media`.
 
 ## [0.6.31] - 2026-06-28
 

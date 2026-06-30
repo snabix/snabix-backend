@@ -14,6 +14,10 @@ Schedule::command('shared:cleanup-system-logs')
     ->dailyAt('03:30')
     ->withoutOverlapping();
 
+Schedule::command('shared:cleanup-storage')
+    ->dailyAt('03:40')
+    ->withoutOverlapping();
+
 $failedJobsRetentionHours = config('queue.maintenance.failed_retention_hours', 168);
 
 if (! is_int($failedJobsRetentionHours)) {
