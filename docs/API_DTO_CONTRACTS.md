@@ -51,7 +51,7 @@
 | MULTISELECT |     5 | Выбор нескольких значений |
 | DATE        |     6 | Дата                      |
 
-## Private Listing DTO
+## Приватный DTO объявления
 
 Используется в пользовательском кабинете и owner-сценариях:
 
@@ -63,7 +63,7 @@
 | `PATCH /api/v1/listings/{listingId}`                  | Обновление объявления текущего пользователя |
 | `POST /api/v1/listings/{listingId}/submit-for-review` | Отправка черновика на проверку              |
 
-Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media`.
+Поля только для приватного DTO: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media`.
 
 ```json
 {
@@ -122,7 +122,7 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 }
 ```
 
-## Private Listing Collection DTO
+## Приватный DTO коллекции объявлений
 
 Личный список объявлений возвращает `items` и `meta` внутри `data`.
 
@@ -160,7 +160,7 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 }
 ```
 
-## Public Listing DTO
+## Публичный DTO объявления
 
 Используется для публичной витрины и карточек объявлений:
 

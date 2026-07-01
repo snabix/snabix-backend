@@ -10,6 +10,9 @@ use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
 use App\Listing\Infrastructure\Models\EloquentListing;
+use App\Media\Infrastructure\Models\EloquentMedia;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 
 class ListAndDeleteListingTest extends FeatureTestCase
@@ -129,6 +132,55 @@ class ListAndDeleteListingTest extends FeatureTestCase
         );
     }
 
+    public function test_deleting_listing_removes_attached_media(): void
+    {
+        Storage::fake('public');
+
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Фотоархив',
+            'slug'         => 'fotoarhiv',
+            'catalog_type' => 1,
+        ]);
+        $listing            = $this->createListing(
+            userId: $user->id,
+            categoryId: $category->id,
+            status: ListingStatus::DRAFT,
+            title: 'Камера на удаление',
+            slug: 'kamera-na-udalenie',
+        );
+
+        $this
+            ->actingAs($user)
+            ->withHeader('Accept', 'application/json')
+            ->post('/api/v1/listings/' . $listing->id . '/media', [
+                'images' => [$this->fakePng('listing.png')],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data.media');
+
+        $this->assertDatabaseHas('media', [
+            'model_type' => EloquentListing::class,
+            'model_id'   => $listing->id,
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->deleteJson('/api/v1/listings/' . $listing->id)
+            ->assertOk()
+            ->assertJsonPath('data.deleted', true);
+
+        $this->assertDatabaseMissing('media', [
+            'model_type' => EloquentListing::class,
+            'model_id'   => $listing->id,
+        ]);
+        $this->assertSame(0, EloquentMedia::query()
+            ->where('model_type', EloquentListing::class)
+            ->where('model_id', $listing->id)
+            ->count());
+    }
+
     private function createListing(
         string $userId,
         string $categoryId,
@@ -149,5 +201,13 @@ class ListAndDeleteListingTest extends FeatureTestCase
             'currency'      => 'RUB',
             'is_negotiable' => true,
         ]);
+    }
+
+    private function fakePng(string $name): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', true) ?: '',
+        );
     }
 }
