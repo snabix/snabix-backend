@@ -128,11 +128,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [UserNotificationsController::class, 'index']);
         Route::patch('/read-all', [UserNotificationsController::class, 'markAllRead']);
         Route::delete('/', [UserNotificationsController::class, 'deleteAll']);
-        Route::patch('/{notificationId}/read', [UserNotificationsController::class, 'markRead']);
-        Route::delete('/{notificationId}', [UserNotificationsController::class, 'delete']);
         Route::get('/preferences', [NotificationPreferencesController::class, 'show']);
         Route::put('/preferences', [NotificationPreferencesController::class, 'update']);
         Route::delete('/preferences', [NotificationPreferencesController::class, 'reset']);
+        Route::patch('/{notificationId}/read', [UserNotificationsController::class, 'markRead']);
+        Route::delete('/{notificationId}', [UserNotificationsController::class, 'delete']);
     });
 
     Route::prefix('service/bot')->middleware('bot.service')->group(function () {
