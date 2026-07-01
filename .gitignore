@@ -27,3 +27,6 @@ Thumbs.db
 
 /storage/api-docs
 /storage/phpstan
+
+# Local audit reports
+/PROJECT_AUDIT_*.md
