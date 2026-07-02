@@ -10,46 +10,48 @@
 
 ### ListingType
 
-| Case    | Value | Label  |
-|---------|------:|--------|
-| PRODUCT |     1 | Товар  |
-| SERVICE |     2 | Услуга |
+| Case | Value | Label |
+|------|-------|-------|
+| PRODUCT | 1 | Товар |
+| SERVICE | 2 | Услуга |
 
 ### ListingStatus
 
-| Case           | Value | Label        |
-|----------------|------:|--------------|
-| DRAFT          |     1 | Черновик     |
-| PENDING_REVIEW |     2 | На проверке  |
-| PUBLISHED      |     3 | Опубликовано |
-| REJECTED       |     4 | Отклонено    |
-| ARCHIVED       |     5 | В архиве     |
+| Case | Value | Label |
+|------|-------|-------|
+| DRAFT | 1 | Черновик |
+| PENDING_REVIEW | 2 | На проверке |
+| PUBLISHED | 3 | Опубликовано |
+| REJECTED | 4 | Отклонено |
+| ARCHIVED | 5 | В архиве |
 
 ### ListingCondition
 
-| Case           | Value | Label          |
-|----------------|------:|----------------|
-| NEW            |     1 | Новый          |
-| USED           |     2 | Б/у            |
-| NOT_APPLICABLE |     3 | Не применяется |
+| Case | Value | Label |
+|------|-------|-------|
+| NEW | 1 | Новый |
+| USED | 2 | Б/у |
+| NOT_APPLICABLE | 3 | Не применяется |
 
 ### CategoryCatalogType
 
-| Case    | Value | Label  |
-|---------|------:|--------|
-| PRODUCT |     1 | Товары |
-| SERVICE |     2 | Услуги |
+| Case | Value | Label |
+|------|-------|-------|
+| PRODUCT | 1 | Товары |
+| SERVICE | 2 | Услуги |
 
 ### CategoryAttributeType
 
-| Case        | Value | Label                     |
-|-------------|------:|---------------------------|
-| TEXT        |     1 | Текст                     |
-| NUMBER      |     2 | Число                     |
-| BOOLEAN     |     3 | Да/Нет                    |
-| SELECT      |     4 | Выбор одного значения     |
-| MULTISELECT |     5 | Выбор нескольких значений |
-| DATE        |     6 | Дата                      |
+| Case | Value | Label |
+|------|-------|-------|
+| TEXT | 1 | Текст |
+| NUMBER | 2 | Число |
+| BOOLEAN | 3 | Да/Нет |
+| SELECT | 4 | Выбор одного значения |
+| MULTISELECT | 5 | Выбор нескольких значений |
+| DATE | 6 | Дата |
+
+## Private Listing DTO
 
 ## Приватный DTO объявления
 
@@ -63,7 +65,7 @@
 | `PATCH /api/v1/listings/{listingId}`                  | Обновление объявления текущего пользователя |
 | `POST /api/v1/listings/{listingId}/submit-for-review` | Отправка черновика на проверку              |
 
-Поля только для приватного DTO: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media`.
+Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media`.
 
 ```json
 {
@@ -159,6 +161,8 @@
   }
 }
 ```
+
+## Public Listing DTO
 
 ## Публичный DTO объявления
 

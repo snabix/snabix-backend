@@ -8,10 +8,14 @@
 ## [Unreleased]
 
 ### Fixed
+- Route `DELETE /api/v1/notifications/preferences` больше не перехватывается wildcard-маршрутом удаления одного уведомления.
+- Повторная отправка email verification после cooldown снова ставит новое письмо в очередь, при этом код переиспользуется до истечения TTL.
+- Документация API DTO contracts синхронизирована с тестами enum labels и public/private listing boundaries.
 - Добавление объявления в избранное больше не падает, если побочное уведомление владельцу не удалось доставить.
 - DTO объявления теперь нормализует legacy `address_snapshot`, чтобы старые или неполные адреса не ломали загрузку личных объявлений и ответ после создания.
 
 ### Added
+- Добавлены GitHub Actions и локальные git hooks для обязательных backend-проверок: PHP CS Fixer dry-run, PHPStan и тесты.
 - Добавлен защищенный service API для Telegram-бота: health, service identity и базовая статистика.
 - Добавлены API-действия для удаления одного уведомления и очистки всех уведомлений пользователя.
 - Добавлена команда `shared:cleanup-storage` и ежедневный scheduler retention для `storage/logs`, generated API docs, временных uploads, media-library temp и debugbar-файлов.

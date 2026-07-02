@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -eu
+
+echo "Running backend pre-push checks..."
+. "$(dirname "$0")/pre-commit"

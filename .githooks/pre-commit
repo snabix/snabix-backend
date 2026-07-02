@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+set -eu
+
+echo "Running backend pre-commit checks..."
+
+if command -v task >/dev/null 2>&1; then
+  task "cs:dry"
+  task stan
+  task test
+  exit 0
+fi
+
+php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
+composer stan
+composer test
