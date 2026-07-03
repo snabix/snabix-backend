@@ -5,21 +5,26 @@ declare(strict_types=1);
 namespace Tests\Feature\Shared;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\Feature\FeatureTestCase;
 
 class LogRequestActivityTest extends FeatureTestCase
 {
     public function test_api_requests_are_logged_via_middleware(): void
     {
+        $email = 'log-request@example.com';
+
+        RateLimiter::clear($email . '|127.0.0.1');
+
         EloquentUser::factory()->create([
             'first_name' => 'Imran',
             'last_name'  => 'Khan',
-            'email'      => 'imran@example.com',
+            'email'      => $email,
             'password'   => 'StrongPassword123!',
         ]);
 
         $this->postJson('/api/v1/auth/sign-in', [
-            'email'    => 'imran@example.com',
+            'email'    => $email,
             'password' => 'StrongPassword123!',
         ])->assertOk();
 
