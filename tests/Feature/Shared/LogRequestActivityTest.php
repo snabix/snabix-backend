@@ -6,13 +6,14 @@ namespace Tests\Feature\Shared;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Tests\Feature\FeatureTestCase;
 
 class LogRequestActivityTest extends FeatureTestCase
 {
     public function test_api_requests_are_logged_via_middleware(): void
     {
-        $email = 'log-request@example.com';
+        $email = sprintf('log-request-%s@example.com', Str::uuid()->toString());
 
         RateLimiter::clear($email . '|127.0.0.1');
 
