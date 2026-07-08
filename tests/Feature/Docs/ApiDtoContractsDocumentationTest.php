@@ -46,7 +46,7 @@ class ApiDtoContractsDocumentationTest extends TestCase
 
     private function contractsDocumentation(): string
     {
-        $path     = base_path('docs/API_DTO_CONTRACTS.md');
+        $path     = base_path('.docs/API_DTO_CONTRACTS.md');
 
         $this->assertFileExists($path);
 

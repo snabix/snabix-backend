@@ -19,13 +19,20 @@ Backend отвечает за:
 ## Первый запуск
 
 ```bash
-cd /Users/imranpskhu/projects/snabix/snabix-backend
+cd /Users/dustun/Projects/snabix/snabix-backend
 cp .env.example .env
 composer install
 docker compose up -d
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate
 docker compose exec app php artisan storage:link
+```
+
+Для Taskfile-команд нужен CLI `go-task`. Расширение VS Code само CLI не устанавливает:
+
+```bash
+brew install go-task
+task --version
 ```
 
 Локальные адреса:
@@ -121,7 +128,7 @@ php artisan db:wipe
 ```bash
 task cs
 vendor/bin/phpstan analyse --memory-limit=1G
-docker compose exec -e APP_ENV=testing -e DB_HOST=db-test -e DB_DATABASE=snabix_test -e DB_CONNECTION=pgsql app php artisan test
+task test
 ```
 
 Для API-документации:

@@ -20,8 +20,8 @@ DB_CONNECTION=pgsql
 ## Полный запуск
 
 ```bash
-cd /Users/imranpskhu/projects/snabix/snabix-backend
-docker compose exec -e APP_ENV=testing -e DB_HOST=db-test -e DB_DATABASE=snabix_test -e DB_CONNECTION=pgsql app php artisan test
+cd /Users/dustun/Projects/snabix/snabix-backend
+task test
 ```
 
 ## Точечные проверки
