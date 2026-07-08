@@ -14,6 +14,7 @@ use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Location\Infrastructure\Models\EloquentCity;
 use App\Location\Infrastructure\Models\EloquentRegion;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 
@@ -286,6 +287,53 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonValidationErrors(['maxPrice', 'sort', 'regionQuery']);
     }
 
+    public function test_public_listings_query_count_does_not_grow_per_listing(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $rootCategory       = $categoryRepository->save([
+            'name'         => 'Промышленное оборудование',
+            'slug'         => 'promyshlennoe-oborudovanie',
+            'catalog_type' => 1,
+        ]);
+        $childCategory      = $categoryRepository->save([
+            'parent_id'    => $rootCategory->id,
+            'name'         => 'Станки',
+            'slug'         => 'stanki',
+            'catalog_type' => 1,
+        ]);
+        $leafCategory       = $categoryRepository->save([
+            'parent_id'    => $childCategory->id,
+            'name'         => 'Токарные станки',
+            'slug'         => 'tokarnye-stanki',
+            'catalog_type' => 1,
+        ]);
+
+        for ($index = 1; $index <= 8; $index++) {
+            $this->createPublishedListing(
+                $user->id,
+                $leafCategory->id,
+                'Токарный станок ' . $index,
+                'tokarnyj-stanok-' . $index,
+                now()->subMinutes($index),
+            );
+        }
+
+        $queryCount         = $this->countQueries(function (): void {
+            $this
+                ->getJson('/api/v1/public/listings?perPage=8')
+                ->assertOk()
+                ->assertJsonCount(8, 'data.items')
+                ->assertJsonPath('data.items.0.category.fullName', 'Промышленное оборудование / Станки / Токарные станки');
+        });
+
+        $this->assertLessThanOrEqual(
+            12,
+            $queryCount,
+            'Public listings endpoint must not add queries per listing while resolving categories, media and breadcrumbs.',
+        );
+    }
+
     /**
      * @param array<string, mixed> $overrides
      */
@@ -320,5 +368,18 @@ class ListPublicListingsTest extends FeatureTestCase
             $name,
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', true) ?: '',
         );
+    }
+
+    private function countQueries(callable $callback): int
+    {
+        $queryCount = 0;
+
+        DB::listen(static function () use (&$queryCount): void {
+            $queryCount++;
+        });
+
+        $callback();
+
+        return $queryCount;
     }
 }

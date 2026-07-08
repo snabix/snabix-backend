@@ -1,0 +1,72 @@
+name: Backend CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+      - "dev/**"
+      - "dev__*"
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: CS, PHPStan and tests
+    runs-on: ubuntu-latest
+
+    services:
+      db-test:
+        image: postgres:17
+        env:
+          POSTGRES_DB: snabix_test
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: 1234
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U root -d snabix_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: dom, pdo_pgsql
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: backend-composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: backend-composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          sudo sh -c 'echo "127.0.0.1 db-test" >> /etc/hosts'
+
+      - name: PHP CS Fixer dry run
+        run: php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
+
+      - name: PHPStan
+        run: php vendor/bin/phpstan analyse --memory-limit=1G
+
+      - name: Tests
+        run: php artisan test

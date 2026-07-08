@@ -7,6 +7,8 @@ namespace Tests\Feature\Auth;
 use App\Auth\Application\Jobs\SendPasswordResetJob;
 use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Tests\Feature\FeatureTestCase;
 
 class ForgotPasswordTest extends FeatureTestCase
@@ -15,8 +17,12 @@ class ForgotPasswordTest extends FeatureTestCase
     {
         Queue::fake();
 
+        $email    = sprintf('forgot-password-%s@example.com', Str::uuid()->toString());
+
+        RateLimiter::clear($email . '|127.0.0.1');
+
         $user     = EloquentUser::factory()->create([
-            'email' => 'imran@example.com',
+            'email' => $email,
         ]);
 
         $response = $this->postJson('/api/v1/auth/forgot-password', [

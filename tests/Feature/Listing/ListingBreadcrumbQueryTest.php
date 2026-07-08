@@ -80,4 +80,70 @@ class ListingBreadcrumbQueryTest extends FeatureTestCase
 
         DB::disableQueryLog();
     }
+
+    public function test_public_listing_breadcrumb_query_count_stays_constant_for_many_categories(): void
+    {
+        $root              = EloquentCategory::factory()->create([
+            'name' => 'Запчасти',
+            'slug' => 'zapchasti',
+            'path' => 'zapchasti',
+        ]);
+        $user              = EloquentUser::factory()->create();
+
+        for ($index = 1; $index <= 6; $index++) {
+            $child = EloquentCategory::factory()->childOf($root)->create([
+                'name' => 'Группа ' . $index,
+                'slug' => 'gruppa-' . $index,
+            ]);
+            $leaf  = EloquentCategory::factory()->childOf($child)->create([
+                'name' => 'Подгруппа ' . $index,
+                'slug' => 'podgruppa-' . $index,
+            ]);
+
+            EloquentListing::factory()
+                ->published()
+                ->create([
+                    'user_id'     => $user->id,
+                    'category_id' => $leaf->id,
+                ]);
+        }
+
+        $query             = app(PublicListingQueryInterface::class);
+        $mapper            = app(PublicListingPayloadMapper::class);
+
+        $paginator         = $query->listPublicPublished(perPage: 10);
+
+        $mappingQueryCount = $this->countQueries(function () use ($mapper, $paginator): void {
+            $payloads = $paginator->getCollection()
+                ->map(fn(EloquentListing $listing): array => $mapper->map($listing))
+                ->values();
+
+            $this->assertCount(6, $payloads);
+            $this->assertContains(
+                'Запчасти / Группа 1 / Подгруппа 1',
+                $payloads
+                    ->pluck('category.fullName')
+                    ->all(),
+            );
+        });
+
+        $this->assertSame(
+            1,
+            $mappingQueryCount,
+            'Breadcrumb mapping must preload categories once instead of querying parent chains per listing.',
+        );
+    }
+
+    private function countQueries(callable $callback): int
+    {
+        $queryCount = 0;
+
+        DB::listen(static function () use (&$queryCount): void {
+            $queryCount++;
+        });
+
+        $callback();
+
+        return $queryCount;
+    }
 }
