@@ -28,7 +28,7 @@ Backend является источником истины для пользов
 Путь:
 
 ```text
-/Users/imranpskhu/projects/snabix/snabix-backend
+$PROJECT_ROOT/snabix-backend
 ```
 
 Назначение:
@@ -48,7 +48,7 @@ Backend является источником истины для пользов
 Путь:
 
 ```text
-/Users/imranpskhu/projects/snabix/snabix-frontend
+$PROJECT_ROOT/snabix-frontend
 ```
 
 Назначение:
@@ -61,12 +61,12 @@ Backend является источником истины для пользов
 - отображение уведомлений;
 - адаптивный интерфейс.
 
-### `snabix-bot`
+### `snabix-telegram-bot`
 
 Путь:
 
 ```text
-/Users/imranpskhu/projects/snabix/snabix-bot
+$PROJECT_ROOT/snabix-telegram-bot
 ```
 
 Назначение:

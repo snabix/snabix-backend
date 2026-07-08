@@ -19,7 +19,7 @@ Backend отвечает за:
 ## Первый запуск
 
 ```bash
-cd /Users/dustun/Projects/snabix/snabix-backend
+cd $PROJECT_ROOT/snabix-backend
 cp .env.example .env
 composer install
 docker compose up -d

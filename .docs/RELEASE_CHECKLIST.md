@@ -13,7 +13,7 @@
 ## 2. Проверки backend
 
 ```bash
-cd /Users/imranpskhu/projects/snabix/snabix-backend
+cd $PROJECT_ROOT/snabix-backend
 task cs
 vendor/bin/phpstan analyse --memory-limit=1G
 docker compose exec -e APP_ENV=testing -e DB_HOST=db-test -e DB_DATABASE=snabix_test -e DB_CONNECTION=pgsql app php artisan test

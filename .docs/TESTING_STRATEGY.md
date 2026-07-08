@@ -20,7 +20,7 @@ DB_CONNECTION=pgsql
 ## Полный запуск
 
 ```bash
-cd /Users/dustun/Projects/snabix/snabix-backend
+cd $PROJECT_ROOT/snabix-backend
 task test
 ```
 

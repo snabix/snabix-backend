@@ -27,13 +27,13 @@
 Локальный backend env:
 
 ```text
-/Users/imranpskhu/projects/snabix/snabix-backend/.env
+$PROJECT_ROOT/snabix-backend/.env
 ```
 
 Пример хранится в:
 
 ```text
-/Users/imranpskhu/projects/snabix/snabix-backend/.env.example
+$PROJECT_ROOT/snabix-backend/.env.example
 ```
 
 ## Критичные переменные
