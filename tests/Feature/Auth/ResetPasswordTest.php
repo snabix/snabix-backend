@@ -7,14 +7,20 @@ namespace Tests\Feature\Auth;
 use App\Auth\Infrastructure\Models\EloquentUser;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Tests\Feature\FeatureTestCase;
 
 class ResetPasswordTest extends FeatureTestCase
 {
     public function test_user_can_reset_password_with_valid_token(): void
     {
+        $email     = sprintf('reset-password-%s@example.com', Str::uuid()->toString());
+
+        RateLimiter::clear($email . '|127.0.0.1');
+
         $user      = EloquentUser::factory()->create([
-            'email'    => 'imran@example.com',
+            'email'    => $email,
             'password' => 'OldStrongPassword123!',
         ]);
 
