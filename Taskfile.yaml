@@ -51,9 +51,14 @@ tasks:
     desc: Larastan / PHPStan — статический анализ backend на уровне 9
     cmd: composer stan
 
+  files:size:
+    desc: Проверить baseline крупных backend-файлов
+    cmd: php scripts/check-file-sizes.php
+
   check:
     desc: "Полная проверка backend: cs-fixer, larastan, scramble и тесты"
     cmds:
+      - task "files:size"
       - task "cs:dry"
       - task stan
       - task "docs:scramble"

@@ -1,0 +1,60 @@
+# Контроль размера backend-файлов
+
+Документ фиксирует крупные backend-файлы, которые можно оставить временно, но нельзя незаметно раздувать дальше. Цель правила - не механическое дробление, а понятная ответственность файлов и безопасные ревью.
+
+## Правило
+
+Если tracked-файл меняется функционально, нужно одно из двух:
+
+- декомпозировать файл по ответственности;
+- оставить короткое обоснование, почему файл временно остается крупным, и при необходимости обновить baseline в `scripts/check-file-sizes.php`.
+
+Проверка запускается через:
+
+```bash
+task files:size
+task check
+```
+
+## Текущий baseline
+
+| Файл | Строк | Решение |
+| --- | ---: | --- |
+| `app/CLI/SharedCLICleanupStorage.php` | 357 | Разделить при следующем функциональном изменении cleanup workflow |
+| `app/News/Filament/Resources/NewsPosts/Schemas/NewsPostForm.php` | 349 | Разделить schema sections при следующем изменении формы |
+| `app/Listing/Infrastructure/Services/ListingAttributeValueSynchronizer.php` | 331 | Разделить синхронизацию, pruning и normalization при следующем изменении сервиса |
+
+## Рекомендуемая декомпозиция
+
+### `SharedCLICleanupStorage.php`
+
+Возможное направление:
+
+```text
+app/CLI/SharedCLICleanupStorage.php
+app/Shared/Application/Services/StorageCleanupPlanner.php
+app/Shared/Application/Services/StorageCleanupExecutor.php
+app/Shared/Application/DTO/StorageCleanupSummary.php
+```
+
+### `NewsPostForm.php`
+
+Возможное направление:
+
+```text
+app/News/Filament/Resources/NewsPosts/Schemas/NewsPostForm.php
+app/News/Filament/Resources/NewsPosts/Schemas/NewsPostMainSection.php
+app/News/Filament/Resources/NewsPosts/Schemas/NewsPostSeoSection.php
+app/News/Filament/Resources/NewsPosts/Schemas/NewsPostContentBlocksSection.php
+```
+
+### `ListingAttributeValueSynchronizer.php`
+
+Возможное направление:
+
+```text
+app/Listing/Infrastructure/Services/ListingAttributeValueSynchronizer.php
+app/Listing/Infrastructure/Services/ListingAttributeValueNormalizer.php
+app/Listing/Infrastructure/Services/ListingAttributeValuePruner.php
+app/Listing/Infrastructure/Services/ListingAttributeValueUpserter.php
+```

@@ -62,6 +62,9 @@ jobs:
           php artisan key:generate --ansi
           sudo sh -c 'echo "127.0.0.1 db-test" >> /etc/hosts'
 
+      - name: File size baseline
+        run: php scripts/check-file-sizes.php
+
       - name: PHP CS Fixer dry run
         run: php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
 
