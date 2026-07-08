@@ -37,8 +37,8 @@ task --version
 
 Локальные адреса:
 
-- backend: `http://127.0.0.1:8080`;
-- admin panel: `http://127.0.0.1:8080/admin`;
+- backend: `http://localhost:8080`;
+- admin panel: `http://localhost:8080/admin`;
 - Mailpit: `http://127.0.0.1:8025`;
 - RabbitMQ management: `http://127.0.0.1:15672`.
 
