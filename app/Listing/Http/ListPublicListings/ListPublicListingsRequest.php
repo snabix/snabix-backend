@@ -26,37 +26,39 @@ class ListPublicListingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page'        => ['nullable', 'integer', 'min:1'],
-            'perPage'     => ['nullable', 'integer', 'min:1', 'max:48'],
-            'categoryId'  => ['nullable', 'uuid', 'exists:categories,id'],
-            'type'        => ['nullable', 'integer', Rule::enum(ListingType::class)],
-            'minPrice'    => ['nullable', 'integer', 'min:0'],
-            'maxPrice'    => ['nullable', 'integer', 'min:0', 'gte:minPrice'],
-            'regionId'    => ['nullable', 'integer', 'min:1', 'exists:regions,id'],
-            'cityId'      => ['nullable', 'integer', 'min:1', 'exists:cities,id'],
-            'regionQuery' => ['nullable', 'string', 'max:120'],
-            'cityQuery'   => ['nullable', 'string', 'max:120'],
-            'sort'        => ['nullable', 'string', Rule::in(self::SORT_VALUES)],
+            'page'         => ['nullable', 'integer', 'min:1'],
+            'perPage'      => ['nullable', 'integer', 'min:1', 'max:48'],
+            'categoryId'   => ['nullable', 'uuid', 'exists:categories,id'],
+            'type'         => ['nullable', 'integer', Rule::enum(ListingType::class)],
+            'minPrice'     => ['nullable', 'integer', 'min:0'],
+            'maxPrice'     => ['nullable', 'integer', 'min:0', 'gte:minPrice'],
+            'regionId'     => ['nullable', 'integer', 'min:1', 'exists:regions,id'],
+            'cityId'       => ['nullable', 'integer', 'min:1', 'exists:cities,id'],
+            'regionQuery'  => ['nullable', 'string', 'max:120'],
+            'cityQuery'    => ['nullable', 'string', 'max:120'],
+            'isNegotiable' => ['nullable', Rule::in(['true', 'false', '1', '0', true, false, 1, 0])],
+            'sort'         => ['nullable', 'string', Rule::in(self::SORT_VALUES)],
         ];
     }
 
     /**
-     * @return array<string, int|string|null>
+     * @return array<string, bool|int|string|null>
      */
     public function inputData(): array
     {
         return [
-            'page'        => $this->integer('page', 1),
-            'perPage'     => $this->integer('perPage', 15),
-            'categoryId'  => $this->nullableStringInput('categoryId'),
-            'type'        => $this->nullableIntegerInput('type'),
-            'minPrice'    => $this->nullableIntegerInput('minPrice'),
-            'maxPrice'    => $this->nullableIntegerInput('maxPrice'),
-            'regionId'    => $this->nullableIntegerInput('regionId'),
-            'cityId'      => $this->nullableIntegerInput('cityId'),
-            'regionQuery' => $this->nullableStringInput('regionQuery'),
-            'cityQuery'   => $this->nullableStringInput('cityQuery'),
-            'sort'        => $this->string('sort', self::DEFAULT_SORT)->toString(),
+            'page'         => $this->integer('page', 1),
+            'perPage'      => $this->integer('perPage', 15),
+            'categoryId'   => $this->nullableStringInput('categoryId'),
+            'type'         => $this->nullableIntegerInput('type'),
+            'minPrice'     => $this->nullableIntegerInput('minPrice'),
+            'maxPrice'     => $this->nullableIntegerInput('maxPrice'),
+            'regionId'     => $this->nullableIntegerInput('regionId'),
+            'cityId'       => $this->nullableIntegerInput('cityId'),
+            'regionQuery'  => $this->nullableStringInput('regionQuery'),
+            'cityQuery'    => $this->nullableStringInput('cityQuery'),
+            'isNegotiable' => $this->nullableBooleanInput('isNegotiable'),
+            'sort'         => $this->string('sort', self::DEFAULT_SORT)->toString(),
         ];
     }
 
@@ -77,5 +79,16 @@ class ListPublicListingsRequest extends FormRequest
         $value = $this->input($key);
 
         return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    private function nullableBooleanInput(string $key): ?bool
+    {
+        if (! $this->exists($key)) {
+            return null;
+        }
+
+        $value = filter_var($this->input($key), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        return is_bool($value) ? $value : null;
     }
 }

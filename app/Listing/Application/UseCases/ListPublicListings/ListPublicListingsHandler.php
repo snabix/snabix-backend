@@ -30,6 +30,7 @@ readonly class ListPublicListingsHandler
             cityId: $input->cityId,
             regionQuery: $input->regionQuery,
             cityQuery: $input->cityQuery,
+            isNegotiable: $input->isNegotiable,
             sort: $input->sort,
         );
 

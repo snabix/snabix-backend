@@ -27,6 +27,7 @@ final readonly class PublicListingQuery implements PublicListingQueryInterface
         ?int $cityId = null,
         ?string $regionQuery = null,
         ?string $cityQuery = null,
+        ?bool $isNegotiable = null,
         string $sort = 'newest',
     ): LengthAwarePaginator {
         $query = EloquentListing::query()
@@ -36,7 +37,8 @@ final readonly class PublicListingQuery implements PublicListingQueryInterface
             ->when($minPrice !== null, fn($query) => $query->where('price', '>=', $minPrice))
             ->when($maxPrice !== null, fn($query) => $query->where('price', '<=', $maxPrice))
             ->when($regionId !== null, fn($query) => $query->where('region_id', $regionId))
-            ->when($cityId !== null, fn($query) => $query->where('city_id', $cityId));
+            ->when($cityId !== null, fn($query) => $query->where('city_id', $cityId))
+            ->when($isNegotiable !== null, fn($query) => $query->where('is_negotiable', $isNegotiable));
 
         $this->applyCategoryFilter($query, $categoryId);
         $this->applyLocationSearchFilter($query, 'region', $regionQuery);

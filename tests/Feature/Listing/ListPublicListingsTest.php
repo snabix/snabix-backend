@@ -192,6 +192,52 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertJsonPath('data.items.0.id', $matchedListing->id);
     }
 
+    public function test_public_listings_can_be_filtered_by_negotiable_price(): void
+    {
+        $categoryRepository = app(CategoryRepositoryInterface::class);
+        $user               = EloquentUser::factory()->create();
+        $category           = $categoryRepository->save([
+            'name'         => 'Стройматериалы',
+            'slug'         => 'strojmaterialy',
+            'catalog_type' => 1,
+        ]);
+
+        $negotiableListing  = $this->createPublishedListing(
+            $user->id,
+            $category->id,
+            'Кирпич с торгом',
+            'kirpich-s-torgom',
+            now(),
+            [
+                'is_negotiable' => true,
+            ],
+        );
+        $fixedPriceListing  = $this->createPublishedListing(
+            $user->id,
+            $category->id,
+            'Кирпич без торга',
+            'kirpich-bez-torga',
+            now()->subMinute(),
+            [
+                'is_negotiable' => false,
+            ],
+        );
+
+        $this
+            ->getJson('/api/v1/public/listings?isNegotiable=true')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $negotiableListing->id)
+            ->assertJsonPath('data.items.0.isNegotiable', true);
+
+        $this
+            ->getJson('/api/v1/public/listings?isNegotiable=false')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $fixedPriceListing->id)
+            ->assertJsonPath('data.items.0.isNegotiable', false);
+    }
+
     public function test_public_listings_can_be_filtered_by_region_and_city(): void
     {
         $categoryRepository = app(CategoryRepositoryInterface::class);
@@ -282,9 +328,9 @@ class ListPublicListingsTest extends FeatureTestCase
     public function test_public_listings_validate_filter_values(): void
     {
         $this
-            ->getJson('/api/v1/public/listings?minPrice=90000&maxPrice=1000&sort=unknown&regionQuery=' . str_repeat('x', 121))
+            ->getJson('/api/v1/public/listings?minPrice=90000&maxPrice=1000&sort=unknown&isNegotiable=maybe&regionQuery=' . str_repeat('x', 121))
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['maxPrice', 'sort', 'regionQuery']);
+            ->assertJsonValidationErrors(['maxPrice', 'sort', 'isNegotiable', 'regionQuery']);
     }
 
     public function test_public_listings_query_count_does_not_grow_per_listing(): void

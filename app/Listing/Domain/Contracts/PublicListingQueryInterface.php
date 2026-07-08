@@ -23,6 +23,7 @@ interface PublicListingQueryInterface
         ?int $cityId = null,
         ?string $regionQuery = null,
         ?string $cityQuery = null,
+        ?bool $isNegotiable = null,
         string $sort = 'newest',
     ): LengthAwarePaginator;
 
