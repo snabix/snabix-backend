@@ -7,11 +7,15 @@ namespace App\Auth\Domain\Events;
 use App\Auth\Domain\Entities\User;
 use App\Shared\Domain\Contracts\LoggableEvent;
 use App\Shared\Domain\Enums\SystemLogLevel;
+use Carbon\CarbonImmutable;
 
 readonly class UserSignedIn implements LoggableEvent
 {
     public function __construct(
         public User $user,
+        public ?string $ipAddress = null,
+        public string $userAgent = '',
+        public ?CarbonImmutable $signedInAt = null,
     ) {}
 
     public function logLevel(): SystemLogLevel
@@ -37,7 +41,10 @@ readonly class UserSignedIn implements LoggableEvent
     public function logContext(): ?array
     {
         return [
-            'email' => $this->user->email->value(),
+            'email'      => $this->user->email->value(),
+            'ipAddress'  => $this->ipAddress,
+            'userAgent'  => $this->userAgent,
+            'signedInAt' => $this->signedInAt?->toISOString(),
         ];
     }
 

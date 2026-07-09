@@ -34,6 +34,15 @@ class PlatformNotification extends Notification implements ShouldQueue
         $this->onQueue('notifications');
     }
 
+    private static function stringContextValue(mixed $value, string $fallback): string
+    {
+        if (! is_string($value) || $value === '') {
+            return $fallback;
+        }
+
+        return $value;
+    }
+
     /**
      * @return list<string>
      */
@@ -87,10 +96,22 @@ class PlatformNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $message = (new MailMessage())
+        $message      = (new MailMessage())
             ->subject($this->title)
             ->greeting('Здравствуйте!')
             ->line($this->body);
+
+        $loginDetails = $this->context['loginDetails'] ?? null;
+
+        if (is_array($loginDetails)) {
+            $message
+                ->line('Детали входа:')
+                ->line('Расположение: ' . self::stringContextValue($loginDetails['location'] ?? null, 'неизвестно'))
+                ->line('Устройство: ' . self::stringContextValue($loginDetails['device'] ?? null, 'неизвестно'))
+                ->line('Браузер: ' . self::stringContextValue($loginDetails['browser'] ?? null, 'неизвестно'))
+                ->line('IP-адрес: ' . self::stringContextValue($loginDetails['ipAddress'] ?? null, 'неизвестно'))
+                ->line('Время входа: ' . self::stringContextValue($loginDetails['signedInAt'] ?? null, 'неизвестно'));
+        }
 
         if ($this->actionUrl !== null) {
             $message->action('Открыть SNABIX', $this->actionUrl);

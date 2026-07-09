@@ -6,6 +6,7 @@ namespace Tests\Feature\Notification;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Notification\Application\Notifications\PlatformNotification;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use InvalidArgumentException;
@@ -150,20 +151,40 @@ class NotificationApiTest extends FeatureTestCase
     public function test_successful_sign_in_dispatches_security_notification(): void
     {
         Notification::fake();
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-09 12:53:00', 'UTC'));
+
         $user = EloquentUser::factory()->create([
             'email'    => 'notify-login@example.com',
             'password' => Hash::make('StrongPassword123!'),
         ]);
 
-        $this->postJson('/api/v1/auth/sign-in', [
-            'email'    => 'notify-login@example.com',
-            'password' => 'StrongPassword123!',
-        ])->assertOk();
+        $this
+            ->withServerVariables([
+                'REMOTE_ADDR'      => '89.105.210.66',
+                'HTTP_USER_AGENT'  => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:127.0) Gecko/20100101 Firefox/127.0',
+            ])
+            ->postJson('/api/v1/auth/sign-in', [
+                'email'    => 'notify-login@example.com',
+                'password' => 'StrongPassword123!',
+            ])
+            ->assertOk();
 
         Notification::assertSentTo(
             $user,
             PlatformNotification::class,
-            fn(PlatformNotification $notification): bool => $notification->eventType->value === 'security_login',
+            function (PlatformNotification $notification): bool {
+                $loginDetails = $notification->context['loginDetails'] ?? null;
+
+                return $notification->eventType->value === 'security_login'
+                    && is_array($loginDetails)
+                    && $loginDetails['location'] === 'По IP: 89.105.210.66'
+                    && $loginDetails['device'] === 'macOS устройство'
+                    && $loginDetails['browser'] === 'Firefox'
+                    && $loginDetails['ipAddress'] === '89.105.210.66'
+                    && $loginDetails['signedInAt'] === '09.07.2026 12:53:00 UTC';
+            },
         );
+
+        CarbonImmutable::setTestNow();
     }
 }

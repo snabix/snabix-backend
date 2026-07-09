@@ -10,6 +10,7 @@ use App\Auth\Domain\Events\UserSignedIn;
 use App\Shared\Domain\Contracts\HasherInterface;
 use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
 use App\Shared\Domain\ValueObjects\Email;
+use Carbon\CarbonImmutable;
 use Illuminate\Validation\ValidationException;
 
 readonly class SignInHandler
@@ -74,7 +75,12 @@ readonly class SignInHandler
             $user->id->value(),
         );
 
-        event(new UserSignedIn($user));
+        event(new UserSignedIn(
+            user: $user,
+            ipAddress: $data->ipAddress,
+            userAgent: $data->userAgent,
+            signedInAt: CarbonImmutable::now(),
+        ));
 
         return SignInOutput::from([
             'userId' => $user->id->value(),
