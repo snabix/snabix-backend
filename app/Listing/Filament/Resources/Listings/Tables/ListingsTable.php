@@ -57,6 +57,7 @@ class ListingsTable
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
+                    ->action(ListingModerationActions::changeStatusAction())
                     ->formatStateUsing(fn(EloquentListing $record): string => $record->status->label())
                     ->color(fn(EloquentListing $record): string => match ($record->status) {
                         ListingStatus::DRAFT          => 'gray',
