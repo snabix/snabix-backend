@@ -20,12 +20,13 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 /**
  * Class EloquentUser
  *
- * @property string  $id
- * @property string  $first_name
- * @property string  $last_name
- * @property string  $email
- * @property boolean $is_active
- * @property string  $phone_number
+ * @property string      $id
+ * @property string      $first_name
+ * @property string      $last_name
+ * @property string      $email
+ * @property boolean     $is_active
+ * @property string      $phone_number
+ * @property string|null $about
  *
  * @property Carbon      $created_at
  * @property Carbon      $updated_at
@@ -59,6 +60,7 @@ class EloquentUser extends Authenticatable implements HasMedia
         'first_name',
         'last_name',
         'phone_number',
+        'about',
         'is_active',
         'email_verified_at',
     ];

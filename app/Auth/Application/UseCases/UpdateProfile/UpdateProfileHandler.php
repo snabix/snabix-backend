@@ -50,6 +50,7 @@ readonly class UpdateProfileHandler
             new LastName($data->lastName),
             $email,
             filled($data->phoneNumber) ? new PhoneNumber($data->phoneNumber) : null,
+            filled($data->aboutMe) ? $data->aboutMe : null,
         );
 
         $this->userRepository->save($user);
@@ -69,6 +70,7 @@ readonly class UpdateProfileHandler
             'lastName'        => $user->lastName->value(),
             'email'           => $user->email->value(),
             'phoneNumber'     => $user->phoneNumber?->value(),
+            'aboutMe'         => $user->about,
             'isActive'        => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
             'avatar'          => $this->userAvatarService->toPayload($data->userId),

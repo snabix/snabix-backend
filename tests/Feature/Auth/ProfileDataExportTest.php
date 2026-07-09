@@ -18,6 +18,7 @@ class ProfileDataExportTest extends FeatureTestCase
         $user = EloquentUser::factory()->create([
             'first_name'   => 'Imran',
             'last_name'    => 'Khan',
+            'about'        => 'Описание профиля для экспорта.',
             'email'        => 'privacy@example.com',
             'phone_number' => '+79991234567',
         ]);
@@ -51,6 +52,7 @@ class ProfileDataExportTest extends FeatureTestCase
 
             return str_contains($contents, '"id": "' . $user->id . '"')
                 && str_contains($contents, '"email": "privacy@example.com"')
+                && str_contains($contents, '"aboutMe": "Описание профиля для экспорта."')
                 && str_contains($contents, '"phoneNumber": "+79991234567"')
                 && str_contains($contents, '"password": "not_exported"');
         });

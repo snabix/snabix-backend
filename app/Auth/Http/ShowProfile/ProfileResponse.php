@@ -20,6 +20,7 @@ class ProfileResponse extends OutputResource
      *     lastName: string,
      *     email: string,
      *     phoneNumber: string|null,
+     *     aboutMe: string|null,
      *     isActive: bool,
      *     emailVerifiedAt: string|null,
      *     avatar: array<string, mixed>|null,

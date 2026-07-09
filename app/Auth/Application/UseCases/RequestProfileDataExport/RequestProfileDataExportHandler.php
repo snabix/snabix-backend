@@ -62,6 +62,7 @@ readonly class RequestProfileDataExportHandler
                 'id'        => $user->id,
                 'firstName' => $user->first_name,
                 'lastName'  => $user->last_name,
+                'aboutMe'   => $user->about,
                 'isActive'  => $user->is_active,
                 'createdAt' => $user->created_at->format(DATE_ATOM),
                 'updatedAt' => $user->updated_at->format(DATE_ATOM),

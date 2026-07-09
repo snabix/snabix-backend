@@ -37,6 +37,7 @@ readonly class ProfileHandler
             'lastName'        => $user->lastName->value(),
             'email'           => $user->email->value(),
             'phoneNumber'     => $user->phoneNumber?->value(),
+            'aboutMe'         => $user->about,
             'isActive'        => $user->isActive(),
             'emailVerifiedAt' => $user->emailVerifiedAt?->format(DATE_ATOM),
             'avatar'          => $this->userAvatarService->toPayload($data->userId),

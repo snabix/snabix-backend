@@ -14,6 +14,7 @@ class ProfileTest extends FeatureTestCase
         $user  = EloquentUser::factory()->create([
             'first_name'   => 'Imran',
             'last_name'    => 'Khan',
+            'about'        => 'Поставляю инженерное оборудование и быстро отвечаю на заявки.',
             'phone_number' => '+79991234567',
             'email'        => 'imran@example.com',
             'is_active'    => true,
@@ -24,6 +25,7 @@ class ProfileTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonPath('data.firstName', 'Imran')
             ->assertJsonPath('data.lastName', 'Khan')
+            ->assertJsonPath('data.aboutMe', 'Поставляю инженерное оборудование и быстро отвечаю на заявки.')
             ->assertJsonPath('data.email', 'imran@example.com')
             ->assertJsonPath('data.phoneNumber', '+79991234567')
             ->assertJsonPath('data.isActive', true);

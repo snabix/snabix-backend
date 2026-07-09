@@ -18,6 +18,7 @@ class ProfileOutput extends Output
         public readonly string $lastName,
         public readonly string $email,
         public readonly ?string $phoneNumber,
+        public readonly ?string $aboutMe,
         public readonly bool $isActive,
         public readonly ?string $emailVerifiedAt,
         public readonly ?array $avatar,
