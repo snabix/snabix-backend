@@ -110,5 +110,18 @@ class AuthServiceProvider extends ServiceProvider
                     'message' => 'Слишком много запросов на повторную отправку кода. Попробуйте позже.',
                 ], 429));
         });
+
+        RateLimiter::for('auth.data-export', function (Request $request): Limit {
+            $user   = $request->user();
+            $userId = is_object($user) && (is_string($user->getAuthIdentifier()) || is_int($user->getAuthIdentifier()))
+                ? (string) $user->getAuthIdentifier()
+                : ($request->ip() ?? 'unknown');
+
+            return Limit::perHour(3)
+                ->by($userId)
+                ->response(fn(): JsonResponse => response()->json([
+                    'message' => 'Слишком много запросов данных. Попробуйте позже.',
+                ], 429));
+        });
     }
 }

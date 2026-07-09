@@ -10,6 +10,7 @@ use App\Auth\Http\ListActiveSessions\ListActiveSessionsController;
 use App\Auth\Http\ListProfileAddresses\ListProfileAddressesController;
 use App\Auth\Http\Logout\LogoutController;
 use App\Auth\Http\ReplaceProfileAddresses\ReplaceProfileAddressesController;
+use App\Auth\Http\RequestProfileDataExport\RequestProfileDataExportController;
 use App\Auth\Http\ResendEmailVerification\ResendEmailVerificationController;
 use App\Auth\Http\ResetPassword\ResetPasswordController;
 use App\Auth\Http\ShowProfile\ProfileController;
@@ -66,6 +67,8 @@ Route::prefix('v1')->group(function () {
             ->middleware('auth:sanctum');
         Route::patch('me', UpdateProfileController::class)
             ->middleware('auth:sanctum');
+        Route::post('me/data-export', RequestProfileDataExportController::class)
+            ->middleware(['auth:sanctum', 'throttle:auth.data-export']);
         Route::get('me/addresses', ListProfileAddressesController::class)
             ->middleware('auth:sanctum');
         Route::put('me/addresses', ReplaceProfileAddressesController::class)
