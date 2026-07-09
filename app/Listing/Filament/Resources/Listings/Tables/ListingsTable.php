@@ -6,6 +6,7 @@ namespace App\Listing\Filament\Resources\Listings\Tables;
 
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Listing\Filament\Resources\Listings\Actions\ListingModerationActions;
 use App\Listing\Filament\Resources\Listings\ListingResource;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Filament\Actions\ActionGroup;
@@ -128,6 +129,7 @@ class ListingsTable
             ])
             ->recordActions([
                 ActionGroup::make([
+                    ...ListingModerationActions::make(),
                     ViewAction::make()
                         ->label('Открыть'),
                     EditAction::make()

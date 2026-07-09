@@ -37,12 +37,15 @@ final readonly class ListingModerationNormalizer
     public function statusTransitionAttributes(
         EloquentListing $listing,
         ListingStatus $status,
+        ?string $rejectionReason = null,
     ): array {
         return [
             'status'           => $status,
-            'rejection_reason' => $status === ListingStatus::PENDING_REVIEW
-                ? null
-                : $listing->rejection_reason,
+            'rejection_reason' => match ($status) {
+                ListingStatus::PENDING_REVIEW => null,
+                ListingStatus::REJECTED       => $rejectionReason,
+                default                       => $listing->rejection_reason,
+            },
         ];
     }
 }

@@ -46,28 +46,51 @@ class NotificationApiTest extends FeatureTestCase
 
     public function test_user_can_read_and_update_delivery_preferences(): void
     {
-        $user     = EloquentUser::factory()->create();
+        $user            = EloquentUser::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = $this->getJson('/api/v1/notifications/preferences')
+        $response        = $this->getJson('/api/v1/notifications/preferences')
             ->assertOk()
-            ->assertJsonCount(10, 'data.items');
+            ->assertJsonCount(11, 'data.items');
 
-        $items    = self::preferenceItems($response->json('data.items'));
-        $security = collect($items)->firstWhere('key', 'security_login');
+        $items           = self::preferenceItems($response->json('data.items'));
+        $security        = collect($items)->firstWhere('key', 'security_login');
 
         $this->assertNotNull($security);
         $this->assertTrue($security['siteEnabled']);
 
-        $this->putJson('/api/v1/notifications/preferences', [
+        $updatedResponse = $this->putJson('/api/v1/notifications/preferences', [
             'items' => [[
                 'key'          => 'security_login',
                 'siteEnabled'  => false,
                 'emailEnabled' => false,
             ]],
-        ])->assertOk()
-            ->assertJsonPath('data.items.7.siteEnabled', true)
-            ->assertJsonPath('data.items.7.emailEnabled', false);
+        ])->assertOk();
+        $updatedSecurity = collect(self::preferenceItems($updatedResponse->json('data.items')))->firstWhere('key', 'security_login');
+
+        $this->assertNotNull($updatedSecurity);
+        $this->assertTrue($updatedSecurity['siteEnabled']);
+        $this->assertFalse($updatedSecurity['emailEnabled']);
+    }
+
+    public function test_listing_moderation_notification_is_required_for_site_and_email(): void
+    {
+        $user       = EloquentUser::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response   = $this->putJson('/api/v1/notifications/preferences', [
+            'items' => [[
+                'key'          => 'listing_moderation',
+                'siteEnabled'  => false,
+                'emailEnabled' => false,
+            ]],
+        ])->assertOk();
+
+        $moderation = collect(self::preferenceItems($response->json('data.items')))->firstWhere('key', 'listing_moderation');
+
+        $this->assertNotNull($moderation);
+        $this->assertTrue($moderation['siteEnabled']);
+        $this->assertTrue($moderation['emailEnabled']);
     }
 
     public function test_user_can_list_and_mark_notifications_as_read(): void
