@@ -91,6 +91,14 @@ http://127.0.0.1:8025
 - backend service token не добавлен;
 - SMTP password не добавлен;
 - production DB password не добавлен;
+- production env прошел проверку на dev placeholders:
+
+```bash
+PRODUCTION_ENV_FILE=/path/to/.env.production task secrets:production
+```
+
+- в staging/production не используются `SNABIX_BOT_SERVICE_TOKEN=change-me`, `RABBITMQ_USER=guest`, `RABBITMQ_PASSWORD=guest`, `DB_USERNAME=root`, `DB_PASSWORD=1234`;
+- если placeholder успел попасть в staging/production, выполнена ротация соответствующего секрета и проверены access logs;
 - user dumps не добавлены;
 - новые private endpoints имеют auth middleware;
 - новые bot endpoints имеют `bot.service`;

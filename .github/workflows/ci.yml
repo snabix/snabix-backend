@@ -65,6 +65,9 @@ jobs:
       - name: File size baseline
         run: php scripts/check-file-sizes.php
 
+      - name: Production secret guard
+        run: php scripts/check-production-secrets.php --self-test
+
       - name: PHP CS Fixer dry run
         run: php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
 
