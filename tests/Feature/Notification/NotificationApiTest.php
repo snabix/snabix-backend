@@ -154,8 +154,10 @@ class NotificationApiTest extends FeatureTestCase
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-09 12:53:00', 'UTC'));
 
         $user = EloquentUser::factory()->create([
-            'email'    => 'notify-login@example.com',
-            'password' => Hash::make('StrongPassword123!'),
+            'email'      => 'notify-login@example.com',
+            'first_name' => 'Test',
+            'last_name'  => 'User',
+            'password'   => Hash::make('StrongPassword123!'),
         ]);
 
         $this
@@ -172,8 +174,13 @@ class NotificationApiTest extends FeatureTestCase
         Notification::assertSentTo(
             $user,
             PlatformNotification::class,
-            function (PlatformNotification $notification): bool {
+            function (PlatformNotification $notification) use ($user): bool {
                 $loginDetails = $notification->context['loginDetails'] ?? null;
+                $mailMessage  = $notification->toMail($user);
+                $viewDetails  = $mailMessage->viewData['details'] ?? null;
+                $renderedMail = $mailMessage->view === 'emails.security-login'
+                    ? view('emails.security-login', $mailMessage->viewData)->render()
+                    : '';
 
                 return $notification->eventType->value === 'security_login'
                     && is_array($loginDetails)
@@ -181,7 +188,17 @@ class NotificationApiTest extends FeatureTestCase
                     && $loginDetails['device'] === 'macOS устройство'
                     && $loginDetails['browser'] === 'Firefox'
                     && $loginDetails['ipAddress'] === '89.105.210.66'
-                    && $loginDetails['signedInAt'] === '09.07.2026 12:53:00 UTC';
+                    && $loginDetails['signedInAt'] === '09.07.2026 12:53:00 UTC'
+                    && $mailMessage->view === 'emails.security-login'
+                    && $mailMessage->viewData['accountLabel'] === 'Test User'
+                    && $mailMessage->viewData['sessionsUrl'] === 'http://localhost:3000/account/settings/sessions'
+                    && is_array($viewDetails)
+                    && $viewDetails['location'] === 'По IP: 89.105.210.66'
+                    && $viewDetails['device'] === 'macOS устройство'
+                    && $viewDetails['browser'] === 'Firefox'
+                    && str_contains($renderedMail, 'Ваша учетная запись SNABIX')
+                    && str_contains($renderedMail, 'Проверить активные сессии')
+                    && str_contains($renderedMail, '89.105.210.66');
             },
         );
 
