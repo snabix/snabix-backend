@@ -14,7 +14,6 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
@@ -107,16 +106,6 @@ class CategoriesTable
                     ->toggleable(),
             ])
             ->filters([
-                TernaryFilter::make('root_categories')
-                    ->translateLabel()
-                    ->placeholder(__('All categories'))
-                    ->trueLabel(__('Root categories only'))
-                    ->falseLabel(__('Child categories only'))
-                    ->queries(
-                        true: fn(Builder $query): Builder => $query->whereNull('parent_id'),
-                        false: fn(Builder $query): Builder => $query->whereNotNull('parent_id'),
-                        blank: fn(Builder $query): Builder => $query,
-                    ),
                 SelectFilter::make('is_active')
                     ->translateLabel()
                     ->options([
