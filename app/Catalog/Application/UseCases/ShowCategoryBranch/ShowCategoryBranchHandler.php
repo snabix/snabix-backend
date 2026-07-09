@@ -6,6 +6,7 @@ namespace App\Catalog\Application\UseCases\ShowCategoryBranch;
 
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
+use App\Shared\Application\Support\ReferenceDataCache;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 
@@ -13,25 +14,29 @@ readonly class ShowCategoryBranchHandler
 {
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
+        private ReferenceDataCache $cache,
     ) {}
 
     public function execute(ShowCategoryBranchInput $input): ShowCategoryBranchOutput
     {
-        $rootCategory     = $this->categoryRepository->findById($input->categoryId);
-
-        if ($rootCategory === null) {
-            throw (new ModelNotFoundException())->setModel(EloquentCategory::class, [$input->categoryId]);
-        }
-
-        $branchCategories = $this->categoryRepository->listBranch(
-            $input->categoryId,
-            $input->onlyActive,
-        );
-
         return ShowCategoryBranchOutput::from([
-            'item' => $this->mapCategory(
-                $rootCategory,
-                $branchCategories,
+            'item' => $this->cache->rememberCatalog(
+                'catalog:branch:' . $input->categoryId . ':only-active:' . (int) $input->onlyActive,
+                function () use ($input): array {
+                    $rootCategory = $this->categoryRepository->findById($input->categoryId);
+
+                    if ($rootCategory === null) {
+                        throw (new ModelNotFoundException())->setModel(EloquentCategory::class, [$input->categoryId]);
+                    }
+
+                    return $this->mapCategory(
+                        $rootCategory,
+                        $this->categoryRepository->listBranch(
+                            $input->categoryId,
+                            $input->onlyActive,
+                        ),
+                    );
+                },
             ),
         ]);
     }

@@ -6,9 +6,14 @@ namespace App\Catalog\Application\Services;
 
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Media\Infrastructure\Models\EloquentMedia;
+use App\Shared\Application\Support\ReferenceDataCache;
 
 readonly class CategoryIconMediaService
 {
+    public function __construct(
+        private ReferenceDataCache $cache,
+    ) {}
+
     public function replaceFromStoredUpload(EloquentCategory $category, string $sourceDisk, string $sourcePath): EloquentMedia
     {
         $media = $category
@@ -19,6 +24,8 @@ readonly class CategoryIconMediaService
         $media->forceFill([
             'description' => 'Иконка категории ' . $category->name,
         ])->save();
+
+        $this->cache->invalidateCatalog();
 
         return EloquentMedia::query()
             ->whereKey($media->getKey())

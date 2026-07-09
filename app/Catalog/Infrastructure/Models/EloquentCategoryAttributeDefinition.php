@@ -6,6 +6,7 @@ namespace App\Catalog\Infrastructure\Models;
 
 use App\Catalog\Domain\Enums\CategoryAttributeType;
 use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
+use App\Shared\Application\Support\ReferenceDataCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,6 +59,17 @@ class EloquentCategoryAttributeDefinition extends Model
         'schema_version',
         'sort_order',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            app(ReferenceDataCache::class)->invalidateCatalog();
+        });
+
+        static::deleted(function (): void {
+            app(ReferenceDataCache::class)->invalidateCatalog();
+        });
+    }
 
     /**
      * @return BelongsTo<EloquentCategory, $this>
