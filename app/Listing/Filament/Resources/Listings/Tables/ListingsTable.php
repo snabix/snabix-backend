@@ -29,7 +29,7 @@ class ListingsTable
         return $table
             ->modifyQueryUsing(fn(Builder $query): Builder => $query->with(['user', 'category']))
             ->defaultSort('created_at', 'desc')
-            ->recordUrl(fn(EloquentListing $record): string => ListingResource::getUrl('edit', ['record' => $record]))
+            ->recordUrl(fn(EloquentListing $record): string => ListingResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('title')
                     ->label('Объявление')
@@ -128,8 +128,10 @@ class ListingsTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make(),
-                    EditAction::make(),
+                    ViewAction::make()
+                        ->label('Открыть'),
+                    EditAction::make()
+                        ->label('Корректировать'),
                 ]),
             ])
             ->toolbarActions([

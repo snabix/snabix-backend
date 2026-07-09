@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Providers\Filament;
 
-use App\Shared\Filament\Widgets\SystemHealthChecksWidget;
 use App\Shared\Filament\Widgets\SystemHealthOverviewWidget;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -47,11 +46,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 SystemHealthOverviewWidget::class,
-                SystemHealthChecksWidget::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->discoverWidgets(in: app_path('Auth/Filament/Widgets'), for: 'App\Auth\Filament\Widgets')
-            ->discoverWidgets(in: app_path('Listing/Filament/Widgets'), for: 'App\Listing\Filament\Widgets')
             ->plugins([
                 FilamentShieldPlugin::make()
                     ->navigationGroup('Управление доступом'),
