@@ -24,27 +24,17 @@
                         </p>
 
                         <p style="font-size:14px; line-height:1.6; margin:0 0 18px;">
-                            Вы запросили копию персональных данных аккаунта. Ниже указана текущая информация профиля на момент запроса: {{ $requestedAt }}.
+                            Вы запросили копию персональных данных аккаунта. Мы приложили JSON-файл с текущей информацией профиля на момент запроса: {{ $requestedAt }}.
                         </p>
 
-                        @foreach($sections as $section)
-                            <h2 style="margin:24px 0 10px; color:#111827; font-size:16px;">
-                                {{ $section['title'] }}
-                            </h2>
-
-                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; background:#f9fafb;">
-                                @foreach($section['rows'] as $row)
-                                    <tr>
-                                        <td style="padding:12px 14px; width:38%; color:#6b7280; font-size:13px; border-bottom:1px solid #e5e7eb;">
-                                            {{ $row['label'] }}
-                                        </td>
-                                        <td style="padding:12px 14px; color:#111827; font-size:14px; font-weight:600; border-bottom:1px solid #e5e7eb;">
-                                            {{ $row['value'] }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </table>
-                        @endforeach
+                        <div style="padding:16px; border-radius:14px; background:#f9fafb; border:1px solid #e5e7eb;">
+                            <p style="font-size:14px; line-height:1.6; color:#111827; margin:0; font-weight:700;">
+                                Вложение: snabix-profile-data.json
+                            </p>
+                            <p style="font-size:13px; line-height:1.6; color:#6b7280; margin:8px 0 0;">
+                                Файл содержит профиль, контакты и адреса. Пароль не экспортируется: в системе хранится только защищенный хеш.
+                            </p>
+                        </div>
 
                         <p style="font-size:13px; line-height:1.6; color:#6b7280; margin:24px 0 0;">
                             Если вы не запрашивали эти данные, проверьте активные сессии и смените пароль.

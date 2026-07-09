@@ -28,14 +28,20 @@ readonly class RequestProfileDataExportHandler
             throw new NotFoundException('Пользователь не найден.');
         }
 
-        $this->mailSender->send(
+        $this->mailSender->sendWithAttachments(
             new Email($user->email),
             'Ваши данные аккаунта SNABIX',
             'emails.profile-data-export',
             [
                 'accountLabel' => trim($user->first_name . ' ' . $user->last_name) ?: $user->email,
                 'requestedAt'  => now()->timezone($this->appTimezone())->format('d.m.Y H:i:s T'),
-                'sections'     => $this->profileSections($user),
+            ],
+            [
+                [
+                    'filename' => 'snabix-profile-data.json',
+                    'contents' => $this->profileJson($user),
+                    'mime'     => 'application/json',
+                ],
             ],
         );
 
@@ -46,73 +52,78 @@ readonly class RequestProfileDataExportHandler
     }
 
     /**
-     * @return list<array{title: string, rows: list<array{label: string, value: string}>}>
+     * @return array<string, mixed>
      */
-    private function profileSections(EloquentUser $user): array
+    private function profilePayload(EloquentUser $user): array
     {
         return [
-            [
-                'title' => 'Профиль',
-                'rows'  => [
-                    ['label' => 'ID аккаунта', 'value' => $user->id],
-                    ['label' => 'Имя', 'value' => $user->first_name],
-                    ['label' => 'Фамилия', 'value' => $user->last_name],
-                    ['label' => 'Статус аккаунта', 'value' => $user->is_active ? 'Активен' : 'Отключен'],
-                    ['label' => 'Дата регистрации', 'value' => $user->created_at->format(DATE_ATOM)],
-                    ['label' => 'Последнее обновление', 'value' => $user->updated_at->format(DATE_ATOM)],
-                ],
+            'generatedAt' => now()->timezone($this->appTimezone())->toIso8601String(),
+            'profile'     => [
+                'id'        => $user->id,
+                'firstName' => $user->first_name,
+                'lastName'  => $user->last_name,
+                'isActive'  => $user->is_active,
+                'createdAt' => $user->created_at->format(DATE_ATOM),
+                'updatedAt' => $user->updated_at->format(DATE_ATOM),
             ],
-            [
-                'title' => 'Контакты',
-                'rows'  => [
-                    ['label' => 'Email', 'value' => $user->email],
-                    ['label' => 'Email подтвержден', 'value' => $user->email_verified_at !== null ? 'Да' : 'Нет'],
-                    ['label' => 'Дата подтверждения email', 'value' => $user->email_verified_at?->format(DATE_ATOM) ?? 'Не указано'],
-                    ['label' => 'Телефон', 'value' => $user->phone_number ?: 'Не указан'],
-                ],
+            'contacts'    => [
+                'email'           => $user->email,
+                'emailVerified'   => $user->email_verified_at !== null,
+                'emailVerifiedAt' => $user->email_verified_at?->format(DATE_ATOM),
+                'phoneNumber'     => $user->phone_number,
             ],
-            [
-                'title' => 'Безопасность',
-                'rows'  => [
-                    ['label' => 'Пароль', 'value' => 'Не экспортируется. Хранится только защищенный хеш.'],
-                ],
+            'security'    => [
+                'password' => 'not_exported',
+                'note'     => 'Пароль не экспортируется. В системе хранится только защищенный хеш.',
             ],
-            [
-                'title' => 'Адреса профиля',
-                'rows'  => $this->addressRows($user),
-            ],
+            'addresses'   => $this->addressPayload($user),
         ];
     }
 
     /**
-     * @return list<array{label: string, value: string}>
+     * @return list<array<string, mixed>>
      */
-    private function addressRows(EloquentUser $user): array
+    private function addressPayload(EloquentUser $user): array
     {
         if ($user->addresses->isEmpty()) {
-            return [
-                ['label' => 'Адреса', 'value' => 'Не указаны'],
+            return [];
+        }
+
+        $addresses = [];
+
+        foreach ($user->addresses->values() as $address) {
+            $addresses[] = [
+                'id'          => $address->id,
+                'label'       => $address->label,
+                'addressLine' => $address->address_line,
+                'isPrimary'   => $address->is_primary,
+                'region'      => [
+                    'id'       => $address->region->id,
+                    'name'     => $address->region->name,
+                    'fullName' => $address->region->fullname ?? $address->region->name,
+                    'label'    => $address->region->label,
+                ],
+                'city'        => $address->city !== null
+                    ? [
+                        'id'    => $address->city->id,
+                        'name'  => $address->city->name,
+                        'label' => $address->city->label,
+                    ]
+                    : null,
             ];
         }
 
-        $rows = [];
+        return $addresses;
+    }
 
-        foreach ($user->addresses->values() as $index => $address) {
-            $parts  = array_filter([
-                $address->label,
-                $address->region->label ?? $address->region->name,
-                $address->city !== null ? ($address->city->label ?? $address->city->name) : null,
-                $address->address_line,
-                $address->is_primary ? 'Основной' : null,
-            ]);
+    private function profileJson(EloquentUser $user): string
+    {
+        $json = json_encode(
+            $this->profilePayload($user),
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+        );
 
-            $rows[] = [
-                'label' => 'Адрес ' . ($index + 1),
-                'value' => implode(', ', $parts) ?: 'Не указано',
-            ];
-        }
-
-        return $rows;
+        return is_string($json) ? $json : '{}';
     }
 
     private function appTimezone(): string

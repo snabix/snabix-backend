@@ -29,9 +29,30 @@ class ProfileDataExportTest extends FeatureTestCase
             ->assertJsonPath('data.requested', true)
             ->assertJsonPath('data.message', 'Запрос отправлен. Письмо с данными профиля придет на email аккаунта.');
 
-        Mail::assertSent(
-            GenericMail::class,
-            fn(GenericMail $mail): bool => $mail->hasTo('privacy@example.com'),
-        );
+        Mail::assertSent(GenericMail::class, function (GenericMail $mail) use ($user): bool {
+            if (! $mail->hasTo('privacy@example.com')) {
+                return false;
+            }
+
+            $attachment = $mail->attachments()[0] ?? null;
+
+            if ($attachment === null || $attachment->as !== 'snabix-profile-data.json' || $attachment->mime !== 'application/json') {
+                return false;
+            }
+
+            $contents   = $attachment->attachWith(
+                static fn(): array => [],
+                static fn(callable $data): string => $data(),
+            );
+
+            if (! is_string($contents)) {
+                return false;
+            }
+
+            return str_contains($contents, '"id": "' . $user->id . '"')
+                && str_contains($contents, '"email": "privacy@example.com"')
+                && str_contains($contents, '"phoneNumber": "+79991234567"')
+                && str_contains($contents, '"password": "not_exported"');
+        });
     }
 }
