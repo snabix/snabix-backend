@@ -17,6 +17,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -127,15 +128,18 @@ class ListingsTable
                             ->when(filled($data['created_until'] ?? null), fn(Builder $query): Builder => $query->whereDate('created_at', '<=', $data['created_until']));
                     }),
             ])
-            ->recordActions([
-                ActionGroup::make([
-                    ...ListingModerationActions::make(),
-                    ViewAction::make()
-                        ->label('Открыть'),
-                    EditAction::make()
-                        ->label('Корректировать'),
-                ]),
-            ])
+            ->recordActions(
+                [
+                    ActionGroup::make([
+                        ...ListingModerationActions::make(),
+                        ViewAction::make()
+                            ->label('Открыть'),
+                        EditAction::make()
+                            ->label('Корректировать'),
+                    ]),
+                ],
+                RecordActionsPosition::BeforeColumns,
+            )
             ->toolbarActions([
                 DeleteBulkAction::make(),
             ]);

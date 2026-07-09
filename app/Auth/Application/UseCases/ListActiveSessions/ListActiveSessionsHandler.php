@@ -29,6 +29,7 @@ class ListActiveSessionsHandler
      *     deviceName: string,
      *     browser: string,
      *     ipAddress: ?string,
+     *     locationLabel: string,
      *     type: string,
      *     isCurrent: bool,
      *     lastActivityAt: ?string
@@ -43,6 +44,7 @@ class ListActiveSessionsHandler
             'deviceName'     => $this->detectDeviceName($userAgent),
             'browser'        => $this->detectBrowser($userAgent),
             'ipAddress'      => $session->ip_address,
+            'locationLabel'  => $this->detectLocationLabel($session->ip_address),
             'type'           => $this->detectDeviceType($userAgent),
             'isCurrent'      => $currentSessionId !== null && hash_equals($session->id, $currentSessionId),
             'lastActivityAt' => $session->last_activity > 0
@@ -93,5 +95,26 @@ class ListActiveSessionsHandler
             str_contains($normalized, 'safari/')                                            => 'Safari',
             default                                                                         => 'Неизвестный браузер',
         };
+    }
+
+    private function detectLocationLabel(?string $ipAddress): string
+    {
+        if ($ipAddress === null || $ipAddress === '') {
+            return 'Местоположение неизвестно';
+        }
+
+        if (in_array($ipAddress, ['127.0.0.1', '::1'], true)) {
+            return 'Локальная сеть';
+        }
+
+        if (
+            str_starts_with($ipAddress, '10.')
+            || str_starts_with($ipAddress, '192.168.')
+            || preg_match('/^172\.(1[6-9]|2\d|3[0-1])\./', $ipAddress) === 1
+        ) {
+            return 'Частная сеть';
+        }
+
+        return 'По IP: ' . $ipAddress;
     }
 }

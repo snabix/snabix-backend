@@ -39,7 +39,8 @@ task --version
 
 - backend: `http://localhost:8080`;
 - admin panel: `http://localhost:8080/admin`;
-- Mailpit: `http://127.0.0.1:8025`;
+- Mailpit UI: `http://127.0.0.1:8025`;
+- Mailpit SMTP: `mailpit:1025` внутри Docker-сети или `127.0.0.1:1025` с host-машины;
 - RabbitMQ management: `http://127.0.0.1:15672`.
 
 ## Docker-сервисы
