@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Location\Infrastructure\Models;
 
+use App\Shared\Application\Support\ReferenceDataCache;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -69,6 +70,17 @@ class EloquentRegion extends Model
         'is_active',
         'sort_order',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            app(ReferenceDataCache::class)->invalidateLocation();
+        });
+
+        static::deleted(function (): void {
+            app(ReferenceDataCache::class)->invalidateLocation();
+        });
+    }
 
     /**
      * @return HasMany<EloquentCity, $this>

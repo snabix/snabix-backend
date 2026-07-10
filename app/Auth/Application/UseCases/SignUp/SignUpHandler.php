@@ -51,7 +51,7 @@ readonly class SignUpHandler
                     $data->password,
                 ),
             ),
-            phoneNumber: new PhoneNumber($data->phoneNumber),
+            phoneNumber: filled($data->phoneNumber) ? new PhoneNumber($data->phoneNumber) : null,
         );
 
         /** @var SignUpOutput $result */

@@ -18,7 +18,6 @@ class SignUpTest extends FeatureTestCase
         $response = $this->postJson('/api/v1/auth/sign-up', [
             'firstName'            => 'Imran',
             'lastName'             => 'Khan',
-            'phoneNumber'          => '+79991234567',
             'email'                => 'imran@example.com',
             'password'             => 'StrongPassword123!',
             'passwordConfirmation' => 'StrongPassword123!',
@@ -33,7 +32,7 @@ class SignUpTest extends FeatureTestCase
         $this->assertDatabaseHas('users', [
             'first_name'   => 'Imran',
             'last_name'    => 'Khan',
-            'phone_number' => '+79991234567',
+            'phone_number' => null,
             'email'        => 'imran@example.com',
             'is_active'    => true,
         ]);

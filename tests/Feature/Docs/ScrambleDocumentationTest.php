@@ -44,6 +44,8 @@ class ScrambleDocumentationTest extends TestCase
         $this->assertSame('array', data_get($schemas, 'ListListingsResponse.properties.items.type'));
         $this->assertSame('object', data_get($schemas, 'ListListingsResponse.properties.meta.type'));
         $this->assertSame(['string', 'null'], data_get($schemas, 'ProfileResponse.properties.phoneNumber.type'));
+        $this->assertSame(['string', 'null'], data_get($schemas, 'ProfileResponse.properties.description.type'));
+        $this->assertSame(['string', 'null'], data_get($schemas, 'ProfileResponse.properties.dateOfBirth.type'));
         $this->assertSame('object', data_get($schemas, 'CreateListingResponse.type'));
     }
 }

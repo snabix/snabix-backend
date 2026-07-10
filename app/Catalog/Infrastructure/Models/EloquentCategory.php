@@ -6,6 +6,7 @@ namespace App\Catalog\Infrastructure\Models;
 
 use App\Catalog\Domain\Enums\CategoryCatalogType;
 use App\Media\Infrastructure\Models\EloquentMedia;
+use App\Shared\Application\Support\ReferenceDataCache;
 use Database\Factories\EloquentCategoryFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -66,8 +67,13 @@ class EloquentCategory extends Model implements HasMedia
 
     protected static function booted(): void
     {
+        static::saved(function (): void {
+            app(ReferenceDataCache::class)->invalidateCatalog();
+        });
+
         static::deleted(function (self $category): void {
             $category->iconMedia?->delete();
+            app(ReferenceDataCache::class)->invalidateCatalog();
         });
     }
 

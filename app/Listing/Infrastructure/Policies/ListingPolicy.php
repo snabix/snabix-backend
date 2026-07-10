@@ -66,6 +66,13 @@ class ListingPolicy
         return $this->adminCan($user, 'DeleteAny:EloquentListing');
     }
 
+    public function moderate(
+        Authenticatable $user,
+        EloquentListing $listing,
+    ): bool {
+        return $this->adminCan($user, 'Moderate:EloquentListing');
+    }
+
     public function submitForReview(
         EloquentUser $user,
         EloquentListing $listing,

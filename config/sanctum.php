@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Shared\Infrastructure\Support\FrontendDomainConfig;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Laravel\Sanctum\Http\Middleware\AuthenticateSession;
 use Laravel\Sanctum\Sanctum;
 
-$statefulDomains = env('SANCTUM_STATEFUL_DOMAINS');
-$statefulDomains = is_string($statefulDomains)
-    ? $statefulDomains
-    : sprintf(
-        '%s%s',
-        'localhost,localhost:3000,localhost:3001,127.0.0.1,127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:8000,::1',
-        Sanctum::currentApplicationUrlWithPort(),
-    );
+$defaultStatefulDomains = sprintf(
+    '%s%s',
+    'localhost,localhost:3000,localhost:3001,127.0.0.1,127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:8000,::1',
+    Sanctum::currentApplicationUrlWithPort(),
+);
+$statefulDomains        = env('SANCTUM_STATEFUL_DOMAINS');
+$statefulDomains        = is_string($statefulDomains) ? $statefulDomains : null;
 
 return [
 
@@ -29,7 +29,10 @@ return [
     |
     */
 
-    'stateful'     => explode(',', $statefulDomains),
+    'stateful'     => FrontendDomainConfig::statefulDomains(
+        $statefulDomains,
+        $defaultStatefulDomains,
+    ),
 
     /*
     |--------------------------------------------------------------------------

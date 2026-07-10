@@ -6,6 +6,7 @@ namespace Tests\Feature\Notification;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Notification\Application\Notifications\PlatformNotification;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use InvalidArgumentException;
@@ -46,28 +47,51 @@ class NotificationApiTest extends FeatureTestCase
 
     public function test_user_can_read_and_update_delivery_preferences(): void
     {
-        $user     = EloquentUser::factory()->create();
+        $user            = EloquentUser::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = $this->getJson('/api/v1/notifications/preferences')
+        $response        = $this->getJson('/api/v1/notifications/preferences')
             ->assertOk()
-            ->assertJsonCount(10, 'data.items');
+            ->assertJsonCount(11, 'data.items');
 
-        $items    = self::preferenceItems($response->json('data.items'));
-        $security = collect($items)->firstWhere('key', 'security_login');
+        $items           = self::preferenceItems($response->json('data.items'));
+        $security        = collect($items)->firstWhere('key', 'security_login');
 
         $this->assertNotNull($security);
         $this->assertTrue($security['siteEnabled']);
 
-        $this->putJson('/api/v1/notifications/preferences', [
+        $updatedResponse = $this->putJson('/api/v1/notifications/preferences', [
             'items' => [[
                 'key'          => 'security_login',
                 'siteEnabled'  => false,
                 'emailEnabled' => false,
             ]],
-        ])->assertOk()
-            ->assertJsonPath('data.items.7.siteEnabled', true)
-            ->assertJsonPath('data.items.7.emailEnabled', false);
+        ])->assertOk();
+        $updatedSecurity = collect(self::preferenceItems($updatedResponse->json('data.items')))->firstWhere('key', 'security_login');
+
+        $this->assertNotNull($updatedSecurity);
+        $this->assertTrue($updatedSecurity['siteEnabled']);
+        $this->assertFalse($updatedSecurity['emailEnabled']);
+    }
+
+    public function test_listing_moderation_notification_is_required_for_site_and_email(): void
+    {
+        $user       = EloquentUser::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response   = $this->putJson('/api/v1/notifications/preferences', [
+            'items' => [[
+                'key'          => 'listing_moderation',
+                'siteEnabled'  => false,
+                'emailEnabled' => false,
+            ]],
+        ])->assertOk();
+
+        $moderation = collect(self::preferenceItems($response->json('data.items')))->firstWhere('key', 'listing_moderation');
+
+        $this->assertNotNull($moderation);
+        $this->assertTrue($moderation['siteEnabled']);
+        $this->assertTrue($moderation['emailEnabled']);
     }
 
     public function test_user_can_list_and_mark_notifications_as_read(): void
@@ -127,20 +151,57 @@ class NotificationApiTest extends FeatureTestCase
     public function test_successful_sign_in_dispatches_security_notification(): void
     {
         Notification::fake();
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-09 12:53:00', 'UTC'));
+
         $user = EloquentUser::factory()->create([
-            'email'    => 'notify-login@example.com',
-            'password' => Hash::make('StrongPassword123!'),
+            'email'      => 'notify-login@example.com',
+            'first_name' => 'Test',
+            'last_name'  => 'User',
+            'password'   => Hash::make('StrongPassword123!'),
         ]);
 
-        $this->postJson('/api/v1/auth/sign-in', [
-            'email'    => 'notify-login@example.com',
-            'password' => 'StrongPassword123!',
-        ])->assertOk();
+        $this
+            ->withServerVariables([
+                'REMOTE_ADDR'      => '89.105.210.66',
+                'HTTP_USER_AGENT'  => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:127.0) Gecko/20100101 Firefox/127.0',
+            ])
+            ->postJson('/api/v1/auth/sign-in', [
+                'email'    => 'notify-login@example.com',
+                'password' => 'StrongPassword123!',
+            ])
+            ->assertOk();
 
         Notification::assertSentTo(
             $user,
             PlatformNotification::class,
-            fn(PlatformNotification $notification): bool => $notification->eventType->value === 'security_login',
+            function (PlatformNotification $notification) use ($user): bool {
+                $loginDetails = $notification->context['loginDetails'] ?? null;
+                $mailMessage  = $notification->toMail($user);
+                $viewDetails  = $mailMessage->viewData['details'] ?? null;
+                $renderedMail = $mailMessage->view === 'emails.security-login'
+                    ? view('emails.security-login', $mailMessage->viewData)->render()
+                    : '';
+
+                return $notification->eventType->value === 'security_login'
+                    && is_array($loginDetails)
+                    && $loginDetails['location'] === 'По IP: 89.105.210.66'
+                    && $loginDetails['device'] === 'macOS устройство'
+                    && $loginDetails['browser'] === 'Firefox'
+                    && $loginDetails['ipAddress'] === '89.105.210.66'
+                    && $loginDetails['signedInAt'] === '09.07.2026 12:53:00 UTC'
+                    && $mailMessage->view === 'emails.security-login'
+                    && $mailMessage->viewData['accountLabel'] === 'Test User'
+                    && $mailMessage->viewData['sessionsUrl'] === 'http://localhost:3000/account/settings/sessions'
+                    && is_array($viewDetails)
+                    && $viewDetails['location'] === 'По IP: 89.105.210.66'
+                    && $viewDetails['device'] === 'macOS устройство'
+                    && $viewDetails['browser'] === 'Firefox'
+                    && str_contains($renderedMail, 'Ваша учетная запись SNABIX')
+                    && str_contains($renderedMail, 'Проверить активные сессии')
+                    && str_contains($renderedMail, '89.105.210.66');
+            },
         );
+
+        CarbonImmutable::setTestNow();
     }
 }

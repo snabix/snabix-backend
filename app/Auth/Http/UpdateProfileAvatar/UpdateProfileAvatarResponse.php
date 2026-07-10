@@ -20,6 +20,8 @@ class UpdateProfileAvatarResponse extends OutputResource
      *     lastName: string,
      *     email: string,
      *     phoneNumber: string|null,
+     *     description: string|null,
+     *     dateOfBirth: string|null,
      *     isActive: bool,
      *     emailVerifiedAt: string|null,
      *     avatar: array<string, mixed>|null,

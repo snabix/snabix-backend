@@ -8,6 +8,7 @@ enum NotificationEventType: string
 {
     case NEW_MESSAGES       = 'new_messages';
     case LISTING_REPLIES    = 'listing_replies';
+    case LISTING_MODERATION = 'listing_moderation';
     case FAVORITE_LISTINGS  = 'favorite_listings';
     case LISTING_VIEWS      = 'listing_views';
     case RECOMMENDATIONS    = 'recommendations';
@@ -21,7 +22,7 @@ enum NotificationEventType: string
     {
         return match ($this) {
             self::NEW_MESSAGES                                                                       => 'messages',
-            self::LISTING_REPLIES, self::LISTING_EXPIRATION                                          => 'listings',
+            self::LISTING_REPLIES, self::LISTING_MODERATION, self::LISTING_EXPIRATION                => 'listings',
             self::FAVORITE_LISTINGS, self::LISTING_VIEWS, self::RECOMMENDATIONS, self::PRICE_CHANGES => 'activity',
             self::SECURITY_LOGIN, self::PROMOTIONS_NEWS, self::EMAIL_DIGEST                          => 'system',
         };
@@ -32,6 +33,7 @@ enum NotificationEventType: string
         return match ($this) {
             self::NEW_MESSAGES       => 'Новые сообщения',
             self::LISTING_REPLIES    => 'Ответы на объявления',
+            self::LISTING_MODERATION => 'Модерация объявлений',
             self::FAVORITE_LISTINGS  => 'Избранные объявления',
             self::LISTING_VIEWS      => 'Просмотры объявления',
             self::RECOMMENDATIONS    => 'Подборки и рекомендации',
@@ -48,6 +50,7 @@ enum NotificationEventType: string
         return match ($this) {
             self::NEW_MESSAGES       => 'Новые сообщения от покупателей и продавцов.',
             self::LISTING_REPLIES    => 'Ответы, отклики и важные действия по объявлениям.',
+            self::LISTING_MODERATION => 'Решения модерации: публикация, отклонение и архивирование объявлений.',
             self::FAVORITE_LISTINGS  => 'Изменения в объявлениях из избранного.',
             self::LISTING_VIEWS      => 'Активность просмотров ваших объявлений.',
             self::RECOMMENDATIONS    => 'Персональные предложения и подборки.',
@@ -69,6 +72,7 @@ enum NotificationEventType: string
         return in_array($this, [
             self::NEW_MESSAGES,
             self::LISTING_REPLIES,
+            self::LISTING_MODERATION,
             self::PRICE_CHANGES,
             self::LISTING_EXPIRATION,
             self::SECURITY_LOGIN,
@@ -78,6 +82,11 @@ enum NotificationEventType: string
 
     public function isRequiredSite(): bool
     {
-        return $this === self::SECURITY_LOGIN;
+        return in_array($this, [self::SECURITY_LOGIN, self::LISTING_MODERATION], true);
+    }
+
+    public function isRequiredEmail(): bool
+    {
+        return $this === self::LISTING_MODERATION;
     }
 }

@@ -55,10 +55,19 @@ tasks:
     desc: Проверить baseline крупных backend-файлов
     cmd: php scripts/check-file-sizes.php
 
+  secrets:self-test:
+    desc: Проверить production secret guard на безопасном и небезопасном примерах
+    cmd: php scripts/check-production-secrets.php --self-test
+
+  secrets:production:
+    desc: Проверить production env на dev placeholders; передай PRODUCTION_ENV_FILE=/path/to/.env.production
+    cmd: php scripts/check-production-secrets.php --env-file="${PRODUCTION_ENV_FILE}"
+
   check:
     desc: "Полная проверка backend: cs-fixer, larastan, scramble и тесты"
     cmds:
       - task "files:size"
+      - task "secrets:self-test"
       - task "cs:dry"
       - task stan
       - task "docs:scramble"

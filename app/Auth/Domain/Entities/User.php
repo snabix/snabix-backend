@@ -22,6 +22,8 @@ class User
         public Password $password,
         public bool $isActive = true,
         public ?PhoneNumber $phoneNumber = null,
+        public ?string $description = null,
+        public ?string $dateOfBirth = null,
         public ?DateTimeImmutable $emailVerifiedAt = null,
     ) {}
 
@@ -45,6 +47,8 @@ class User
         LastName $lastName,
         Email $email,
         ?PhoneNumber $phoneNumber = null,
+        ?string $description = null,
+        ?string $dateOfBirth = null,
     ): bool {
         $emailChanged      = $this->email->value() !== $email->value();
 
@@ -52,6 +56,8 @@ class User
         $this->lastName    = $lastName;
         $this->email       = $email;
         $this->phoneNumber = $phoneNumber;
+        $this->description = $description;
+        $this->dateOfBirth = $dateOfBirth;
 
         if ($emailChanged) {
             $this->emailVerifiedAt = null;

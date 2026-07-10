@@ -6,24 +6,26 @@ namespace App\Catalog\Application\UseCases\ListRootCategories;
 
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
+use App\Shared\Application\Support\ReferenceDataCache;
 
 readonly class ListRootCategoriesHandler
 {
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
+        private ReferenceDataCache $cache,
     ) {}
 
     public function execute(ListRootCategoriesInput $input): ListRootCategoriesOutput
     {
-        $categories = $this->categoryRepository->listRootCategories(
-            $input->onlyActive,
-        );
-
         return ListRootCategoriesOutput::from([
-            'items' => $categories
-                ->map(fn(EloquentCategory $category): array => $this->mapCategory($category))
-                ->values()
-                ->all(),
+            'items' => $this->cache->rememberCatalog(
+                'catalog:root-categories:only-active:' . (int) $input->onlyActive,
+                fn(): array => $this->categoryRepository
+                    ->listRootCategories($input->onlyActive)
+                    ->map(fn(EloquentCategory $category): array => $this->mapCategory($category))
+                    ->values()
+                    ->all(),
+            ),
         ]);
     }
 

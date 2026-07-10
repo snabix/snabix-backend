@@ -58,6 +58,8 @@ class EloquentUserRepository implements UserRepositoryInterface
                 'email'             => $model->email->value(),
                 'password'          => $model->password->value(),
                 'phone_number'      => $model->phoneNumber?->value(),
+                'description'       => $model->description,
+                'date_of_birth'     => $model->dateOfBirth,
                 'is_active'         => $model->isActive(),
                 'email_verified_at' => $model->emailVerifiedAt?->format('Y-m-d H:i:s'),
             ],
@@ -76,6 +78,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             password: new Password($user->password),
             isActive: $user->is_active,
             phoneNumber: filled($user->phone_number) ? new PhoneNumber($user->phone_number) : null,
+            description: filled($user->description) ? (string) $user->description : null,
+            dateOfBirth: $user->date_of_birth?->format('Y-m-d'),
             emailVerifiedAt: $user->email_verified_at
                 ? new DateTimeImmutable($user->email_verified_at->toDateTimeString())
                 : null,

@@ -31,6 +31,7 @@ Snabix поддерживает два канала уведомлений:
 
 - `new_messages`
 - `listing_replies`
+- `listing_moderation`
 - `favorite_listings`
 - `listing_views`
 - `recommendations`
@@ -48,6 +49,7 @@ Snabix поддерживает два канала уведомлений:
 - `system`
 
 `security_login` является обязательным для site-канала.
+`listing_moderation` является обязательным для site- и email-каналов, чтобы пользователь всегда узнавал о публикации, отклонении или архивировании своего объявления.
 
 ## Поток доставки
 

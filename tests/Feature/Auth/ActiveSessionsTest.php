@@ -40,6 +40,7 @@ class ActiveSessionsTest extends FeatureTestCase
             ->assertJsonPath('data.items.0.id', 'desktop-session')
             ->assertJsonPath('data.items.0.deviceName', 'macOS устройство')
             ->assertJsonPath('data.items.0.browser', 'Chrome')
+            ->assertJsonPath('data.items.0.locationLabel', 'Локальная сеть')
             ->assertJsonPath('data.items.1.type', 'mobile');
     }
 
