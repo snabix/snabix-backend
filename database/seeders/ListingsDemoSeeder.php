@@ -21,7 +21,7 @@ class ListingsDemoSeeder extends Seeder
             EloquentUser::factory()->count(5)->create();
         }
 
-        if (! EloquentCategory::query()->where('slug', 'smartfony')->exists()) {
+        if (! EloquentCategory::query()->exists()) {
             $this->call(CatalogDemoSeeder::class);
         }
 
