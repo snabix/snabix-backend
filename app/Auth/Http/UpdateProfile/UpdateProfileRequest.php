@@ -28,7 +28,8 @@ class UpdateProfileRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->userId()),
             ],
             'phoneNumber' => ['nullable', 'string', 'max:20'],
-            'aboutMe'     => ['nullable', 'string', 'max:1000'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'dateOfBirth' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
         ];
     }
 
@@ -45,8 +46,11 @@ class UpdateProfileRequest extends FormRequest
             'phoneNumber' => $this->filled('phoneNumber')
                 ? $this->string('phoneNumber')->toString()
                 : null,
-            'aboutMe'     => $this->filled('aboutMe')
-                ? $this->string('aboutMe')->trim()->toString()
+            'description' => $this->filled('description')
+                ? $this->string('description')->trim()->toString()
+                : null,
+            'dateOfBirth' => $this->filled('dateOfBirth')
+                ? $this->string('dateOfBirth')->toString()
                 : null,
         ];
     }

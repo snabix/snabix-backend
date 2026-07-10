@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Auth\Filament\Resources\Users\Schemas;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -52,6 +54,17 @@ class UserForm
                             ->placeholder('+79991234567')
                             ->prefixIcon(Heroicon::OutlinedPhone)
                             ->maxLength(20),
+
+                        DatePicker::make('date_of_birth')
+                            ->label('Дата рождения')
+                            ->native(false)
+                            ->maxDate(now()),
+
+                        Textarea::make('description')
+                            ->label('Описание')
+                            ->placeholder('Краткое описание пользователя')
+                            ->maxLength(1000)
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Безопасность')

@@ -14,6 +14,7 @@ class UpdateProfileInput extends Input
         public readonly string $lastName,
         public readonly string $email,
         public readonly ?string $phoneNumber,
-        public readonly ?string $aboutMe,
+        public readonly ?string $description,
+        public readonly ?string $dateOfBirth,
     ) {}
 }

@@ -16,11 +16,12 @@ class ProfileDataExportTest extends FeatureTestCase
         Mail::fake();
 
         $user = EloquentUser::factory()->create([
-            'first_name'   => 'Imran',
-            'last_name'    => 'Khan',
-            'about'        => 'Описание профиля для экспорта.',
-            'email'        => 'privacy@example.com',
-            'phone_number' => '+79991234567',
+            'first_name'         => 'Imran',
+            'last_name'          => 'Khan',
+            'description'        => 'Описание профиля для экспорта.',
+            'date_of_birth'      => '1994-05-12',
+            'email'              => 'privacy@example.com',
+            'phone_number'       => '+79991234567',
         ]);
 
         $this
@@ -52,7 +53,8 @@ class ProfileDataExportTest extends FeatureTestCase
 
             return str_contains($contents, '"id": "' . $user->id . '"')
                 && str_contains($contents, '"email": "privacy@example.com"')
-                && str_contains($contents, '"aboutMe": "Описание профиля для экспорта."')
+                && str_contains($contents, '"description": "Описание профиля для экспорта."')
+                && str_contains($contents, '"dateOfBirth": "1994-05-12"')
                 && str_contains($contents, '"phoneNumber": "+79991234567"')
                 && str_contains($contents, '"password": "not_exported"');
         });

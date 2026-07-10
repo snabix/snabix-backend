@@ -35,6 +35,12 @@ class UsersTable
                     ->searchable()
                     ->toggleable(),
 
+                TextColumn::make('date_of_birth')
+                    ->label('Дата рождения')
+                    ->date('d.m.Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('email')
                     ->translateLabel()
                     ->searchable()

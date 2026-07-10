@@ -59,13 +59,14 @@ readonly class RequestProfileDataExportHandler
         return [
             'generatedAt' => now()->timezone($this->appTimezone())->toIso8601String(),
             'profile'     => [
-                'id'        => $user->id,
-                'firstName' => $user->first_name,
-                'lastName'  => $user->last_name,
-                'aboutMe'   => $user->about,
-                'isActive'  => $user->is_active,
-                'createdAt' => $user->created_at->format(DATE_ATOM),
-                'updatedAt' => $user->updated_at->format(DATE_ATOM),
+                'id'          => $user->id,
+                'firstName'   => $user->first_name,
+                'lastName'    => $user->last_name,
+                'description' => $user->description,
+                'dateOfBirth' => $user->date_of_birth?->format('Y-m-d'),
+                'isActive'    => $user->is_active,
+                'createdAt'   => $user->created_at->format(DATE_ATOM),
+                'updatedAt'   => $user->updated_at->format(DATE_ATOM),
             ],
             'contacts'    => [
                 'email'           => $user->email,
