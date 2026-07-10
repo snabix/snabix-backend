@@ -22,7 +22,9 @@ class ListingsDemoSeeder extends Seeder
         }
 
         if (! EloquentCategory::query()->exists()) {
-            $this->call(CatalogDemoSeeder::class);
+            $this->command->warn('Demo-объявления пропущены: сначала импортируйте категории.');
+
+            return;
         }
 
         EloquentListing::factory()
