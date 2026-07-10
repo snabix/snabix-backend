@@ -12,6 +12,24 @@ use Tests\Feature\FeatureTestCase;
 
 class BootstrapDemoDataCommandTest extends FeatureTestCase
 {
+    public function test_demo_bootstrap_requires_admin_credentials(): void
+    {
+        config([
+            'snabix-bootstrap.admin_email'    => null,
+            'snabix-bootstrap.admin_password' => null,
+        ]);
+
+        $exitCode = Artisan::call('app:bootstrap-demo-data', [
+            '--skip-location-import' => true,
+            '--skip-category-import' => true,
+            '--skip-listings'        => true,
+            '--skip-news'            => true,
+        ]);
+
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString('SNABIX_BOOTSTRAP_ADMIN_EMAIL', Artisan::output());
+    }
+
     public function test_demo_bootstrap_creates_admin_and_listings_after_existing_categories(): void
     {
         $category = EloquentCategory::factory()->create([

@@ -16,9 +16,9 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class DevelopmentCLIBootstrapDemoData extends Command
 {
     protected $signature   = 'app:bootstrap-demo-data
-        {--admin-name=Admin : Имя администратора}
-        {--admin-email=admin@snabix.test : Email администратора}
-        {--admin-password=password : Пароль администратора}
+        {--admin-name= : Имя администратора}
+        {--admin-email= : Email администратора}
+        {--admin-password= : Пароль администратора}
         {--regions= : Путь к russia-regions.json}
         {--cities= : Путь к russia-cities.json}
         {--fresh-locations : Очистить регионы и города перед импортом}
@@ -41,7 +41,9 @@ class DevelopmentCLIBootstrapDemoData extends Command
             return self::FAILURE;
         }
 
-        $this->createOrUpdateAdmin();
+        if (! $this->createOrUpdateAdmin()) {
+            return self::FAILURE;
+        }
 
         if (! (bool) $this->option('skip-listings')) {
             $this->components->info('Создаём demo-объявления после подготовки категорий...');
@@ -87,11 +89,21 @@ class DevelopmentCLIBootstrapDemoData extends Command
         ]);
     }
 
-    private function createOrUpdateAdmin(): void
+    private function createOrUpdateAdmin(): bool
     {
-        $email    = $this->stringOption('admin-email', 'admin@snabix.test');
-        $name     = $this->stringOption('admin-name', 'Admin');
-        $password = $this->stringOption('admin-password', 'password');
+        $email    = $this->stringOption('admin-email', config('snabix-bootstrap.admin_email'));
+        $name     = $this->stringOption('admin-name', config('snabix-bootstrap.admin_name'));
+        $password = $this->stringOption('admin-password', config('snabix-bootstrap.admin_password'));
+
+        if ($email === null || $password === null) {
+            $this->components->error(
+                'Укажите SNABIX_BOOTSTRAP_ADMIN_EMAIL и SNABIX_BOOTSTRAP_ADMIN_PASSWORD в .env или передайте --admin-email/--admin-password.',
+            );
+
+            return false;
+        }
+
+        $name ??= 'Admin';
 
         $admin    = EloquentAdmin::query()->updateOrCreate(
             ['email' => $email],
@@ -105,14 +117,20 @@ class DevelopmentCLIBootstrapDemoData extends Command
         $admin->assignRole($role);
 
         $this->components->info(sprintf('Администратор %s подготовлен и получил роль super_admin.', $email));
+
+        return true;
     }
 
-    private function stringOption(string $key, string $fallback): string
+    private function stringOption(string $key, mixed $fallback = null): ?string
     {
         $value = $this->option($key);
 
-        return is_string($value) && trim($value) !== ''
-            ? trim($value)
-            : $fallback;
+        if (is_string($value) && trim($value) !== '') {
+            return trim($value);
+        }
+
+        return is_string($fallback) && trim($fallback) !== ''
+            ? trim($fallback)
+            : null;
     }
 }
