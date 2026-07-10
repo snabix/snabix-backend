@@ -30,6 +30,7 @@ interface ListingWriterInterface
     public function transitionStatus(
         EloquentListing $listing,
         ListingStatus $status,
+        ?string $rejectionReason = null,
     ): EloquentListing;
 
     public function delete(EloquentListing $listing): void;

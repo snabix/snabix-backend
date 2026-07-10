@@ -6,6 +6,7 @@ namespace App\Listing\Filament\Resources\Listings\Tables;
 
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Listing\Filament\Resources\Listings\Actions\ListingModerationActions;
 use App\Listing\Filament\Resources\Listings\ListingResource;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use Filament\Actions\ActionGroup;
@@ -16,6 +17,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -29,7 +31,7 @@ class ListingsTable
         return $table
             ->modifyQueryUsing(fn(Builder $query): Builder => $query->with(['user', 'category']))
             ->defaultSort('created_at', 'desc')
-            ->recordUrl(fn(EloquentListing $record): string => ListingResource::getUrl('edit', ['record' => $record]))
+            ->recordUrl(fn(EloquentListing $record): string => ListingResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('title')
                     ->label('Объявление')
@@ -55,6 +57,7 @@ class ListingsTable
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
+                    ->action(ListingModerationActions::changeStatusAction())
                     ->formatStateUsing(fn(EloquentListing $record): string => $record->status->label())
                     ->color(fn(EloquentListing $record): string => match ($record->status) {
                         ListingStatus::DRAFT          => 'gray',
@@ -126,12 +129,18 @@ class ListingsTable
                             ->when(filled($data['created_until'] ?? null), fn(Builder $query): Builder => $query->whereDate('created_at', '<=', $data['created_until']));
                     }),
             ])
-            ->recordActions([
-                ActionGroup::make([
-                    ViewAction::make(),
-                    EditAction::make(),
-                ]),
-            ])
+            ->recordActions(
+                [
+                    ActionGroup::make([
+                        ...ListingModerationActions::make(),
+                        ViewAction::make()
+                            ->label('Открыть'),
+                        EditAction::make()
+                            ->label('Корректировать'),
+                    ]),
+                ],
+                RecordActionsPosition::BeforeColumns,
+            )
             ->toolbarActions([
                 DeleteBulkAction::make(),
             ]);

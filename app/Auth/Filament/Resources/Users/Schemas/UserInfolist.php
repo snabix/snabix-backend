@@ -34,6 +34,16 @@ class UserInfolist
                             ->label('Телефон')
                             ->placeholder('Не указан'),
 
+                        TextEntry::make('date_of_birth')
+                            ->label('Дата рождения')
+                            ->placeholder('Не указана')
+                            ->date('d.m.Y'),
+
+                        TextEntry::make('description')
+                            ->label('Описание')
+                            ->placeholder('Не указано')
+                            ->columnSpanFull(),
+
                         IconEntry::make('is_active')
                             ->label('Аккаунт активен')
                             ->boolean(),

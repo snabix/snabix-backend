@@ -8,6 +8,7 @@ use App\Catalog\Domain\Contracts\CategoryAttributeDefinitionRepositoryInterface;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Catalog\Infrastructure\Models\EloquentCategoryAttributeDefinition;
+use App\Shared\Application\Support\ReferenceDataCache;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 readonly class GetCategoryAttributesHandler
@@ -15,22 +16,29 @@ readonly class GetCategoryAttributesHandler
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
         private CategoryAttributeDefinitionRepositoryInterface $categoryAttributeDefinitionRepository,
+        private ReferenceDataCache $cache,
     ) {}
 
     public function execute(GetCategoryAttributesInput $input): GetCategoryAttributesOutput
     {
-        $category    = $this->categoryRepository->findById($input->categoryId);
+        return GetCategoryAttributesOutput::from($this->cache->rememberCatalog(
+            'catalog:attributes:' . $input->categoryId . ':only-active:' . (int) $input->onlyActive,
+            fn(): array => $this->payload($input),
+        ));
+    }
+
+    /**
+     * @return array{category: array<string, mixed>, items: list<array<string, mixed>>}
+     */
+    private function payload(GetCategoryAttributesInput $input): array
+    {
+        $category = $this->categoryRepository->findById($input->categoryId);
 
         if ($category === null) {
             throw (new ModelNotFoundException())->setModel(EloquentCategory::class, [$input->categoryId]);
         }
 
-        $definitions = $this->categoryAttributeDefinitionRepository->forCategory(
-            $input->categoryId,
-            $input->onlyActive,
-        );
-
-        return GetCategoryAttributesOutput::from([
+        return [
             'category' => [
                 'id'               => $category->id,
                 'catalogType'      => $category->catalog_type->value,
@@ -39,7 +47,8 @@ readonly class GetCategoryAttributesHandler
                 'name'             => $category->name,
                 'slug'             => $category->slug,
             ],
-            'items'    => $definitions
+            'items'    => array_values($this->categoryAttributeDefinitionRepository
+                ->forCategory($input->categoryId, $input->onlyActive)
                 ->map(
                     fn(EloquentCategoryAttributeDefinition $definition): array => [
                         'id'                => $definition->id,
@@ -66,8 +75,7 @@ readonly class GetCategoryAttributesHandler
                         'sortOrder'         => $definition->sort_order,
                     ],
                 )
-                ->values()
-                ->all(),
-        ]);
+                ->all()),
+        ];
     }
 }

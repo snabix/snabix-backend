@@ -21,8 +21,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property      string                         $id
@@ -61,14 +63,18 @@ class EloquentListing extends Model implements HasMedia
     use HasUuids;
     use InteractsWithMedia;
 
-    public $incrementing = false;
+    public const string MEDIA_CONVERSION_CARD    = 'listing-card';
 
-    protected $table     = 'listings';
+    public const string MEDIA_CONVERSION_GALLERY = 'listing-gallery';
 
-    protected $keyType   = 'string';
+    public $incrementing                         = false;
+
+    protected $table                             = 'listings';
+
+    protected $keyType                           = 'string';
 
     /** @var list<string> */
-    protected $fillable  = [
+    protected $fillable                          = [
         'id',
         'user_id',
         'category_id',
@@ -165,6 +171,21 @@ class EloquentListing extends Model implements HasMedia
         $this->addMediaCollection('listing-images')
             ->useDisk('public')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this
+            ->addMediaConversion(self::MEDIA_CONVERSION_CARD)
+            ->performOnCollections('listing-images')
+            ->fit(Fit::Crop, 640, 480)
+            ->format('webp');
+
+        $this
+            ->addMediaConversion(self::MEDIA_CONVERSION_GALLERY)
+            ->performOnCollections('listing-images')
+            ->fit(Fit::Max, 1600, 1200)
+            ->format('webp');
     }
 
     /**

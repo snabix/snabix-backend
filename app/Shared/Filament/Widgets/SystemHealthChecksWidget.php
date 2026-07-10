@@ -58,8 +58,9 @@ class SystemHealthChecksWidget extends Widget
         $summary['updatedAt']     = now()->format('d.m.Y H:i');
 
         return [
-            'checks'  => $checks,
-            'summary' => $summary,
+            'checks'       => $checks,
+            'serviceCards' => $this->resolveServiceCards($checks->all()),
+            'summary'      => $summary,
         ];
     }
 
@@ -147,6 +148,38 @@ class SystemHealthChecksWidget extends Widget
             'DEGRADED' => 20,
             'OK'       => 10,
             default    => 0,
+        };
+    }
+
+    /**
+     * @param  array<int, array{label: string, status_label: string, badge_color: string, status_icon: string, status: string|null, message: string}> $checks
+     * @return list<array{label: string, status_label: string, lifecycle_label: string, badge_color: string, icon: string, message: string}>
+     */
+    private function resolveServiceCards(array $checks): array
+    {
+        $cards = [];
+
+        foreach ($checks as $check) {
+            $cards[] = [
+                'label'           => $check['label'],
+                'status_label'    => $check['status_label'],
+                'lifecycle_label' => $this->resolveLifecycleLabel($check['status']),
+                'badge_color'     => $check['badge_color'],
+                'icon'            => $check['status_icon'],
+                'message'         => $check['message'],
+            ];
+        }
+
+        return $cards;
+    }
+
+    private function resolveLifecycleLabel(?string $status): string
+    {
+        return match ($status) {
+            'OK'       => 'Онлайн',
+            'DEGRADED' => 'Доступен с предупреждением',
+            'PROBLEM'  => 'Недоступен или требует вмешательства',
+            default    => 'Ожидает проверки',
         };
     }
 

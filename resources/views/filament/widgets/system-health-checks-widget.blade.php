@@ -10,7 +10,7 @@
                     <div>
                         <div class="flex flex-wrap items-center gap-3">
                             <span class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.22em] ring-1 {{ $summary['tone']['badge'] }}">
-                                System Pulse
+                                Состояние системы
                             </span>
                             <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
                                 Обновлено {{ $summary['updatedAt'] }}
@@ -61,6 +61,55 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
+                            Жизненный цикл сервисов
+                        </p>
+                        <h3 class="mt-1 text-xl font-black tracking-[-0.02em] text-gray-950 dark:text-white">
+                            Инфраструктурные зависимости
+                        </h3>
+                    </div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        Статус берется из health checks текущего окружения.
+                    </p>
+                </div>
+
+                <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    @foreach ($serviceCards as $service)
+                        <article class="rounded-[1.5rem] border border-gray-200/80 bg-white p-4 shadow-sm ring-1 ring-black/5 dark:border-white/10 dark:bg-white/[0.035] dark:ring-white/10">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-black text-gray-950 dark:text-white">
+                                        {{ $service['label'] }}
+                                    </p>
+                                    <p class="mt-1 text-xs font-semibold leading-5 text-gray-500 dark:text-gray-400">
+                                        {{ $service['lifecycle_label'] }}
+                                    </p>
+                                </div>
+
+                                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-gray-100 text-xs font-black text-gray-950 ring-1 ring-black/5 dark:bg-white/10 dark:text-white dark:ring-white/10">
+                                    {{ $service['icon'] }}
+                                </span>
+                            </div>
+
+                            <div class="mt-4 flex items-center justify-between gap-3">
+                                <x-filament::badge :color="$service['badge_color']">
+                                    {{ $service['status_label'] }}
+                                </x-filament::badge>
+
+                                @if (filled($service['message']))
+                                    <span class="truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        {{ $service['message'] }}
+                                    </span>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
                 </div>
             </div>
 

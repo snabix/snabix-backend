@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use Illuminate\Support\Str;
 
+$sessionDomain = env('SESSION_DOMAIN');
+$sessionDomain = is_string($sessionDomain) && in_array(strtolower($sessionDomain), ['', 'null'], true)
+    ? null
+    : $sessionDomain;
+
 return [
 
     /*
@@ -34,7 +39,7 @@ return [
     |
     */
 
-    'lifetime'        => (int) env('SESSION_LIFETIME', 120),
+    'lifetime'        => (int) env('SESSION_LIFETIME', 43200),
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 
@@ -158,7 +163,7 @@ return [
     |
     */
 
-    'domain'          => env('SESSION_DOMAIN'),
+    'domain'          => $sessionDomain,
 
     /*
     |--------------------------------------------------------------------------

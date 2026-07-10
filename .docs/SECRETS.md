@@ -12,6 +12,8 @@
 - названия переменных окружения;
 - инструкции по генерации и ротации.
 
+Значения из `.env.example` предназначены только для локальной Docker-среды. Их нельзя переносить в staging или production.
+
 Нельзя хранить:
 
 - реальный `APP_KEY`;
@@ -57,24 +59,62 @@ SNABIX_BOT_SERVICE_TOKEN=
 - `MAIL_USERNAME` и `MAIL_PASSWORD`: SMTP-доступ.
 - `SNABIX_BOT_SERVICE_TOKEN`: bearer-token для `/api/v1/service/bot/*`.
 
+## Запрещенные значения для staging и production
+
+Перед деплоем проверь, что production env не содержит локальные placeholder credentials:
+
+```text
+SNABIX_BOT_SERVICE_TOKEN=change-me
+SNABIX_BACKEND_SERVICE_TOKEN=change-me
+SNABIX_BACKEND_SERVICE_TOKEN=replace-with-backend-service-token
+RABBITMQ_USER=guest
+RABBITMQ_PASSWORD=guest
+DB_USERNAME=root
+DB_PASSWORD=1234
+DB_TEST_USERNAME=root
+DB_TEST_PASSWORD=1234
+```
+
+Для staging и production нужны значения, сгенерированные отдельно для каждого окружения:
+
+- отдельный `APP_KEY` через `php artisan key:generate --show`;
+- отдельный пользователь PostgreSQL без `root` и с уникальным паролем из secret-хранилища;
+- отдельный пользователь RabbitMQ без `guest/guest`;
+- отдельный `SNABIX_BOT_SERVICE_TOKEN`, совпадающий только с bot `SNABIX_BACKEND_SERVICE_TOKEN`;
+- отдельные SMTP credentials.
+
+Автоматическая проверка production env:
+
+```bash
+PRODUCTION_ENV_FILE=/path/to/.env.production task secrets:production
+```
+
+CI запускает self-test guard:
+
+```bash
+php scripts/check-production-secrets.php --self-test
+```
+
+Если guard нашел placeholder в staging или production, секрет считается скомпрометированным: сгенерируй новое значение, обнови secret-хранилище, перезапусти сервисы и проверь логи доступа.
+
 ## Связка backend и bot
 
 Backend:
 
 ```env
-SNABIX_BOT_SERVICE_TOKEN=long-random-token
+SNABIX_BOT_SERVICE_TOKEN=<generated-64-hex-token>
 ```
 
 Bot:
 
 ```env
-SNABIX_BACKEND_SERVICE_TOKEN=long-random-token
+SNABIX_BACKEND_SERVICE_TOKEN=<same-generated-64-hex-token>
 ```
 
 Bot отправляет:
 
 ```http
-Authorization: Bearer long-random-token
+Authorization: Bearer <generated-64-hex-token>
 ```
 
 Backend проверяет токен middleware-классом:

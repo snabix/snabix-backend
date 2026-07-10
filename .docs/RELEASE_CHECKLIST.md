@@ -91,6 +91,14 @@ http://127.0.0.1:8025
 - backend service token не добавлен;
 - SMTP password не добавлен;
 - production DB password не добавлен;
+- production env прошел проверку на dev placeholders:
+
+```bash
+PRODUCTION_ENV_FILE=/path/to/.env.production task secrets:production
+```
+
+- в staging/production не используются `SNABIX_BOT_SERVICE_TOKEN=change-me`, `RABBITMQ_USER=guest`, `RABBITMQ_PASSWORD=guest`, `DB_USERNAME=root`, `DB_PASSWORD=1234`;
+- если placeholder успел попасть в staging/production, выполнена ротация соответствующего секрета и проверены access logs;
 - user dumps не добавлены;
 - новые private endpoints имеют auth middleware;
 - новые bot endpoints имеют `bot.service`;
@@ -162,7 +170,16 @@ Push:
 git push origin <branch>
 ```
 
-## 9. План отката
+## 9. Performance Budget Public Listings
+
+Перед релизом зафиксируй backend-бюджет публичной витрины на staging:
+
+- TTFB `GET /api/v1/public/listings`: не выше 500 ms.
+- Query count для списка объявлений: не больше 12 SQL-запросов.
+- N+1 по категориям, локациям, владельцу и медиа отсутствует.
+- При превышении бюджета добавь комментарий причины, ссылку на задачу оптимизации и владельца.
+
+## 10. План отката
 
 Перед релизом должно быть понятно:
 

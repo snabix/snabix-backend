@@ -17,7 +17,7 @@ class SignUpRequest extends FormRequest
         return [
             'firstName'            => ['required', 'string', 'max:100'],
             'lastName'             => ['required', 'string', 'max:100'],
-            'phoneNumber'          => ['required', 'string', 'max:20'],
+            'phoneNumber'          => ['nullable', 'string', 'max:20'],
             'email'                => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password'             => ['required', 'confirmed', Password::default()],
             'passwordConfirmation' => ['required', 'string'],
@@ -30,14 +30,16 @@ class SignUpRequest extends FormRequest
     }
 
     /**
-     * @return array{firstName: string, lastName: string, phoneNumber: string, email: string, password: string, passwordConfirmation: string}
+     * @return array{firstName: string, lastName: string, phoneNumber: ?string, email: string, password: string, passwordConfirmation: string}
      */
     public function inputData(): array
     {
         return [
             'firstName'            => $this->string('firstName')->toString(),
             'lastName'             => $this->string('lastName')->toString(),
-            'phoneNumber'          => $this->string('phoneNumber')->toString(),
+            'phoneNumber'          => $this->filled('phoneNumber')
+                ? $this->string('phoneNumber')->toString()
+                : null,
             'email'                => $this->string('email')->toString(),
             'password'             => $this->string('password')->toString(),
             'passwordConfirmation' => $this->string('passwordConfirmation')->toString(),

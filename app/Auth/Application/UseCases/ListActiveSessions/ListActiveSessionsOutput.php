@@ -14,6 +14,7 @@ class ListActiveSessionsOutput extends Data
      *     deviceName: string,
      *     browser: string,
      *     ipAddress: ?string,
+     *     locationLabel: string,
      *     type: string,
      *     isCurrent: bool,
      *     lastActivityAt: ?string

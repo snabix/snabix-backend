@@ -12,7 +12,7 @@ class SignUpInput extends Input
         public readonly string $firstName,
         public readonly string $lastName,
         public readonly string $email,
-        public readonly string $phoneNumber,
+        public readonly ?string $phoneNumber,
         public readonly string $password,
         public readonly string $passwordConfirmation,
     ) {}

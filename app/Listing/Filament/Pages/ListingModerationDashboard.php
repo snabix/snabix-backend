@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Listing\Filament\Pages;
 
 use App\Listing\Filament\Widgets\ListingModerationStatsWidget;
-use App\Listing\Filament\Widgets\PendingListingsTableWidget;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Pages\Dashboard;
@@ -28,6 +27,11 @@ class ListingModerationDashboard extends Dashboard
 
     protected static ?int $navigationSort                             = 1;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public function getTitle(): string
     {
         return 'Модерация объявлений';
@@ -37,7 +41,6 @@ class ListingModerationDashboard extends Dashboard
     {
         return [
             ListingModerationStatsWidget::class,
-            PendingListingsTableWidget::class,
         ];
     }
 

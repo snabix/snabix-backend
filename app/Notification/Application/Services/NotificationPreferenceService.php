@@ -34,8 +34,8 @@ final class NotificationPreferenceService
                 'title'        => $type->title(),
                 'description'  => $type->description(),
                 'siteEnabled'  => $type->isRequiredSite() || $siteEnabled,
-                'emailEnabled' => $emailEnabled,
-                'isRequired'   => $type->isRequiredSite(),
+                'emailEnabled' => $type->isRequiredEmail() || $emailEnabled,
+                'isRequired'   => $type->isRequiredSite() || $type->isRequiredEmail(),
             ];
         }, NotificationEventType::cases());
     }
@@ -54,7 +54,7 @@ final class NotificationPreferenceService
                 ['user_id' => $userId, 'event_key' => $type->value],
                 [
                     'site_enabled'  => $type->isRequiredSite() || $item['siteEnabled'],
-                    'email_enabled' => $item['emailEnabled'],
+                    'email_enabled' => $type->isRequiredEmail() || $item['emailEnabled'],
                 ],
             );
         }
@@ -96,6 +96,10 @@ final class NotificationPreferenceService
         }
 
         if ($emailEnabled) {
+            $channels[] = 'mail';
+        }
+
+        if ($type->isRequiredEmail() && ! in_array('mail', $channels, true)) {
             $channels[] = 'mail';
         }
 

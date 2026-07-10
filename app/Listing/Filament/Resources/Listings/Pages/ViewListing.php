@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listing\Filament\Resources\Listings\Pages;
 
+use App\Listing\Filament\Resources\Listings\Actions\ListingModerationActions;
 use App\Listing\Filament\Resources\Listings\ListingResource;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -15,7 +17,12 @@ class ViewListing extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+            ActionGroup::make(ListingModerationActions::make())
+                ->label('Сменить статус')
+                ->icon('heroicon-o-shield-check')
+                ->button(),
+            EditAction::make()
+                ->label('Корректировать'),
         ];
     }
 }

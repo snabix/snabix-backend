@@ -20,13 +20,15 @@ class SignInRequest extends FormRequest
     }
 
     /**
-     * @return array{email: string, password: string}
+     * @return array{email: string, password: string, ipAddress: ?string, userAgent: string}
      */
     public function inputData(): array
     {
         return [
-            'email'    => $this->string('email')->toString(),
-            'password' => $this->string('password')->toString(),
+            'email'     => $this->string('email')->toString(),
+            'password'  => $this->string('password')->toString(),
+            'ipAddress' => $this->ip(),
+            'userAgent' => $this->userAgent() ?? '',
         ];
     }
 

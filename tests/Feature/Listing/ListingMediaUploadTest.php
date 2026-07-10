@@ -51,6 +51,16 @@ class ListingMediaUploadTest extends FeatureTestCase
             'action'   => 'listing.media.upload',
             'user_id'  => $user->id,
         ]);
+
+        $media   = EloquentMedia::query()
+            ->where('model_type', EloquentListing::class)
+            ->where('model_id', $listing->id)
+            ->firstOrFail();
+
+        $this->assertEqualsCanonicalizing([
+            EloquentListing::MEDIA_CONVERSION_CARD,
+            EloquentListing::MEDIA_CONVERSION_GALLERY,
+        ], $media->getMediaConversionNames());
     }
 
     public function test_user_cannot_upload_images_to_another_users_listing(): void

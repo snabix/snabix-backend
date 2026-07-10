@@ -85,13 +85,14 @@ final readonly class EloquentListingWriter implements ListingWriterInterface
     public function transitionStatus(
         EloquentListing $listing,
         ListingStatus $status,
+        ?string $rejectionReason = null,
     ): EloquentListing {
         /** @var EloquentListing $updatedListing */
-        $updatedListing = DB::transaction(function () use ($listing, $status): EloquentListing {
+        $updatedListing = DB::transaction(function () use ($listing, $status, $rejectionReason): EloquentListing {
             $this->listingStatusTransitionPolicy->assertCanTransition($listing->status, $status);
 
             $listing->forceFill(
-                $this->listingModerationNormalizer->statusTransitionAttributes($listing, $status),
+                $this->listingModerationNormalizer->statusTransitionAttributes($listing, $status, $rejectionReason),
             );
             $listing->save();
 

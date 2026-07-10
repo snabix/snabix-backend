@@ -8,6 +8,8 @@ use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Auth\Infrastructure\Models\EloquentUserAddress;
 use App\Location\Infrastructure\Models\EloquentCity;
 use App\Location\Infrastructure\Models\EloquentRegion;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Tests\Feature\FeatureTestCase;
 
 class ProfileAddressesTest extends FeatureTestCase
@@ -140,6 +142,48 @@ class ProfileAddressesTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonPath('data.cities.0.id', $city->id)
             ->assertJsonPath('data.cities.0.name', 'Уфа');
+    }
+
+    public function test_locations_api_caches_repeated_reference_requests(): void
+    {
+        Cache::flush();
+
+        $region  = $this->createRegion('0200000000000', 'Республика Башкортостан');
+        $city    = $this->createCity($region, '0200000100000', 'Уфа');
+
+        $this->getJson('/api/v1/locations/regions')->assertOk();
+        $this->getJson('/api/v1/locations/cities?regionId=' . $region->id)->assertOk();
+
+        $queries = [];
+        DB::listen(static function ($query) use (&$queries): void {
+            $queries[] = $query->sql;
+        });
+
+        $this
+            ->getJson('/api/v1/locations/regions')
+            ->assertOk()
+            ->assertJsonPath('data.regions.0.name', 'Республика Башкортостан');
+        $this
+            ->getJson('/api/v1/locations/cities?regionId=' . $region->id)
+            ->assertOk()
+            ->assertJsonPath('data.cities.0.name', 'Уфа');
+
+        $this->assertFalse(collect($queries)->contains(
+            static fn(string $sql): bool => (
+                str_contains($sql, 'from "regions"')
+                && str_contains($sql, '"is_active"')
+            ) || (
+                str_contains($sql, 'from "cities"')
+                && str_contains($sql, '"is_active"')
+            ),
+        ), implode("\n", $queries));
+
+        $city->forceFill(['name' => 'Уфа обновленная'])->save();
+
+        $this
+            ->getJson('/api/v1/locations/cities?regionId=' . $region->id)
+            ->assertOk()
+            ->assertJsonPath('data.cities.0.name', 'Уфа обновленная');
     }
 
     private function createRegion(string $kladrId, string $name): EloquentRegion
