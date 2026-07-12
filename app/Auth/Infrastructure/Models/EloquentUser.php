@@ -28,6 +28,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property string      $phone_number
  * @property string|null $description
  * @property Carbon|null $date_of_birth
+ * @property float|null  $seller_rating_avg
+ * @property int         $seller_reviews_count
  *
  * @property Carbon      $created_at
  * @property Carbon      $updated_at
@@ -63,6 +65,8 @@ class EloquentUser extends Authenticatable implements HasMedia
         'phone_number',
         'description',
         'date_of_birth',
+        'seller_rating_avg',
+        'seller_reviews_count',
         'is_active',
         'email_verified_at',
     ];
@@ -123,12 +127,14 @@ class EloquentUser extends Authenticatable implements HasMedia
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'date_of_birth'     => 'date',
-            'created_at'        => 'datetime',
-            'updated_at'        => 'datetime',
-            'is_active'         => 'boolean',
+            'email_verified_at'   => 'datetime',
+            'password'            => 'hashed',
+            'date_of_birth'       => 'date',
+            'seller_rating_avg'   => 'float',
+            'seller_reviews_count'=> 'integer',
+            'created_at'          => 'datetime',
+            'updated_at'          => 'datetime',
+            'is_active'           => 'boolean',
         ];
     }
 }

@@ -23,7 +23,7 @@ final readonly class OwnedListingQuery implements OwnedListingQueryInterface
         ?string $categoryId = null,
     ): LengthAwarePaginator {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'user'])
             ->where('user_id', $userId)
             ->when($status !== null, fn($query) => $query->where('status', $status))
             ->when($type !== null, fn($query) => $query->where('type', $type))
