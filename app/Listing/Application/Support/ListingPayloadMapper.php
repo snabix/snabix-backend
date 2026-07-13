@@ -17,6 +17,8 @@ final readonly class ListingPayloadMapper
      */
     public function map(EloquentListing $listing): array
     {
+        $listing->loadMissing(['category', 'orderedMedia', 'user']);
+
         return $this->assembler->assemble(
             $listing,
             ListingPayloadVisibility::PRIVATE_VIEW,
