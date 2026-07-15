@@ -92,7 +92,7 @@ class CategoryForm
                             ->rows(4)
                             ->maxLength(2000),
 
-                        SpatieMediaLibraryFileUpload::make('iconMedia')
+                        SpatieMediaLibraryFileUpload::make('category_icon_upload')
                             ->label('Icon')
                             ->translateLabel()
                             ->collection('category_icons')

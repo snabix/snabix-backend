@@ -6,6 +6,7 @@ namespace App\Media\Filament\Resources\Media\Pages;
 
 use App\Media\Application\Services\MediaStorageService;
 use App\Media\Filament\Resources\Media\MediaResource;
+use App\Media\Filament\Resources\Media\Schemas\MediaForm;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
@@ -27,6 +28,19 @@ class EditMedia extends EditRecord
             DeleteAction::make()
                 ->label('Удалить'),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        /** @var EloquentMedia $record */
+        $record                = $this->record;
+        $data['uploaded_file'] = [MediaForm::existingMediaState($record)];
+
+        return $data;
     }
 
     /**
@@ -62,7 +76,11 @@ class EditMedia extends EditRecord
     {
         $path = Arr::first(Arr::wrap($state));
 
-        return is_string($path) && $path !== '' ? $path : null;
+        if (! is_string($path) || $path === '' || MediaForm::isExistingMediaState($path)) {
+            return null;
+        }
+
+        return $path;
     }
 
     /**
