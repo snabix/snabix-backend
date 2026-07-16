@@ -47,6 +47,8 @@ use App\News\Http\ListPublishedNewsPosts\ListPublishedNewsPostsController;
 use App\News\Http\ShowPublishedNewsPost\ShowPublishedNewsPostController;
 use App\Notification\Http\NotificationPreferencesController;
 use App\Notification\Http\UserNotificationsController;
+use App\Review\Http\CreateUserReview\CreateUserReviewController;
+use App\Review\Http\ListUserReviews\ListUserReviewsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -109,6 +111,10 @@ Route::prefix('v1')->group(function () {
 
     Route::get('public/listings', ListPublicListingsController::class);
     Route::get('public/listings/{listingId}', ShowPublicListingController::class);
+
+    Route::get('users/{userId}/reviews', ListUserReviewsController::class);
+    Route::post('users/{userId}/reviews', CreateUserReviewController::class)
+        ->middleware('auth:sanctum');
 
     Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
         Route::get('/', ListListingsController::class);

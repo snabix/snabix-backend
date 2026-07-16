@@ -124,6 +124,33 @@ php artisan db:wipe
 
 Для тестов используется только `db-test/snabix_test`.
 
+Если нужно полностью очистить локальную dev-базу и проверить bootstrap-команду,
+сначала убедись, что контейнер смотрит именно на локальную базу, а не на staging/production:
+
+```bash
+docker compose exec app php artisan env
+docker compose exec app php artisan db:show
+```
+
+В `.env` должны быть заданы credentials bootstrap-администратора:
+
+```dotenv
+SNABIX_BOOTSTRAP_ADMIN_NAME=Admin
+SNABIX_BOOTSTRAP_ADMIN_EMAIL=admin@example.test
+SNABIX_BOOTSTRAP_ADMIN_PASSWORD=generated-local-password
+```
+
+После проверки окружения локальную базу можно пересоздать и заполнить импортами:
+
+```bash
+docker compose exec app php artisan migrate:fresh --force
+docker compose exec app php artisan app:bootstrap-demo-data
+```
+
+Если Laravel пишет `This command is prohibited from running in this environment`,
+значит destructive-команды для текущего окружения заблокированы. Проверь `APP_ENV`,
+подключение к базе и не обходи блокировку, пока не убедился, что это локальная dev-база.
+
 ## Проверки качества
 
 ```bash

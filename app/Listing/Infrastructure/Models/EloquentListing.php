@@ -54,6 +54,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read Collection<int, EloquentMedia> $orderedMedia
  * @property-read EloquentRegion|null            $region
  * @property-read EloquentCity|null              $city
+ * @property-read EloquentUser|null              $user
  */
 class EloquentListing extends Model implements HasMedia
 {

@@ -31,6 +31,8 @@ final readonly class ListingPayloadVisibilityPolicy
         'fullLocation',
         'imageUrl',
         'imageUrls',
+        'sellerRating',
+        'sellerReviewCount',
         'viewsCount',
         'isFeatured',
         'publishedAt',

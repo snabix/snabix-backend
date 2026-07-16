@@ -25,6 +25,14 @@ docker compose exec -e APP_ENV=testing -e DB_HOST=db-test -e DB_DATABASE=snabix_
 docker compose exec app php artisan scramble:analyze
 ```
 
+Проверка production-зависимостей по актуальной advisory-базе Composer:
+
+```bash
+task deps:audit
+```
+
+Audit должен завершаться без advisories и abandoned production packages. Если advisory нельзя закрыть обновлением сразу, исключение оформляется отдельным security review с advisory ID, оценкой применимости, компенсирующими мерами, владельцем и сроком удаления. Не добавляй безымянное глобальное исключение.
+
 Проверка scheduled-команд:
 
 ```bash
@@ -133,6 +141,9 @@ php artisan media:cleanup-orphans --days=7 --force
 
 ## 7. Ручной smoke
 
+- Filament login и dashboard открываются.
+- Super admin открывает таблицу/просмотр объявления и видит moderation actions.
+- Filament edit-формы категории и медиафайла отображают существующие изображения.
 - `GET /api/v1/categories/list`.
 - Регистрация пользователя.
 - Вход пользователя.

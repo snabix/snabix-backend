@@ -43,8 +43,8 @@ readonly class SignUpHandler
 
         $domainUser = new User(
             id: UUID::generate(),
-            firstName: new FirstName($data->firstName),
-            lastName: new LastName($data->lastName),
+            firstName: new FirstName($data->firstName ?: 'User'),
+            lastName: new LastName($data->lastName ?: 'Account'),
             email: new Email($data->email),
             password: new Password(
                 $this->hasherService->hash(
