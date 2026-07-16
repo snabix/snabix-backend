@@ -47,7 +47,7 @@
 
 ## Подтвержденный baseline
 
-- [x] `BASE-001` Backend quality gate проходит: file-size guard, PHP CS Fixer dry-run, PHPStan, Scramble analysis, 149 PHPUnit-тестов и 718 assertions. Проверено 2026-07-16.
+- [x] `BASE-001` Backend quality gate проходит: file-size guard, PHP CS Fixer dry-run, PHPStan, Scramble analysis, 151 PHPUnit-тест и 730 assertions. Проверено 2026-07-16.
 - [x] `BASE-002` Frontend проходит file-size guard, ESLint, обычный и полный typecheck, 29 Vitest-файлов и 111 тестов, production build, 31 Playwright E2E-тест в Chromium. Проверено 2026-07-16.
 - [x] `BASE-003` Telegram bot проходит Ruff format/lint, strict mypy и pytest. Ограничение: pytest выполняет только один тест конфигурации. Проверено 2026-07-16.
 - [x] `BASE-004` Рабочие деревья backend и frontend перед созданием аудита были чистыми и синхронизированными со своими remote-ветками. Bot был чистым, но `main` уже опережал `origin/main` на один существующий коммит `c0b6c94`.
@@ -147,13 +147,17 @@ Snabix уже имеет хорошую основу для модульного
 
 ### Безопасность зависимостей
 
-- [ ] `P0-SEC-001` Обновить уязвимые locked-зависимости backend и включить audit в CI.
+- [x] `P0-SEC-001` Обновить уязвимые locked-зависимости backend и включить audit в CI.
   - Факт: `composer audit --locked` от 2026-07-16 нашел 12 advisories в 8 пакетах; `--no-dev` - 10 advisories в 7 production-пакетах.
   - Критичные версии: Filament `5.6.2` уязвим к `CVE-2026-48505` high и нескольким medium; Guzzle `7.11.0`, PSR-7 `2.11.0`, phpseclib `3.0.52`, Symfony YAML `7.4.8` также имеют advisories.
   - Риск: компрометация MFA recovery flow, временные uploads на auth pages, user enumeration, XSS в image values, HTTP parsing/proxy и SSRF-сценарии.
   - Где смотреть: `composer.json`, `composer.lock`, `.github/workflows/ci.yml`, Filament auth/upload/image configuration.
   - План: обновить сначала patch/minor-версии; прочитать upgrade notes; проверить Filament login, Shield permissions, media forms и moderation actions; запретить merge при production advisory high/critical.
   - Критерий готовности: `composer audit --locked --no-dev` не содержит high/critical и имеет документированные исключения для остальных; `task check` и admin smoke проходят; audit запускается CI.
+  - Выполнено 2026-07-16, реализация: `4d15562`.
+  - Решение: Filament обновлен до `5.6.8`, Guzzle до `7.14.2`, PSR-7 до `2.12.5`, phpseclib до `3.0.55`, Symfony YAML до PHP 8.3-совместимой `7.4.14`; lock-файл рассчитан в целевом PHP 8.3 runtime, Filament assets переопубликованы.
+  - Контроль: CI и `task deps:audit` выполняют `composer audit --locked --no-dev --format=summary --abandoned=fail`. Gate строже минимального критерия и блокирует любую production advisory или abandoned package. Исключения не добавлены, потому что production и полный Composer audit возвращают ноль advisories.
+  - Проверки: `composer validate --strict --no-check-publish`, Docker PHP 8.3 `composer install --dry-run`, production/full Composer audits, `task check` (151 тест, 730 assertions) и Filament admin smoke (2 теста, 12 assertions) прошли.
 
 - [ ] `P0-SEC-002` Обновить уязвимые locked-зависимости frontend и включить audit в CI.
   - Факт: production `npm audit --omit=dev` нашел 3 уязвимости: 2 high и 1 moderate. Прямой Next `16.2.4` имеет исправление в `16.2.10`; transitive `form-data 4.0.5` и Next `postcss 8.4.31` уязвимы. Полный audit также отмечает dev `undici 7.27.2` через jsdom.
