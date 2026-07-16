@@ -63,6 +63,10 @@ tasks:
     desc: Проверить production env на dev placeholders; передай PRODUCTION_ENV_FILE=/path/to/.env.production
     cmd: php scripts/check-production-secrets.php --env-file="${PRODUCTION_ENV_FILE}"
 
+  deps:audit:
+    desc: Проверить production Composer-зависимости на advisories и abandoned packages
+    cmd: composer audit --locked --no-dev --format=summary --abandoned=fail
+
   check:
     desc: "Полная проверка backend: cs-fixer, larastan, scramble и тесты"
     cmds:
