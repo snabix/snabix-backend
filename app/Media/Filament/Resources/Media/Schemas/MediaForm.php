@@ -8,6 +8,8 @@ use App\Media\Application\Support\MediaAttachableModels;
 use App\Media\Application\Support\MediaTypeDetector;
 use App\Media\Domain\Enums\MediaType;
 use App\Media\Domain\Enums\MediaVisibility;
+use App\Media\Infrastructure\Models\EloquentMedia;
+use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -20,9 +22,12 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Arr;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Throwable;
 
 class MediaForm
 {
+    private const EXISTING_MEDIA_STATE_PREFIX = 'existing-media:';
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -39,6 +44,25 @@ class MediaForm
                             ->storeFiles()
                             ->downloadable()
                             ->openable()
+                            ->fetchFileInformation(false)
+                            ->getUploadedFileUsing(
+                                fn(BaseFileUpload $component, string $file): ?array => self::uploadedFilePayload(
+                                    $component,
+                                    $file,
+                                ),
+                            )
+                            ->getOpenableFileUrlUsing(
+                                fn(BaseFileUpload $component, string $file): ?string => self::uploadedFileUrl(
+                                    $component,
+                                    $file,
+                                ),
+                            )
+                            ->getDownloadableFileUrlUsing(
+                                fn(BaseFileUpload $component, string $file): ?string => self::uploadedFileUrl(
+                                    $component,
+                                    $file,
+                                ),
+                            )
                             ->live()
                             ->afterStateUpdated(fn(mixed $state, Set $set): null => self::fillMetadataFromUpload($state, $set))
                             ->required(fn(string $operation): bool => $operation === 'create')
@@ -124,6 +148,98 @@ class MediaForm
                             ->disabled(fn(Get $get): bool => blank($get('model_type'))),
                     ]),
             ]);
+    }
+
+    public static function existingMediaState(EloquentMedia $media): string
+    {
+        $key = $media->getKey();
+
+        if (! is_int($key) && ! is_string($key)) {
+            return self::EXISTING_MEDIA_STATE_PREFIX . $media->getKeyName() . ':missing';
+        }
+
+        return self::EXISTING_MEDIA_STATE_PREFIX . $media->getKeyName() . ':' . $key;
+    }
+
+    public static function isExistingMediaState(mixed $state): bool
+    {
+        return is_string($state) && str_starts_with($state, self::EXISTING_MEDIA_STATE_PREFIX);
+    }
+
+    /**
+     * @return array{name: string, size: int, type: string|null, url: string}|null
+     */
+    private static function uploadedFilePayload(BaseFileUpload $component, string $file): ?array
+    {
+        if (self::isExistingMediaState($file)) {
+            $record = $component->getRecord();
+
+            return $record instanceof EloquentMedia ? self::existingMediaPayload($record) : null;
+        }
+
+        $url = self::uploadedFileUrl($component, $file);
+
+        if ($url === null) {
+            return null;
+        }
+
+        try {
+            $storage  = $component->getDisk();
+            $exists   = $storage->exists($file);
+            $mimeType = $exists ? $storage->mimeType($file) : null;
+
+            return [
+                'name' => basename($file),
+                'size' => $exists ? $storage->size($file) : 0,
+                'type' => is_string($mimeType) ? $mimeType : null,
+                'url'  => $url,
+            ];
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array{name: string, size: int, type: string|null, url: string}|null
+     */
+    private static function existingMediaPayload(EloquentMedia $media): ?array
+    {
+        $url = self::mediaUrl($media);
+
+        if ($url === null) {
+            return null;
+        }
+
+        return [
+            'name' => $media->file_name,
+            'size' => (int) $media->size,
+            'type' => $media->mime_type,
+            'url'  => $url,
+        ];
+    }
+
+    private static function uploadedFileUrl(BaseFileUpload $component, string $file): ?string
+    {
+        if (self::isExistingMediaState($file)) {
+            $record = $component->getRecord();
+
+            return $record instanceof EloquentMedia ? self::mediaUrl($record) : null;
+        }
+
+        try {
+            return $component->getDisk()->url($file);
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private static function mediaUrl(EloquentMedia $media): ?string
+    {
+        try {
+            return $media->getFullUrl();
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     private static function fillMetadataFromUpload(mixed $state, Set $set): null

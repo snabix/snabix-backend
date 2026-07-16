@@ -8,6 +8,7 @@
 ## [Unreleased]
 
 ### Fixed
+- Уязвимые Composer-зависимости Filament, Guzzle, PSR-7, phpseclib и Symfony YAML обновлены до исправленных PHP 8.3-совместимых версий; опубликованные Filament assets синхронизированы с package version.
 - Route `DELETE /api/v1/notifications/preferences` больше не перехватывается wildcard-маршрутом удаления одного уведомления.
 - Повторная отправка email verification после cooldown снова ставит новое письмо в очередь, при этом код переиспользуется до истечения TTL.
 - Документация API DTO contracts синхронизирована с тестами enum labels и public/private listing boundaries.
@@ -15,6 +16,8 @@
 - DTO объявления теперь нормализует legacy `address_snapshot`, чтобы старые или неполные адреса не ломали загрузку личных объявлений и ответ после создания.
 
 ### Added
+- Backend CI и Taskfile получили строгий audit production Composer-зависимостей; добавлен Filament smoke-тест login, dashboard, Shield permissions, media/category forms и listing moderation page.
+- Добавлен единый актуальный технический аудит backend, frontend и Telegram-бота с release blockers, планом развития и проверяемыми критериями готовности.
 - Добавлены query-count feature-тесты для публичного списка объявлений и breadcrumbs категорий, чтобы ловить N+1-регрессии.
 - Добавлены GitHub Actions и локальные git hooks для обязательных backend-проверок: PHP CS Fixer dry-run, PHPStan и тесты.
 - Добавлен защищенный service API для Telegram-бота: health, service identity и базовая статистика.

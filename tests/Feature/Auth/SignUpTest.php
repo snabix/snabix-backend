@@ -48,4 +48,29 @@ class SignUpTest extends FeatureTestCase
                 && $job->queue === 'notifications',
         );
     }
+
+    public function test_user_can_sign_up_with_only_email_and_password(): void
+    {
+        Queue::fake();
+
+        $response = $this->postJson('/api/v1/auth/sign-up', [
+            'email'                => 'minimal@example.com',
+            'password'             => 'StrongPassword123!',
+            'passwordConfirmation' => 'StrongPassword123!',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => ['userId'],
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'first_name'   => 'User',
+            'last_name'    => 'Account',
+            'phone_number' => null,
+            'email'        => 'minimal@example.com',
+            'is_active'    => true,
+        ]);
+    }
 }

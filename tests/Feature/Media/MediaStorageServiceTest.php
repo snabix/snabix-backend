@@ -7,6 +7,7 @@ namespace Tests\Feature\Media;
 use App\Media\Application\Services\MediaStorageService;
 use App\Media\Domain\Enums\MediaType;
 use App\Media\Domain\Enums\MediaVisibility;
+use App\Media\Filament\Resources\Media\Schemas\MediaForm;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
@@ -107,6 +108,29 @@ class MediaStorageServiceTest extends FeatureTestCase
 
         Storage::disk('public')->assertMissing($this->expectedMediaPath($media, MediaType::IMAGE, 'photo.jpg'));
         Storage::disk('public')->assertExists($this->expectedMediaPath($media, MediaType::DOCUMENT, 'photo.jpg'));
+    }
+
+    public function test_existing_media_upload_state_is_not_treated_as_new_upload_path(): void
+    {
+        $media = EloquentMedia::query()->create([
+            'name'                  => 'Главное фото',
+            'file_name'             => 'photo.jpg',
+            'mime_type'             => 'image/jpeg',
+            'disk'                  => 'public',
+            'collection_name'       => 'listing_images',
+            'size'                  => 128,
+            'manipulations'         => [],
+            'custom_properties'     => [],
+            'generated_conversions' => [],
+            'responsive_images'     => [],
+            'media_type'            => MediaType::IMAGE,
+            'visibility'            => MediaVisibility::PUBLIC,
+        ]);
+
+        $state = MediaForm::existingMediaState($media);
+
+        $this->assertTrue(MediaForm::isExistingMediaState($state));
+        $this->assertFalse(MediaForm::isExistingMediaState('filament-media-temp/photo.jpg'));
     }
 
     public function test_public_media_file_is_removed_from_storage_when_record_is_deleted(): void

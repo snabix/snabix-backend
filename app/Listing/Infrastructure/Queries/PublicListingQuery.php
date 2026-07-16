@@ -31,7 +31,7 @@ final readonly class PublicListingQuery implements PublicListingQueryInterface
         string $sort = 'newest',
     ): LengthAwarePaginator {
         $query = EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'region', 'city'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'region', 'city', 'user'])
             ->where('status', ListingStatus::PUBLISHED)
             ->when($type !== null, fn($query) => $query->where('type', $type))
             ->when($minPrice !== null, fn($query) => $query->where('price', '>=', $minPrice))
@@ -55,7 +55,7 @@ final readonly class PublicListingQuery implements PublicListingQueryInterface
     public function findPublicPublishedById(string $listingId): ?EloquentListing
     {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'user'])
             ->whereKey($listingId)
             ->where('status', ListingStatus::PUBLISHED)
             ->first();
