@@ -8,6 +8,7 @@
 ## [Unreleased]
 
 ### Fixed
+- Ссылка восстановления пароля из `.env.example` теперь ведет на существующий frontend route `/reset-password`.
 - Уязвимые Composer-зависимости Filament, Guzzle, PSR-7, phpseclib и Symfony YAML обновлены до исправленных PHP 8.3-совместимых версий; опубликованные Filament assets синхронизированы с package version.
 - Route `DELETE /api/v1/notifications/preferences` больше не перехватывается wildcard-маршрутом удаления одного уведомления.
 - Повторная отправка email verification после cooldown снова ставит новое письмо в очередь, при этом код переиспользуется до истечения TTL.
@@ -16,6 +17,7 @@
 - DTO объявления теперь нормализует legacy `address_snapshot`, чтобы старые или неполные адреса не ломали загрузку личных объявлений и ответ после создания.
 
 ### Added
+- Добавлены environment matrix и заполняемый HTTPS staging smoke report для проверки auth/session/CSRF flow без сохранения секретов.
 - Backend CI и Taskfile получили строгий audit production Composer-зависимостей; добавлен Filament smoke-тест login, dashboard, Shield permissions, media/category forms и listing moderation page.
 - Добавлен единый актуальный технический аудит backend, frontend и Telegram-бота с release blockers, планом развития и проверяемыми критериями готовности.
 - Добавлены query-count feature-тесты для публичного списка объявлений и breadcrumbs категорий, чтобы ловить N+1-регрессии.
@@ -25,6 +27,9 @@
 - Добавлена команда `shared:cleanup-storage` и ежедневный scheduler retention для `storage/logs`, generated API docs, временных uploads, media-library temp и debugbar-файлов.
 - Добавлена безопасная команда `media:cleanup-orphans` для поиска и ручного удаления постоянных media-файлов без записей в таблице `media`.
 - Добавлен комплект проектной документации по архитектуре, локальной разработке, релизам, секретам, тестированию, уведомлениям, lifecycle объявлений, lifecycle медиа и Telegram-боту.
+
+### Changed
+- Смена пароля теперь ротирует текущую session и CSRF token и завершает остальные сессии пользователя; восстановление пароля завершает все его сессии и требует нового входа.
 
 ## [0.6.31] - 2026-06-28
 

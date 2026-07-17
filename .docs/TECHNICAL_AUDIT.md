@@ -159,12 +159,17 @@ Snabix уже имеет хорошую основу для модульного
   - Контроль: CI и `task deps:audit` выполняют `composer audit --locked --no-dev --format=summary --abandoned=fail`. Gate строже минимального критерия и блокирует любую production advisory или abandoned package. Исключения не добавлены, потому что production и полный Composer audit возвращают ноль advisories.
   - Проверки: `composer validate --strict --no-check-publish`, Docker PHP 8.3 `composer install --dry-run`, production/full Composer audits, `task check` (151 тест, 730 assertions) и Filament admin smoke (2 теста, 12 assertions) прошли.
 
-- [ ] `P0-SEC-002` Обновить уязвимые locked-зависимости frontend и включить audit в CI.
+- [x] `P0-SEC-002` Обновить уязвимые locked-зависимости frontend и включить audit в CI.
   - Факт: production `npm audit --omit=dev` нашел 3 уязвимости: 2 high и 1 moderate. Прямой Next `16.2.4` имеет исправление в `16.2.10`; transitive `form-data 4.0.5` и Next `postcss 8.4.31` уязвимы. Полный audit также отмечает dev `undici 7.27.2` через jsdom.
   - Риск: DoS, middleware/proxy bypass, SSRF/cache poisoning/XSS в Next, CRLF injection в multipart.
   - Где смотреть: `package.json`, `package-lock.json`, `.github/workflows/ci.yml`, `next.config.ts`.
   - План: обновить Next/eslint-config-next одной версией, Axios/transitive form-data и jsdom; не использовать `npm audit fix --force`; проверить release notes и lockfile diff.
   - Критерий готовности: production audit без high/critical; lint, оба typecheck, tests, build и полный E2E проходят; CI выполняет `npm audit --omit=dev --audit-level=high`.
+  - Выполнено 2026-07-16, frontend-реализация: `f6954d2`.
+  - Решение: Next и eslint-config-next обновлены до `16.2.10`, Axios до `1.18.1`, transitive form-data до `4.0.6`, а undici в актуальном jsdom `29.1.1` до `7.28.0`; lock-файл рассчитан npm `10.9.0` под Node `22.23.1` без `--force` и transitive overrides.
+  - Контроль: CI и `npm run audit:prod` выполняют `npm audit --omit=dev --audit-level=high`; итоговый production/full audit содержит `0 high`, `0 critical`.
+  - Исключение: `GHSA-qx2v-qp2m-jg93` остается как две moderate-записи через Next и закрепленный им PostCSS `8.4.31`. Применимость, компенсирующие меры, владелец и срок пересмотра до 2026-08-16 описаны в frontend `docs/RELEASE_CHECKLIST.md`; неподдерживаемый откат Next через `npm audit fix --force` не применяется.
+  - Проверки: clean `npm ci`, file-size guard, ESLint, обычный и полный typecheck, 29 Vitest-файлов/111 тестов, production build и 31 Playwright E2E-тест прошли на Node `22.23.1`.
 
 - [ ] `P0-SEC-003` Зафиксировать безопасный Python dependency set для bot.
   - Факт: текущий локальный диапазон разрешил `aiohttp 3.12.15` и `python-dotenv 1.2.1`; `pip-audit` нашел известные advisories с исправлениями в `aiohttp 3.14.1` и `python-dotenv 1.2.2`. Общий отчет содержит 44 advisories в 9 пакетах, но часть пакетов установлена самим audit/dev tooling и не входит в runtime bot.
@@ -229,11 +234,14 @@ Snabix уже имеет хорошую основу для модульного
   - Критерий готовности: датированный restore report восстанавливает DB и media, проверяет выборку объявлений/изображений/auth; владелец и alert на failed backup назначены.
 
 - [ ] `P0-AUTH-001` Подтвердить production auth/session/CSRF flow на реальном staging.
-  - Факт: unit/feature и документационный smoke существуют, но внешний staging не проверялся. `.env.example` все еще задает `FRONTEND_RESET_PASSWORD_URL=${FRONTEND_URL}/auth/reset-password`, хотя route frontend - `/reset-password`.
+  - Факт: unit/feature и документационный smoke существуют, но внешний staging не проверялся. На момент аудита `.env.example` указывал на несуществующий frontend route `/auth/reset-password`.
   - Риск: reset link, SameSite/domain/secure cookies или CORS могут сломаться только на реальных поддоменах; длинная session lifetime усиливает последствия кражи cookie.
   - Где смотреть: frontend Axios/env/docs, backend `cors.php`, `sanctum.php`, `session.php`, `frontend.php`, `.env.example`.
   - План: исправить reset URL; составить environment matrix; проверить sign-up/sign-in/refresh/logout/change password/reset/unsafe CSRF/401/419/other-session termination на HTTPS staging.
   - Критерий готовности: приложен smoke report с доменами и cookie attributes без секретов; reset email ведет на рабочую страницу; password reset/change завершает остальные sessions по принятой policy.
+  - Прогресс `2026-07-17`: reset URL исправлен на `/reset-password`; смена пароля ротирует текущую session/CSRF и завершает остальные sessions, email reset завершает все sessions; поведение покрыто автоматическими тестами.
+  - Evidence: environment matrix описана во frontend `docs/SANCTUM_SESSION_PRODUCTION.md`, отчет подготовлен в `.docs/STAGING_AUTH_SMOKE_REPORT.md`.
+  - Блокер закрытия: в workspace нет фактических staging origins и безопасного тестового доступа; browser smoke на реальном HTTPS staging остается `PENDING`, поэтому задача не отмечена выполненной.
 
 - [ ] `P0-SEC-004` Проверять реальные deployment secrets, а не только self-test scanner.
   - Факт: CI запускает `check-production-secrets --self-test`, что проверяет код guard, но не конфигурацию staging/production.

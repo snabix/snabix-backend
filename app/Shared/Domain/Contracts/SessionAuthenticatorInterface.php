@@ -9,4 +9,6 @@ interface SessionAuthenticatorInterface
     public function login(string $userId): void;
 
     public function logout(): void;
+
+    public function regenerate(): ?string;
 }
