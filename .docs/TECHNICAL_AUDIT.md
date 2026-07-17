@@ -382,10 +382,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: server-known/session hint или lazy auth bootstrap без раскрытия; polling только authenticated+visible, backoff и refresh on open/focus; centralized mutation error handling.
   - Критерий готовности: anonymous first view не вызывает `/me`; hidden tab не poll; offline/500 не создает unhandled promise; request budget E2E соблюден.
 
-- [ ] `P1-FE-009` Исправить auth form semantics и доступность.
+- [x] `P1-FE-009` Исправить auth form semantics и доступность.
   - Факт: формы используют `autocomplete="off"`, email местами не имеет корректного input type/autocomplete; это мешает password managers и assistive technology.
   - План: `email`/`username`, `current-password`, `new-password`, `one-time-code`; labels/descriptions/errors связать ARIA; focus management dialogs.
   - Критерий готовности: axe critical violations отсутствуют; keyboard-only auth/profile flows проходят; password manager semantics проверены.
+  - Выполнено `2026-07-17`: auth/profile controls получили корректные `type` и WHATWG autocomplete tokens; общий `FormField` связывает label, description и alert error через ARIA.
+  - Dialog focus: privacy/profile/verification dialogs задают initial focus, удерживают keyboard focus через Radix и возвращают его на исходную кнопку; OTP оформлен как six-digit group с `one-time-code`.
+  - Tests: axe не находит critical violations на sign-in/sign-up/forgot/reset и privacy/verification dialogs; E2E выполняет sign-in и email verification только клавиатурой, а DOM assertions фиксируют password-manager contract.
 
 - [ ] `P1-FE-010` Добавить route-level loading/error/metadata/robots/sitemap.
   - Факт: в App Router найден только `not-found.tsx`; нет `error.tsx`, `loading.tsx`, `robots.ts`, `sitemap.ts`, page metadata/generateMetadata для основных сущностей.
