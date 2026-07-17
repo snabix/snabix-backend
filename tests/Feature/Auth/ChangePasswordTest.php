@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Auth;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\Feature\FeatureTestCase;
 
@@ -12,9 +13,41 @@ class ChangePasswordTest extends FeatureTestCase
 {
     public function test_authenticated_user_can_change_password(): void
     {
-        $user      = EloquentUser::factory()->create([
+        $user             = EloquentUser::factory()->create([
             'email'    => 'change-password@example.com',
             'password' => 'OldStrongPassword123!',
+        ]);
+        $otherUser        = EloquentUser::factory()->create();
+
+        $this->withSession(['auth-flow' => 'change-password']);
+
+        $currentSessionId = $this->app['session']->getId();
+
+        DB::table('sessions')->insert([
+            [
+                'id'            => $currentSessionId,
+                'user_id'       => $user->id,
+                'ip_address'    => null,
+                'user_agent'    => null,
+                'payload'       => 'serialized-payload',
+                'last_activity' => now()->timestamp,
+            ],
+            [
+                'id'            => 'other-user-device-session',
+                'user_id'       => $user->id,
+                'ip_address'    => null,
+                'user_agent'    => null,
+                'payload'       => 'serialized-payload',
+                'last_activity' => now()->timestamp,
+            ],
+            [
+                'id'            => 'foreign-user-session',
+                'user_id'       => $otherUser->id,
+                'ip_address'    => null,
+                'user_agent'    => null,
+                'payload'       => 'serialized-payload',
+                'last_activity' => now()->timestamp,
+            ],
         ]);
 
         $this
@@ -28,10 +61,13 @@ class ChangePasswordTest extends FeatureTestCase
             ->assertJsonPath('data.changed', true)
             ->assertJsonPath('data.message', 'Пароль успешно изменен.');
 
-        $freshUser = $user->fresh();
+        $freshUser        = $user->fresh();
 
         $this->assertInstanceOf(EloquentUser::class, $freshUser);
         $this->assertTrue(Hash::check('NewStrongPassword123!', $freshUser->password));
+        $this->assertDatabaseMissing('sessions', ['id' => $currentSessionId]);
+        $this->assertDatabaseMissing('sessions', ['id' => 'other-user-device-session']);
+        $this->assertDatabaseHas('sessions', ['id' => 'foreign-user-session']);
         $this->assertDatabaseHas('system_logs', [
             'category' => 'auth',
             'action'   => 'auth.change-password',
