@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Auth\CLI;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
 use Filament\Commands\MakeUserCommand;
@@ -10,7 +10,7 @@ use Spatie\Permission\Models\Role;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'app:make-admin', aliases: ['auth:make-admin'])]
-class AuthCLIMakeAdminUser extends MakeUserCommand
+class CreateAdminCommand extends MakeUserCommand
 {
     protected $name        = 'app:make-admin';
 

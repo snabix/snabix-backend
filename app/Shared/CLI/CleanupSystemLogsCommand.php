@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Shared\CLI;
 
 use App\Shared\Infrastructure\Models\EloquentSystemLog;
 use Carbon\CarbonImmutable;
@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'shared:cleanup-system-logs')]
-class SharedCLICleanupSystemLogs extends Command
+class CleanupSystemLogsCommand extends Command
 {
     protected $signature   = 'shared:cleanup-system-logs
         {--days= : За сколько дней хранить системные логи}';

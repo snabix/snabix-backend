@@ -8,8 +8,8 @@ Snabix использует Spatie Media Library с собственным ге�
 - `app/Media/Infrastructure/Support/MediaPathGenerator.php`
 - `app/Media/Application/Services/MediaStorageService.php`
 - `app/Listing/Application/Services/ListingMediaService.php`
-- `app/CLI/SharedCLICleanupStorage.php`
-- `app/CLI/MediaCLICleanupOrphanFiles.php`
+- `app/Shared/CLI/CleanupStorageCommand.php`
+- `app/Media/CLI/CleanupOrphanFilesCommand.php`
 - `config/media-library.php`
 - `config/storage-cleanup.php`
 

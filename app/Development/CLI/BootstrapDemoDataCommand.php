@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Development\CLI;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
 use Database\Seeders\ListingsDemoSeeder;
@@ -13,7 +13,7 @@ use Spatie\Permission\Models\Role;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'app:bootstrap-demo-data')]
-class DevelopmentCLIBootstrapDemoData extends Command
+class BootstrapDemoDataCommand extends Command
 {
     protected $signature   = 'app:bootstrap-demo-data
         {--admin-name= : Имя администратора}

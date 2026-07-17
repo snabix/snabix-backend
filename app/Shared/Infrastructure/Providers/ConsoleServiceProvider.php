@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Providers;
 
-use App\CLI\AuthCLIMakeAdminUser;
-use App\CLI\CatalogCLIImportCategories;
-use App\CLI\LocationCLIImportRussiaLocations;
-use App\CLI\MediaCLICleanupOrphanFiles;
-use App\CLI\SharedCLICleanupStorage;
-use App\CLI\SharedCLICleanupSystemLogs;
+use App\Auth\CLI\CreateAdminCommand;
+use App\Catalog\CLI\ImportCategoriesCommand;
+use App\Location\CLI\ImportRussiaLocationsCommand;
+use App\Media\CLI\CleanupOrphanFilesCommand;
+use App\Shared\CLI\CleanupStorageCommand;
+use App\Shared\CLI\CleanupSystemLogsCommand;
 use Illuminate\Support\ServiceProvider;
 
 class ConsoleServiceProvider extends ServiceProvider
@@ -17,12 +17,12 @@ class ConsoleServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->commands([
-            AuthCLIMakeAdminUser::class,
-            CatalogCLIImportCategories::class,
-            LocationCLIImportRussiaLocations::class,
-            MediaCLICleanupOrphanFiles::class,
-            SharedCLICleanupStorage::class,
-            SharedCLICleanupSystemLogs::class,
+            CreateAdminCommand::class,
+            ImportCategoriesCommand::class,
+            ImportRussiaLocationsCommand::class,
+            CleanupOrphanFilesCommand::class,
+            CleanupStorageCommand::class,
+            CleanupSystemLogsCommand::class,
         ]);
     }
 }

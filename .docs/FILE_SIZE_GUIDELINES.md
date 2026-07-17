@@ -20,18 +20,18 @@ task check
 
 | Файл | Строк | Решение |
 | --- | ---: | --- |
-| `app/CLI/SharedCLICleanupStorage.php` | 357 | Разделить при следующем функциональном изменении cleanup workflow |
+| `app/Shared/CLI/CleanupStorageCommand.php` | 357 | Rename `2026-07-17` не менял cleanup workflow; разделить при следующем функциональном изменении |
 | `app/News/Filament/Resources/NewsPosts/Schemas/NewsPostForm.php` | 349 | Разделить schema sections при следующем изменении формы |
 | `app/Listing/Infrastructure/Services/ListingAttributeValueSynchronizer.php` | 331 | Разделить синхронизацию, pruning и normalization при следующем изменении сервиса |
 
 ## Рекомендуемая декомпозиция
 
-### `SharedCLICleanupStorage.php`
+### `CleanupStorageCommand.php`
 
 Возможное направление:
 
 ```text
-app/CLI/SharedCLICleanupStorage.php
+app/Shared/CLI/CleanupStorageCommand.php
 app/Shared/Application/Services/StorageCleanupPlanner.php
 app/Shared/Application/Services/StorageCleanupExecutor.php
 app/Shared/Application/DTO/StorageCleanupSummary.php

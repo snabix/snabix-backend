@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Catalog\CLI;
 
 use App\Catalog\Application\Services\CategoryImporter;
 use App\Catalog\Application\Services\PromCategoriesFetcher;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Throwable;
 
 #[AsCommand(name: 'catalog:import-categories')]
-class CatalogCLIImportCategories extends Command
+class ImportCategoriesCommand extends Command
 {
     protected $signature   = 'catalog:import-categories
         {--source=prom.ua : Публичный идентификатор источника}

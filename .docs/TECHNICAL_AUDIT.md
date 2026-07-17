@@ -477,11 +477,12 @@ Snabix уже имеет хорошую основу для модульного
   - Альтернатива: реальная ports-and-adapters boundary с domain entities/read DTO и Laravel-free interfaces, но стоимость сейчас выше пользы.
   - Критерий готовности: ADR, dependency rules и один refactored vertical slice; новые модули следуют выбранному пути.
 
-- [ ] `P2-NAME-001` Нормализовать backend CLI class naming и namespaces.
-  - Факт: `SharedCLICleanupStorage`, `CatalogCLIImportCategories`, `AuthCLIMakeAdminUser`, `MediaCLICleanupOrphanFiles` кодируют модуль и CLI в имени вместо namespace/роли.
+- [x] `P2-NAME-001` Нормализовать backend CLI class naming и namespaces.
+  - Факт: legacy CLI-классы кодировали модуль и транспорт в имени вместо namespace и роли.
   - План: `App\Shared\CLI\CleanupStorageCommand`, `App\Catalog\CLI\ImportCategoriesCommand`, `App\Auth\CLI\CreateAdminCommand`, `App\Media\CLI\CleanupOrphanFilesCommand`; Artisan signature остается стабильной.
   - Почему: имя отвечает «что делает класс», namespace отвечает «где он живет»; проще искать и читать DI.
   - Критерий готовности: команды зарегистрированы, docs/tests обновлены, старые class names отсутствуют.
+  - Выполнено `2026-07-17`: все семь project CLI-команд перенесены в namespaces соответствующих модулей и получили role-based suffix `Command`; registration test фиксирует прежние Artisan signatures.
 
 - [ ] `P2-NAME-002` Уточнить review vocabulary и разнести обязанности.
   - Факт: `reviewee` технически корректно, но продукт говорит о продавце; `UserReviewService` одновременно валидирует eligibility, создает review и пересчитывает aggregate.
@@ -499,7 +500,7 @@ Snabix уже имеет хорошую основу для модульного
   - Критерий готовности: conventions в API docs; contract tests не допускают случайные variants; rename имеет deprecation window.
 
 - [ ] `P2-CODE-001` Декомпозировать крупные backend production-файлы по обязанностям.
-  - Текущий baseline: `SharedCLICleanupStorage.php` 357, `NewsPostForm.php` 349, `ListingAttributeValueSynchronizer.php` 331, `CategoryAttributeDefinitionNormalizer.php` 325, `SystemHealthChecksWidget.php` 324.
+  - Текущий baseline: `CleanupStorageCommand.php` 357, `NewsPostForm.php` 349, `ListingAttributeValueSynchronizer.php` 331, `CategoryAttributeDefinitionNormalizer.php` 325, `SystemHealthChecksWidget.php` 324.
   - План: command orchestration + services/reporting; Filament schema sections; attribute validation/dependency/persistence split; health check providers/view model.
   - Критерий готовности: каждый затронутый файл ниже установленной границы либо имеет отдельное датированное исключение с причиной; tests не ухудшены.
 
