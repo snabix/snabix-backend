@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Auth\Application\UseCases\TerminateOtherSessions;
 
-use App\Auth\Infrastructure\Models\EloquentSession;
+use App\Auth\Domain\Contracts\UserSessionRepositoryInterface;
 
-class TerminateOtherSessionsHandler
+readonly class TerminateOtherSessionsHandler
 {
+    public function __construct(
+        private UserSessionRepositoryInterface $userSessionRepository,
+    ) {}
+
     public function execute(TerminateOtherSessionsInput $data): TerminateOtherSessionsOutput
     {
-        $query           = EloquentSession::query()
-            ->where('user_id', $data->userId);
-
-        if ($data->currentSessionId !== null) {
-            $query->where('id', '!=', $data->currentSessionId);
-        }
-
-        $terminatedCount = $query->delete();
+        $terminatedCount = $this->userSessionRepository->deleteOtherForUser(
+            $data->userId,
+            $data->currentSessionId,
+        );
 
         return TerminateOtherSessionsOutput::from([
             'terminated'      => true,

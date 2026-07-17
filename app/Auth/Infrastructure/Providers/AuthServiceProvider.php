@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Auth\Infrastructure\Providers;
 
 use App\Auth\Domain\Contracts\UserRepositoryInterface;
+use App\Auth\Domain\Contracts\UserSessionRepositoryInterface;
 use App\Auth\Infrastructure\Models\EloquentAdmin;
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Auth\Infrastructure\Policies\EloquentAdminPolicy;
 use App\Auth\Infrastructure\Policies\EloquentUserPolicy;
 use App\Auth\Infrastructure\Repositories\EloquentUserRepository;
+use App\Auth\Infrastructure\Repositories\EloquentUserSessionRepository;
 use App\Policies\RolePolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\JsonResponse;
@@ -26,6 +28,10 @@ class AuthServiceProvider extends ServiceProvider
         $this->app->bind(
             UserRepositoryInterface::class,
             EloquentUserRepository::class,
+        );
+        $this->app->bind(
+            UserSessionRepositoryInterface::class,
+            EloquentUserSessionRepository::class,
         );
     }
 

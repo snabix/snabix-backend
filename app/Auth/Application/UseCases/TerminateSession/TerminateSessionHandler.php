@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Auth\Application\UseCases\TerminateSession;
 
-use App\Auth\Infrastructure\Models\EloquentSession;
+use App\Auth\Domain\Contracts\UserSessionRepositoryInterface;
 
-class TerminateSessionHandler
+readonly class TerminateSessionHandler
 {
+    public function __construct(
+        private UserSessionRepositoryInterface $userSessionRepository,
+    ) {}
+
     public function execute(TerminateSessionInput $data): TerminateSessionOutput
     {
-        EloquentSession::query()
-            ->where('user_id', $data->userId)
-            ->where('id', $data->sessionId)
-            ->delete();
+        $this->userSessionRepository->deleteForUser(
+            $data->userId,
+            $data->sessionId,
+        );
 
         return TerminateSessionOutput::from([
             'terminated' => true,

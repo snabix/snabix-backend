@@ -234,11 +234,14 @@ Snabix уже имеет хорошую основу для модульного
   - Критерий готовности: датированный restore report восстанавливает DB и media, проверяет выборку объявлений/изображений/auth; владелец и alert на failed backup назначены.
 
 - [ ] `P0-AUTH-001` Подтвердить production auth/session/CSRF flow на реальном staging.
-  - Факт: unit/feature и документационный smoke существуют, но внешний staging не проверялся. `.env.example` все еще задает `FRONTEND_RESET_PASSWORD_URL=${FRONTEND_URL}/auth/reset-password`, хотя route frontend - `/reset-password`.
+  - Факт: unit/feature и документационный smoke существуют, но внешний staging не проверялся. На момент аудита `.env.example` указывал на несуществующий frontend route `/auth/reset-password`.
   - Риск: reset link, SameSite/domain/secure cookies или CORS могут сломаться только на реальных поддоменах; длинная session lifetime усиливает последствия кражи cookie.
   - Где смотреть: frontend Axios/env/docs, backend `cors.php`, `sanctum.php`, `session.php`, `frontend.php`, `.env.example`.
   - План: исправить reset URL; составить environment matrix; проверить sign-up/sign-in/refresh/logout/change password/reset/unsafe CSRF/401/419/other-session termination на HTTPS staging.
   - Критерий готовности: приложен smoke report с доменами и cookie attributes без секретов; reset email ведет на рабочую страницу; password reset/change завершает остальные sessions по принятой policy.
+  - Прогресс `2026-07-17`: reset URL исправлен на `/reset-password`; смена пароля ротирует текущую session/CSRF и завершает остальные sessions, email reset завершает все sessions; поведение покрыто автоматическими тестами.
+  - Evidence: environment matrix описана во frontend `docs/SANCTUM_SESSION_PRODUCTION.md`, отчет подготовлен в `.docs/STAGING_AUTH_SMOKE_REPORT.md`.
+  - Блокер закрытия: в workspace нет фактических staging origins и безопасного тестового доступа; browser smoke на реальном HTTPS staging остается `PENDING`, поэтому задача не отмечена выполненной.
 
 - [ ] `P0-SEC-004` Проверять реальные deployment secrets, а не только self-test scanner.
   - Факт: CI запускает `check-production-secrets --self-test`, что проверяет код guard, но не конфигурацию staging/production.

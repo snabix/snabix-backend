@@ -141,6 +141,10 @@ php artisan media:cleanup-orphans --days=7 --force
 
 ## 7. Ручной smoke
 
+- Для staging/production auth flow заполнен
+  `.docs/STAGING_AUTH_SMOKE_REPORT.md`: фактические origins, cookie attributes и
+  все сценарии имеют `PASS`, а значения cookie, пароли и reset tokens в отчет
+  не попали.
 - Filament login и dashboard открываются.
 - Super admin открывает таблицу/просмотр объявления и видит moderation actions.
 - Filament edit-формы категории и медиафайла отображают существующие изображения.
@@ -155,6 +159,11 @@ php artisan media:cleanup-orphans --days=7 --force
 - Настройки уведомлений.
 - Mailpit получает письмо.
 - `/api/v1/service/bot/health` отвечает с корректным token.
+
+При смене пароля текущая пользовательская сессия должна продолжить работу уже с
+новым session ID, а остальные сессии должны получить `401`. После восстановления
+пароля по email все старые сессии должны получить `401`, и пользователь должен
+войти с новым паролем.
 
 ## 8. Коммит и push
 

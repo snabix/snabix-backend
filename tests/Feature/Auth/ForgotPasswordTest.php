@@ -16,6 +16,7 @@ class ForgotPasswordTest extends FeatureTestCase
     public function test_user_can_request_password_reset_instructions(): void
     {
         Queue::fake();
+        config()->set('frontend.reset_password_url', 'https://app.snabix.test/reset-password');
 
         $email    = sprintf('forgot-password-%s@example.com', Str::uuid()->toString());
 
@@ -36,6 +37,7 @@ class ForgotPasswordTest extends FeatureTestCase
         Queue::assertPushed(
             SendPasswordResetJob::class,
             fn(SendPasswordResetJob $job): bool => $job->email === $user->email
+                && str_starts_with($job->resetUrl, 'https://app.snabix.test/reset-password?')
                 && str_contains($job->resetUrl, 'token=')
                 && str_contains($job->resetUrl, 'email=' . urlencode($user->email)),
         );
