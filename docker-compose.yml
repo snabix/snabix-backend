@@ -46,7 +46,10 @@ services:
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-notifications}
       RABBITMQ_WORKER: ${RABBITMQ_WORKER:-default}
-      QUEUE_WORK_QUEUES: ${QUEUE_WORK_QUEUES:-notifications}
+      QUEUE_WORK_QUEUES: ${QUEUE_WORK_QUEUES:-notifications,media-maintenance}
+      MEDIA_STAGING_DISK: ${MEDIA_STAGING_DISK:-local}
+      MEDIA_STAGING_PREFIX: ${MEDIA_STAGING_PREFIX:-media-staging}
+      MEDIA_CLEANUP_QUEUE: ${MEDIA_CLEANUP_QUEUE:-media-maintenance}
       MAIL_MAILER: ${MAIL_MAILER}
       MAIL_SCHEME: ${MAIL_SCHEME}
       MAIL_HOST: ${MAIL_HOST}
@@ -115,7 +118,10 @@ services:
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-notifications}
       RABBITMQ_WORKER: ${RABBITMQ_WORKER:-default}
-      QUEUE_WORK_QUEUES: ${QUEUE_WORK_QUEUES:-notifications}
+      QUEUE_WORK_QUEUES: ${QUEUE_WORK_QUEUES:-notifications,media-maintenance}
+      MEDIA_STAGING_DISK: ${MEDIA_STAGING_DISK:-local}
+      MEDIA_STAGING_PREFIX: ${MEDIA_STAGING_PREFIX:-media-staging}
+      MEDIA_CLEANUP_QUEUE: ${MEDIA_CLEANUP_QUEUE:-media-maintenance}
       MAIL_MAILER: ${MAIL_MAILER}
       MAIL_SCHEME: ${MAIL_SCHEME}
       MAIL_HOST: ${MAIL_HOST}

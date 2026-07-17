@@ -187,7 +187,7 @@ Snabix уже имеет хорошую основу для модульного
   - План: возвращать public card DTO для чужих favorites; если owner нужен собственному объявлению, выбирать projection по authorization context, а не по endpoint случайно.
   - Критерий готовности: feature-тесты add/remove/list явно проверяют отсутствие всех private/contact/moderation полей; query-count test исключает N+1; frontend contract остается зеленым.
 
-- [ ] `P0-DATA-001` Сделать media create/replace/move отказоустойчивыми.
+- [x] `P0-DATA-001` Сделать media create/replace/move отказоустойчивыми. Закрыто 2026-07-17.
   - Факт: `MediaStorageService` выполняет файловые copy/delete внутри DB transaction. Replace удаляет старый файл до гарантированного сохранения нового; rollback БД не может вернуть удаленный объект storage.
   - Риск: потеря пользовательского файла, orphan objects или запись БД, указывающая на отсутствующий файл.
   - Где смотреть: `app/Media/Application/Services/MediaStorageService.php`, Spatie Media Library operations, orphan cleanup, media tests.

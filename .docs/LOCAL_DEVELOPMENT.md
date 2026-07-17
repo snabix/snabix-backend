@@ -46,7 +46,7 @@ task --version
 ## Docker-сервисы
 
 - `app`: PHP-FPM приложение Laravel.
-- `queue-worker`: обработчик очереди `notifications`.
+- `queue-worker`: обработчик очередей `notifications` и `media-maintenance`.
 - `caddy`: HTTP-сервер на порту `8080`.
 - `db`: основная PostgreSQL база `snabix`.
 - `db-test`: тестовая PostgreSQL база `snabix_test`.
