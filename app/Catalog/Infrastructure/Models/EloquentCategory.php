@@ -22,6 +22,9 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property      string                                               $id
+ * @property      string|null                                          $external_source
+ * @property      string|null                                          $external_id
+ * @property      \Carbon\CarbonImmutable|null                         $source_last_seen_at
  * @property      CategoryCatalogType                                  $catalog_type
  * @property      string|null                                          $parent_id
  * @property      string                                               $name
@@ -54,6 +57,9 @@ class EloquentCategory extends Model implements HasMedia
     /** @var list<string> */
     protected $fillable  = [
         'id',
+        'external_source',
+        'external_id',
+        'source_last_seen_at',
         'parent_id',
         'catalog_type',
         'name',
@@ -137,12 +143,13 @@ class EloquentCategory extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'sort_order'  => 'integer',
-            'is_active'   => 'boolean',
-            'depth'       => 'integer',
-            'catalog_type'=> CategoryCatalogType::class,
-            'created_at'  => 'datetime',
-            'updated_at'  => 'datetime',
+            'sort_order'          => 'integer',
+            'is_active'           => 'boolean',
+            'depth'               => 'integer',
+            'catalog_type'        => CategoryCatalogType::class,
+            'source_last_seen_at' => 'immutable_datetime',
+            'created_at'          => 'datetime',
+            'updated_at'          => 'datetime',
         ];
     }
 

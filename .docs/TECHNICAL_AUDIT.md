@@ -310,10 +310,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: versioned media DTO с original/card/gallery/width/height/placeholder; запретить или sanitize SVG; production storage должен выбрасывать и логировать write failures.
   - Критерий готовности: frontend использует нужную conversion; API tests и browser network assertions подтверждают размеры; SVG policy покрыта security test.
 
-- [ ] `P1-BE-011` Сделать импорт категорий воспроизводимым и безопасным.
+- [x] `P1-BE-011` Сделать импорт категорий воспроизводимым и безопасным.
   - Факт: importer не использует параметр source последовательно; parser зависит от DOM Prom.ua; сопоставление parent/name создает дубли при rename/move; удаленные элементы не деактивируются; arbitrary URL повышает SSRF-риск.
   - План: stable external IDs, source/version/checksum/import manifest, preview diff/approval/rollback, allowlist hosts, deactivate missing, fixtures contract tests; подтвердить право использования источника.
   - Критерий готовности: повторный import идемпотентен; rename/move не дублирует; diff показывает create/update/deactivate; network parser проверяется fixture без обращения к сайту.
+  - Выполнено `2026-07-17`: identity переведена на `external_source + external_id`; добавлены snapshot checksum, persisted preview diff, explicit approval, stale-state guard, deactivate missing и rollback.
+  - Source rights: соглашение Prom.ua запрещает автоматизированное получение/копирование контента и не передает права на чужой контент; network import отключен до письменного разрешения, решение и ссылки зафиксированы в `.docs/CATEGORY_IMPORT.md`.
+  - Tests: синтетические fixtures проверяют parser contract без HTTP, повторный import, rename, move, deactivate и rollback; CLI tests запрещают network без rights reference.
 
 - [ ] `P1-BE-012` Оптимизировать импорт локаций без потери контроля.
   - Факт: Russia importer загружает большие JSON целиком, выполняет per-row save в большой transaction и многократно инвалидирует cache; удаленные source records остаются active.

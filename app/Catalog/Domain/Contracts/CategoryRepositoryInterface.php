@@ -31,7 +31,5 @@ interface CategoryRepositoryInterface
      */
     public function save(array $attributes, ?string $id = null): EloquentCategory;
 
-    public function findByParentAndName(?string $parentId, string $name): ?EloquentCategory;
-
     public function findById(string $id): ?EloquentCategory;
 }

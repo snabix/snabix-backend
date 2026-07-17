@@ -10,17 +10,19 @@ readonly class ParsedCategoryNode
      * @param array<int, self> $children
      */
     public function __construct(
+        public string $externalId,
         public string $name,
         public int $sortOrder,
         public array $children = [],
     ) {}
 
     /**
-     * @return array{name: string, sortOrder: int, children: array<int, array<string, mixed>>}
+     * @return array{externalId: string, name: string, sortOrder: int, children: array<int, array<string, mixed>>}
      */
     public function toArray(): array
     {
         return [
+            'externalId'=> $this->externalId,
             'name'      => $this->name,
             'sortOrder' => $this->sortOrder,
             'children'  => array_map(

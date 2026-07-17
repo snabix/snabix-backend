@@ -43,6 +43,11 @@ docker compose exec app php artisan media:cleanup-orphans
 
 Не запускай `media:cleanup-orphans --force` автоматически во время релиза. Сначала нужно просмотреть dry-run.
 
+Импорт категорий выполняется только через manifest workflow из
+`.docs/CATEGORY_IMPORT.md`. Перед `--apply --approve` проверь source/version,
+checksum и полный diff. Network source без документированного права использования
+и `CATALOG_IMPORT_PROM_RIGHTS_REFERENCE` запрещен.
+
 ## 3. Безопасность базы
 
 Перед миграциями проверь:

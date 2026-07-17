@@ -123,16 +123,6 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
         return $category->fresh(['parentCategory']) ?? $category;
     }
 
-    public function findByParentAndName(
-        ?string $parentId,
-        string $name,
-    ): ?EloquentCategory {
-        return EloquentCategory::query()
-            ->where('parent_id', $parentId)
-            ->where('name', $name)
-            ->first();
-    }
-
     public function findById(string $id): ?EloquentCategory
     {
         return EloquentCategory::query()
