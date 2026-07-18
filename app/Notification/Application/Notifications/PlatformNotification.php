@@ -122,7 +122,7 @@ class PlatformNotification extends Notification implements ShouldQueue
         return (new MailMessage())
             ->subject($this->title)
             ->view('emails.security-login', [
-                'accountLabel' => $this->userDisplayName($user),
+                'accountLabel' => $user->account_label,
                 'body'         => $this->body,
                 'details'      => [
                     'location'   => self::stringContextValue($loginDetails['location'] ?? null, 'неизвестно'),
@@ -133,17 +133,6 @@ class PlatformNotification extends Notification implements ShouldQueue
                 ],
                 'sessionsUrl'  => $this->frontendUrl('/account/settings/sessions'),
             ]);
-    }
-
-    private function userDisplayName(EloquentUser $user): string
-    {
-        $fullName = trim($user->first_name . ' ' . $user->last_name);
-
-        if ($fullName !== '') {
-            return $fullName;
-        }
-
-        return $user->email;
     }
 
     private function frontendUrl(string $path): string

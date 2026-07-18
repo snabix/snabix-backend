@@ -110,6 +110,23 @@ class UserReviewTest extends FeatureTestCase
             ->assertJsonPath('data.items.0.listing.title', $listing->title);
     }
 
+    public function test_public_review_keeps_missing_reviewer_name_nullable(): void
+    {
+        $reviewer = EloquentUser::factory()->withoutName()->create();
+        $seller   = EloquentUser::factory()->create();
+        $listing  = $this->createPublishedListing($seller->id);
+
+        $this
+            ->actingAs($reviewer)
+            ->postJson('/api/v1/users/' . $seller->id . '/reviews', [
+                'listingId' => $listing->id,
+                'rating'    => 5,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.reviewer.firstName', null)
+            ->assertJsonPath('data.reviewer.lastName', null);
+    }
+
     public function test_public_listing_payload_includes_seller_rating_aggregate(): void
     {
         $reviewer = EloquentUser::factory()->create();

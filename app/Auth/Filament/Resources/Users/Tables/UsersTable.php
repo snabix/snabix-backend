@@ -23,16 +23,19 @@ class UsersTable
                     ->label('Имя')
                     ->searchable()
                     ->sortable()
+                    ->placeholder('Не указано')
                     ->weight('semibold'),
 
                 TextColumn::make('last_name')
                     ->label('Фамилия')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder('Не указана'),
 
                 TextColumn::make('phone_number')
                     ->label('Телефон')
                     ->searchable()
+                    ->placeholder('Не указан')
                     ->toggleable(),
 
                 TextColumn::make('date_of_birth')

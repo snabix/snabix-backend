@@ -8,6 +8,7 @@
 ## [Unreleased]
 
 ### Fixed
+- Упрощенная регистрация больше не сохраняет фиктивные имена `User Account`: nullable-имена поддержаны в domain, profile DTO, письмах, JSON-экспорте и Filament, а legacy sentinel очищается миграцией.
 - Duplicate email и duplicate review при гонке между pre-check и insert теперь преобразуются из именованных PostgreSQL unique violations в предсказуемый `422`, а seller rating пересчитывается под row lock.
 - Ссылка восстановления пароля из `.env.example` теперь ведет на существующий frontend route `/reset-password`.
 - Уязвимые Composer-зависимости Filament, Guzzle, PSR-7, phpseclib и Symfony YAML обновлены до исправленных PHP 8.3-совместимых версий; опубликованные Filament assets синхронизированы с package version.

@@ -11,6 +11,35 @@ use Tests\Feature\FeatureTestCase;
 
 class UpdateProfileTest extends FeatureTestCase
 {
+    public function test_unnamed_user_can_update_contacts_without_creating_names(): void
+    {
+        $user = EloquentUser::factory()
+            ->withoutName()
+            ->create(['email' => 'unnamed-update@example.com']);
+
+        $this
+            ->actingAs($user)
+            ->patchJson('/api/v1/auth/me', [
+                'firstName'   => null,
+                'lastName'    => null,
+                'description' => null,
+                'dateOfBirth' => null,
+                'email'       => 'unnamed-update@example.com',
+                'phoneNumber' => '+79994445566',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.firstName', null)
+            ->assertJsonPath('data.lastName', null)
+            ->assertJsonPath('data.phoneNumber', '+79994445566');
+
+        $this->assertDatabaseHas('users', [
+            'id'           => $user->id,
+            'first_name'   => null,
+            'last_name'    => null,
+            'phone_number' => '+79994445566',
+        ]);
+    }
+
     public function test_authenticated_user_can_update_profile_and_reverify_email_when_it_changes(): void
     {
         Queue::fake();

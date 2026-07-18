@@ -303,11 +303,14 @@ Snabix уже имеет хорошую основу для модульного
   - План: revoke other sessions and remember tokens по policy; фильтровать expired; использовать поддерживаемый UA parser; geo-IP только с consent, лицензией БД и явной точностью; уведомление о новом входе считать обязательным security event.
   - Критерий готовности: tests на session fixation/revocation/expiry, письмо и UI одинаково отображают нормализованные device/browser/time/IP/location.
 
-- [ ] `P1-BE-008` Убрать фиктивные персональные имена из регистрации.
+- [x] `P1-BE-008` Убрать фиктивные персональные имена из регистрации.
   - Факт: упрощенная регистрация сохраняет sentinel `User`/`Account`, потому что domain/DB требуют non-null first/last name.
   - Риск: выдуманные данные попадают в письма, аудит, экспорт и публичное представление как реальные персональные данные.
   - План: сделать имена nullable до заполнения профиля либо ввести отдельный `display_name`/profile completeness; не подменять отсутствие значением.
   - Критерий готовности: новый пользователь без имени корректно отображается во всех DTO/mail/admin; миграция и tests не создают fake values.
+  - Выполнено `2026-07-18`: first/last name стали nullable в domain, repository и profile API; регистрация больше не сохраняет sentinel, а migration очищает существующую точную пару `User`/`Account`.
+  - Presentation policy: приватные письма и Filament используют реальное имя либо email аккаунта; публичный review DTO сохраняет nullable-поля без раскрытия email, frontend показывает нейтральное `Пользователь`.
+  - Tests: signup/profile/update/reset/export/review/Filament и migration regression покрывают пользователя без имени; backend `task check` — `184` tests / `960` assertions, frontend — `113` unit / `38` E2E.
 
 - [ ] `P1-BE-009` Ввести verification/abuse policy для marketplace actions.
   - Факт: email verification не обязательна для создания объявления/отзыва; public catalog/location/news/reviews и часть authenticated mutations не имеют специализированных rate limits.

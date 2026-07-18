@@ -21,10 +21,12 @@ class UserInfolist
                     ->columns(2)
                     ->schema([
                         TextEntry::make('first_name')
-                            ->label('Имя'),
+                            ->label('Имя')
+                            ->placeholder('Не указано'),
 
                         TextEntry::make('last_name')
-                            ->label('Фамилия'),
+                            ->label('Фамилия')
+                            ->placeholder('Не указана'),
 
                         TextEntry::make('email')
                             ->translateLabel()

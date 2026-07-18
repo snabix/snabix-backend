@@ -9,6 +9,20 @@ use Tests\Feature\FeatureTestCase;
 
 class ProfileTest extends FeatureTestCase
 {
+    public function test_profile_returns_null_instead_of_fabricated_names(): void
+    {
+        $user = EloquentUser::factory()
+            ->withoutName()
+            ->create(['email' => 'unnamed@example.com']);
+
+        $this->actingAs($user)
+            ->getJson('/api/v1/auth/me')
+            ->assertOk()
+            ->assertJsonPath('data.firstName', null)
+            ->assertJsonPath('data.lastName', null)
+            ->assertJsonPath('data.email', 'unnamed@example.com');
+    }
+
     public function test_authenticated_user_can_get_profile_with_new_user_fields(): void
     {
         $user  = EloquentUser::factory()->create([

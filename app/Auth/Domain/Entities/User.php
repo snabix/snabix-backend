@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Domain\Entities;
 
+use App\Auth\Domain\Services\UserNameFormatter;
 use App\Auth\Domain\ValueObjects\FirstName;
 use App\Auth\Domain\ValueObjects\LastName;
 use App\Auth\Domain\ValueObjects\PhoneNumber;
@@ -16,8 +17,8 @@ class User
 {
     public function __construct(
         public UUID $id,
-        public FirstName $firstName,
-        public LastName $lastName,
+        public ?FirstName $firstName,
+        public ?LastName $lastName,
         public Email $email,
         public Password $password,
         public bool $isActive = true,
@@ -37,14 +38,22 @@ class User
         return $this->emailVerifiedAt !== null;
     }
 
-    public function fullName(): string
+    public function fullName(): ?string
     {
-        return trim($this->firstName->value() . ' ' . $this->lastName->value());
+        return UserNameFormatter::fullName(
+            $this->firstName?->value(),
+            $this->lastName?->value(),
+        );
+    }
+
+    public function accountLabel(): string
+    {
+        return $this->fullName() ?? $this->email->value();
     }
 
     public function updateProfile(
-        FirstName $firstName,
-        LastName $lastName,
+        ?FirstName $firstName,
+        ?LastName $lastName,
         Email $email,
         ?PhoneNumber $phoneNumber = null,
         ?string $description = null,

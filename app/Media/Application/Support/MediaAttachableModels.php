@@ -41,7 +41,7 @@ class MediaAttachableModels
                 ->get(['id', 'first_name', 'last_name', 'email']);
 
             foreach ($users as $user) {
-                $options[(string) $user->id] = trim($user->first_name . ' ' . $user->last_name) . ' · ' . $user->email;
+                $options[(string) $user->id] = $user->admin_label;
             }
 
             return $options;

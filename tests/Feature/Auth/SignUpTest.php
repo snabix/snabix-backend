@@ -78,12 +78,18 @@ class SignUpTest extends FeatureTestCase
             ]);
 
         $this->assertDatabaseHas('users', [
-            'first_name'   => 'User',
-            'last_name'    => 'Account',
+            'first_name'   => null,
+            'last_name'    => null,
             'phone_number' => null,
             'email'        => 'minimal@example.com',
             'is_active'    => true,
         ]);
+
+        Queue::assertPushed(
+            SendEmailVerificationJob::class,
+            fn(SendEmailVerificationJob $job): bool => $job->email === 'minimal@example.com'
+                && $job->name === 'minimal@example.com',
+        );
     }
 
     public function test_sign_up_replays_same_result_for_same_idempotency_key(): void

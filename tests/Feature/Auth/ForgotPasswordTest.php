@@ -22,9 +22,9 @@ class ForgotPasswordTest extends FeatureTestCase
 
         RateLimiter::clear($email . '|127.0.0.1');
 
-        $user     = EloquentUser::factory()->create([
-            'email' => $email,
-        ]);
+        $user     = EloquentUser::factory()
+            ->withoutName()
+            ->create(['email' => $email]);
 
         $response = $this->postJson('/api/v1/auth/forgot-password', [
             'email' => $user->email,
@@ -37,6 +37,7 @@ class ForgotPasswordTest extends FeatureTestCase
         Queue::assertPushed(
             SendPasswordResetJob::class,
             fn(SendPasswordResetJob $job): bool => $job->email === $user->email
+                && $job->name === $user->email
                 && str_starts_with($job->resetUrl, 'https://app.snabix.test/reset-password?')
                 && str_contains($job->resetUrl, 'token=')
                 && str_contains($job->resetUrl, 'email=' . urlencode($user->email)),
