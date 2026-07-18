@@ -67,11 +67,24 @@ tasks:
     desc: Проверить production Composer-зависимости на advisories и abandoned packages
     cmd: composer audit --locked --no-dev --format=summary --abandoned=fail
 
+  runtime:self-test:
+    desc: Проверить guard production runtime и versioned image references
+    cmds:
+      - php scripts/check-production-runtime.php --self-test
+      - php scripts/check-production-runtime.php --env-file deploy/runtime.env.example
+
+  runtime:validate:
+    desc: Проверить release env и production Compose; передай RUNTIME_ENV_FILE=/protected/release.env
+    cmds:
+      - php scripts/check-production-runtime.php --env-file "${RUNTIME_ENV_FILE}"
+      - docker compose --env-file "${RUNTIME_ENV_FILE}" -f compose.production.yaml config --quiet
+
   check:
     desc: "Полная проверка backend: cs-fixer, larastan, scramble и тесты"
     cmds:
       - task "files:size"
       - task "secrets:self-test"
+      - task "runtime:self-test"
       - task "cs:dry"
       - task stan
       - task "docs:scramble"

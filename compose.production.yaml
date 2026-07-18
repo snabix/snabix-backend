@@ -1,0 +1,199 @@
+name: snabix-production
+
+x-backend-runtime: &backend-runtime
+  image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to a versioned tag or digest}
+  env_file:
+    - ${PRODUCTION_ENV_FILE:?Set PRODUCTION_ENV_FILE to the protected production env path}
+  init: true
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001,mode=1770
+    - /var/www/html/bootstrap/cache:rw,noexec,nosuid,size=16m,uid=10001,gid=10001,mode=0750
+    - /var/www/html/storage/framework:rw,noexec,nosuid,size=128m,uid=10001,gid=10001,mode=0750
+    - /var/www/html/storage/logs:rw,noexec,nosuid,size=64m,uid=10001,gid=10001,mode=0750
+  networks:
+    - backend
+    - egress
+  restart: unless-stopped
+
+x-backend-healthcheck: &backend-healthcheck
+  interval: 15s
+  timeout: 8s
+  retries: 4
+  start_period: 30s
+
+services:
+  app:
+    <<: *backend-runtime
+    command:
+      - php-fpm
+      - --nodaemonize
+    healthcheck:
+      <<: *backend-healthcheck
+      test:
+        - CMD
+        - snabix-healthcheck
+        - app
+
+  worker:
+    <<: *backend-runtime
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        exec php artisan queue:work rabbitmq
+        --queue="$${QUEUE_WORK_QUEUES:-notifications,media-maintenance}"
+        --tries=3 --backoff=10 --timeout=120 --sleep=1
+        --memory=256 --max-time=3600
+    stop_signal: SIGTERM
+    stop_grace_period: 2m
+    healthcheck:
+      <<: *backend-healthcheck
+      test:
+        - CMD
+        - snabix-healthcheck
+        - worker
+
+  scheduler:
+    <<: *backend-runtime
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        php artisan health-check:cache-scheduler-running
+        && exec php artisan schedule:work
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    healthcheck:
+      <<: *backend-healthcheck
+      test:
+        - CMD
+        - snabix-healthcheck
+        - scheduler
+
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE to a versioned tag or digest}
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001,mode=1770
+    networks:
+      - edge
+      - egress
+    restart: unless-stopped
+    healthcheck:
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:3000/api/health')
+          .then((response) => process.exit(response.ok ? 0 : 1))
+          .catch(() => process.exit(1))
+
+  web:
+    <<: *backend-runtime
+    command:
+      - caddy
+      - run
+      - --config
+      - /var/www/html/.docker/caddy/Caddyfile.production
+      - --adapter
+      - caddyfile
+    depends_on:
+      app:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    ports:
+      - ${EDGE_BIND_ADDRESS:-127.0.0.1}:${EDGE_PORT:-8080}:8080
+    networks:
+      - edge
+      - backend
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001,mode=1770
+      - /data:rw,noexec,nosuid,size=16m,uid=10001,gid=10001,mode=0750
+      - /config:rw,noexec,nosuid,size=16m,uid=10001,gid=10001,mode=0750
+      - /var/www/html/bootstrap/cache:rw,noexec,nosuid,size=16m,uid=10001,gid=10001,mode=0750
+      - /var/www/html/storage/framework:rw,noexec,nosuid,size=64m,uid=10001,gid=10001,mode=0750
+      - /var/www/html/storage/logs:rw,noexec,nosuid,size=16m,uid=10001,gid=10001,mode=0750
+    healthcheck:
+      interval: 15s
+      timeout: 8s
+      retries: 4
+      start_period: 30s
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --silent --show-error
+          --header "Host: $${BACKEND_HOST}"
+          http://127.0.0.1:8080/health >/dev/null
+
+  bot:
+    image: ${BOT_IMAGE:?Set BOT_IMAGE to a versioned tag or digest}
+    env_file:
+      - ${PRODUCTION_ENV_FILE:?Set PRODUCTION_ENV_FILE to the protected production env path}
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,uid=10001,gid=10001,mode=1770
+    networks:
+      - backend
+      - egress
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    healthcheck:
+      interval: 15s
+      timeout: 8s
+      retries: 4
+      start_period: 30s
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import sys, urllib.request;
+          response = urllib.request.urlopen(
+              'http://127.0.0.1:9001/health/ready',
+              timeout=5,
+          );
+          sys.exit(0 if response.status == 200 else 1)
+
+  migrate:
+    <<: *backend-runtime
+    profiles:
+      - operations
+    command:
+      - php
+      - artisan
+      - migrate
+      - --force
+      - --isolated
+      - --no-interaction
+    restart: "no"
+
+networks:
+  edge:
+  backend:
+    internal: true
+  egress:

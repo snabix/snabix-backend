@@ -11,6 +11,7 @@ use App\Location\CLI\ImportRussiaLocationsCommand;
 use App\Media\CLI\CleanupOrphanFilesCommand;
 use App\Shared\CLI\CleanupStorageCommand;
 use App\Shared\CLI\CleanupSystemLogsCommand;
+use App\Shared\CLI\RuntimeReadyCommand;
 use Illuminate\Contracts\Console\Kernel;
 use Tests\TestCase;
 
@@ -29,6 +30,7 @@ class ConsoleCommandRegistrationTest extends TestCase
             'media:cleanup-orphans'       => CleanupOrphanFilesCommand::class,
             'shared:cleanup-storage'      => CleanupStorageCommand::class,
             'shared:cleanup-system-logs'  => CleanupSystemLogsCommand::class,
+            'runtime:ready'               => RuntimeReadyCommand::class,
         ];
 
         foreach ($expectedCommands as $signature => $commandClass) {

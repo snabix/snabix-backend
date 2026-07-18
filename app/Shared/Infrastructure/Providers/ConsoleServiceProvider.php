@@ -10,6 +10,7 @@ use App\Location\CLI\ImportRussiaLocationsCommand;
 use App\Media\CLI\CleanupOrphanFilesCommand;
 use App\Shared\CLI\CleanupStorageCommand;
 use App\Shared\CLI\CleanupSystemLogsCommand;
+use App\Shared\CLI\RuntimeReadyCommand;
 use Illuminate\Support\ServiceProvider;
 
 class ConsoleServiceProvider extends ServiceProvider
@@ -23,6 +24,7 @@ class ConsoleServiceProvider extends ServiceProvider
             CleanupOrphanFilesCommand::class,
             CleanupStorageCommand::class,
             CleanupSystemLogsCommand::class,
+            RuntimeReadyCommand::class,
         ]);
     }
 }

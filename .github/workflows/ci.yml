@@ -71,6 +71,12 @@ jobs:
       - name: Production secret guard
         run: php scripts/check-production-secrets.php --self-test
 
+      - name: Production runtime contract
+        run: |
+          php scripts/check-production-runtime.php --self-test
+          php scripts/check-production-runtime.php --env-file deploy/runtime.env.example
+          docker compose --env-file deploy/runtime.env.example -f compose.production.yaml config --quiet
+
       - name: PHP CS Fixer dry run
         run: php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no --dry-run --sequential --verbose
 
@@ -79,3 +85,11 @@ jobs:
 
       - name: Tests
         run: php artisan test
+
+      - name: Build production image
+        run: >-
+          docker build
+          --build-arg APP_REVISION=${{ github.sha }}
+          --build-arg IMAGE_SOURCE=https://github.com/${{ github.repository }}
+          --tag snabix-backend:ci
+          .

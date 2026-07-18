@@ -219,12 +219,18 @@ Snabix уже имеет хорошую основу для модульного
 
 ### Production-контур
 
-- [ ] `P0-OPS-001` Создать production runtime вместо использования dev Compose как deployment.
+- [x] `P0-OPS-001` Создать production runtime вместо использования dev Compose как deployment.
   - Факт: backend Dockerfile не копирует приложение и зависимости, запускается root, сохраняет build packages; Compose bind-mounts source, публикует DB/Redis/RabbitMQ ports и не запускает scheduler. Frontend и bot не имеют production Dockerfile/deploy manifest.
   - Риск: scheduled cleanup/expiry не выполняются; окружение невоспроизводимо и излишне открыто; rollback и horizontal restart не определены.
   - Где смотреть: backend `Dockerfile`, `docker-compose.yml`, Caddyfile; отсутствие Dockerfile/deploy в frontend/bot.
   - План: multi-stage immutable images, non-root runtime, health/readiness, scheduler отдельным process/job, worker graceful shutdown, internal networks, pinned image versions, frontend standalone build, bot image.
   - Критерий готовности: staging разворачивается только из versioned images; migrations отдельным controlled step; app/worker/scheduler/frontend/bot имеют readiness; DB/Redis/RabbitMQ не опубликованы наружу; rollback описан и проверен.
+  - Выполнено `2026-07-18`: dev Compose отделен через `Dockerfile.dev`; добавлены multi-stage non-root images backend/frontend/bot, GHCR workflows с `sha-*`/semver tags и runtime guard, запрещающий `latest` и unversioned references.
+  - Runtime: production Compose использует только готовые images, read-only filesystem, dropped capabilities, private networks и отдельные app/worker/scheduler/frontend/web/bot services. PostgreSQL, Redis и RabbitMQ не входят в manifest, не публикуют ports и не передают stack владение database volumes.
+  - Readiness: backend проверяет PID role, DB, migrations, Redis, RabbitMQ и scheduler heartbeat; frontend имеет non-cacheable `/api/health`; bot разделяет `/health/live` и `/health/ready`, причем readiness проверяет backend service API. Worker получил `pcntl`, `SIGTERM`, двухминутный grace period и controlled recycle.
+  - Data safety: migrations не запускаются при обычном `up` и доступны только как one-shot `operations` profile с `--force --isolated`; runbook требует DB/object-storage backup перед step и запрещает `down -v`, destructive Artisan commands и автоматический migration rollback.
+  - Проверки: production Compose config/runtime guard, Caddy validation, backend non-root image smoke, `task check` backend (167 tests, 884 assertions), frontend audit/lint/оба typecheck/30 Vitest files и 112 tests/build/38 E2E, bot Ruff/mypy/3 pytest tests прошли. Exact frontend/bot base-image pull локально уперся в Docker Hub `DeadlineExceeded`, поэтому их image builds дополнительно являются обязательными CI jobs; standalone frontend runtime проверен локальным HTTP smoke.
+  - Эксплуатация: versioned release/rollback procedure описана в `.docs/PRODUCTION_RUNTIME.md`. Фактический deploy на внешний staging и датированный rollback report остаются задачей deployment platform `P1-CI-002`, так как staging credentials/infrastructure в workspace отсутствуют.
 
 - [ ] `P0-OPS-002` Реализовать согласованный backup/restore DB и object storage.
   - Факт: runbook и автоматический restore drill отсутствуют; media metadata и files должны восстанавливаться в согласованную точку.

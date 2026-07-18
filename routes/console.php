@@ -10,6 +10,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+Schedule::command('health-check:cache-scheduler-running')
+    ->everyMinute();
+
 Schedule::command('shared:cleanup-system-logs')
     ->dailyAt('03:30')
     ->withoutOverlapping();
