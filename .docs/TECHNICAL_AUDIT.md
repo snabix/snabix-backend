@@ -353,11 +353,16 @@ Snabix уже имеет хорошую основу для модульного
 
 ## P1 - Frontend
 
-- [ ] `P1-FE-001` Перенести публичную витрину на server-first rendering.
+- [x] `P1-FE-001` Перенести публичную витрину на server-first rendering.
   - Факт: home/listing details получают основное content через client `useEffect`; сервер отдает skeleton, затем hydration запускает API.
   - Риск: слабые SEO/link previews, задержка LCP, пустой initial HTML и лишний waterfall.
   - План: public list/detail/category data загружать в Server Components через server API client и cache/revalidate; client hydrates filters/favorite state; metadata строить из public DTO.
   - Критерий готовности: HTML без JS содержит title/price/content; generated metadata/OG работают; LCP/TTFB/API budget соблюден; auth favorite state не раскрывается сервером чужому пользователю.
+  - Выполнено `2026-07-18`, frontend-реализация: `f4e0b23`. Главная, категория и detail загружают публичные DTO в Server Components; listings/detail кешируются на 60 секунд, категории на 1 час. Фильтры, пагинация и favorites остаются client islands без повторного hydration-запроса списка.
+  - Privacy boundary: server API client всегда использует `credentials: omit`, не принимает browser cookies/Authorization и валидирует ответы Zod. E2E с искусственной session cookie подтверждает, что сервер не переносит чужое `isFavorite` в HTML.
+  - SEO: category/listing `generateMetadata` строит title, description, Open Graph и Twitter image из публичного DTO; настоящий API `404` преобразуется в `notFound`, outage получает отдельное безопасное состояние.
+  - Performance evidence: локальный production mobile baseline на deterministic API — TTFB `125 ms`, LCP `184 ms`, `1` browser API request; SSR E2E отдельно фиксирует `0` browser-запросов `/public/listings` после hydration. Route-specific home chunk после direct imports — `18 548 bytes gzip`.
+  - Tests: `115` Vitest tests, production build и `43` Playwright E2E прошли; отдельный no-JS сценарий проверяет title/price/category в initial HTML. Production audit не содержит high/critical.
 
 - [ ] `P1-FE-002` Реализовать стабильный публичный профиль продавца.
   - Факт: seller page является placeholder; для public listing нет stable seller ID, поэтому frontend строит slug из имени, что допускает collision и rename break.
@@ -469,6 +474,7 @@ Snabix уже имеет хорошую основу для модульного
   - Существующий бюджет: staging TTFB <= 500 ms, mobile LCP <= 2.5 s, public first-load JS <= 250 KB gzip, API requests <= 4, backend list query count <= 12.
   - План: Lighthouse/Playwright trace и bundle analyzer artifact; backend query-count/performance test на fixture scale; trend не только single hard threshold.
   - Критерий готовности: CI/release report сохраняет метрики и блокирует необъясненное превышение; budget пересматривается осознанно.
+  - Прогресс `2026-07-18`: frontend получил воспроизводимую команду `performance:public` и release checklist для HTTPS staging. Локальный production baseline выявил `380 888 bytes` first-load JS против бюджета `256 000`; основная часть принадлежит глобальному client layout (`Providers`, session/header и framework), а не route-specific витрине. Пункт остается открытым до уменьшения global bundle, CI artifact/trend и блокирующего staging gate.
 
 - [ ] `P1-OPS-003` Ввести observability без доступа приложения к Docker socket.
   - Факт: Filament widget проверяет DB/Redis/cache/storage/migrations/env/resources и TCP RabbitMQ, но не знает uptime/restarts, worker heartbeat, queue lag, scheduler, mail, frontend или bot.
