@@ -10,6 +10,22 @@ use UKFast\HealthCheck\Checks\EnvHealthCheck;
 use UKFast\HealthCheck\Checks\LogHealthCheck;
 use UKFast\HealthCheck\Checks\MigrationUpToDateHealthCheck;
 use UKFast\HealthCheck\Checks\RedisHealthCheck;
+use UKFast\HealthCheck\Checks\SchedulerHealthCheck;
+
+$checks = [
+    LogHealthCheck::class,
+    DatabaseHealthCheck::class,
+    RedisHealthCheck::class,
+    CacheHealthCheck::class,
+    MigrationUpToDateHealthCheck::class,
+    EnvHealthCheck::class,
+    SystemResourcesHealthCheck::class,
+    RabbitMqHealthCheck::class,
+];
+
+if (filter_var(env('SCHEDULER_HEALTH_ENABLED', false), FILTER_VALIDATE_BOOL)) {
+    $checks[] = SchedulerHealthCheck::class;
+}
 
 return [
     'base-path'                 => '',
@@ -19,16 +35,7 @@ return [
         'ping'   => '/ping',
     ],
 
-    'checks'                    => [
-        LogHealthCheck::class,
-        DatabaseHealthCheck::class,
-        RedisHealthCheck::class,
-        CacheHealthCheck::class,
-        MigrationUpToDateHealthCheck::class,
-        EnvHealthCheck::class,
-        SystemResourcesHealthCheck::class,
-        RabbitMqHealthCheck::class,
-    ],
+    'checks'                    => $checks,
 
     'middleware'                => [],
 

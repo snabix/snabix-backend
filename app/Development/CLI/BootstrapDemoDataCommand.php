@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Development\CLI;
 
 use App\Auth\Infrastructure\Models\EloquentAdmin;
 use Database\Seeders\ListingsDemoSeeder;
@@ -13,7 +13,7 @@ use Spatie\Permission\Models\Role;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'app:bootstrap-demo-data')]
-class DevelopmentCLIBootstrapDemoData extends Command
+class BootstrapDemoDataCommand extends Command
 {
     protected $signature   = 'app:bootstrap-demo-data
         {--admin-name= : Имя администратора}
@@ -23,7 +23,9 @@ class DevelopmentCLIBootstrapDemoData extends Command
         {--cities= : Путь к russia-cities.json}
         {--fresh-locations : Очистить регионы и города перед импортом}
         {--category-source=prom.ua : Идентификатор источника категорий}
-        {--category-url=https://prom.ua/consumer-goods : URL публичного каталога}
+        {--category-version= : Версия source contract}
+        {--category-url= : URL из allowlist зарегистрированного источника}
+        {--category-fixture= : Утвержденная HTML fixture категорий}
         {--skip-location-import : Не запускать импорт регионов и городов}
         {--skip-category-import : Не запускать импорт категорий}
         {--skip-listings : Не создавать demo-объявления}
@@ -83,10 +85,20 @@ class DevelopmentCLIBootstrapDemoData extends Command
     {
         $this->components->info('Импортируем категории...');
 
-        return $this->call('catalog:import-categories', [
+        $arguments = [
             '--source' => $this->stringOption('category-source', 'prom.ua'),
-            '--url'    => $this->stringOption('category-url', 'https://prom.ua/consumer-goods'),
-        ]);
+            '--approve'=> true,
+        ];
+
+        foreach (['version', 'url', 'fixture'] as $option) {
+            $value = $this->stringOption('category-' . $option);
+
+            if ($value !== null) {
+                $arguments[$option === 'version' ? '--source-version' : '--' . $option] = $value;
+            }
+        }
+
+        return $this->call('catalog:import-categories', $arguments);
     }
 
     private function createOrUpdateAdmin(): bool

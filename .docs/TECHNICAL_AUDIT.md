@@ -187,7 +187,7 @@ Snabix уже имеет хорошую основу для модульного
   - План: возвращать public card DTO для чужих favorites; если owner нужен собственному объявлению, выбирать projection по authorization context, а не по endpoint случайно.
   - Критерий готовности: feature-тесты add/remove/list явно проверяют отсутствие всех private/contact/moderation полей; query-count test исключает N+1; frontend contract остается зеленым.
 
-- [ ] `P0-DATA-001` Сделать media create/replace/move отказоустойчивыми.
+- [x] `P0-DATA-001` Сделать media create/replace/move отказоустойчивыми. Закрыто 2026-07-17.
   - Факт: `MediaStorageService` выполняет файловые copy/delete внутри DB transaction. Replace удаляет старый файл до гарантированного сохранения нового; rollback БД не может вернуть удаленный объект storage.
   - Риск: потеря пользовательского файла, orphan objects или запись БД, указывающая на отсутствующий файл.
   - Где смотреть: `app/Media/Application/Services/MediaStorageService.php`, Spatie Media Library operations, orphan cleanup, media tests.
@@ -219,12 +219,18 @@ Snabix уже имеет хорошую основу для модульного
 
 ### Production-контур
 
-- [ ] `P0-OPS-001` Создать production runtime вместо использования dev Compose как deployment.
+- [x] `P0-OPS-001` Создать production runtime вместо использования dev Compose как deployment.
   - Факт: backend Dockerfile не копирует приложение и зависимости, запускается root, сохраняет build packages; Compose bind-mounts source, публикует DB/Redis/RabbitMQ ports и не запускает scheduler. Frontend и bot не имеют production Dockerfile/deploy manifest.
   - Риск: scheduled cleanup/expiry не выполняются; окружение невоспроизводимо и излишне открыто; rollback и horizontal restart не определены.
   - Где смотреть: backend `Dockerfile`, `docker-compose.yml`, Caddyfile; отсутствие Dockerfile/deploy в frontend/bot.
   - План: multi-stage immutable images, non-root runtime, health/readiness, scheduler отдельным process/job, worker graceful shutdown, internal networks, pinned image versions, frontend standalone build, bot image.
   - Критерий готовности: staging разворачивается только из versioned images; migrations отдельным controlled step; app/worker/scheduler/frontend/bot имеют readiness; DB/Redis/RabbitMQ не опубликованы наружу; rollback описан и проверен.
+  - Выполнено `2026-07-18`: dev Compose отделен через `Dockerfile.dev`; добавлены multi-stage non-root images backend/frontend/bot, GHCR workflows с `sha-*`/semver tags и runtime guard, запрещающий `latest` и unversioned references.
+  - Runtime: production Compose использует только готовые images, read-only filesystem, dropped capabilities, private networks и отдельные app/worker/scheduler/frontend/web/bot services. PostgreSQL, Redis и RabbitMQ не входят в manifest, не публикуют ports и не передают stack владение database volumes.
+  - Readiness: backend проверяет PID role, DB, migrations, Redis, RabbitMQ и scheduler heartbeat; frontend имеет non-cacheable `/api/health`; bot разделяет `/health/live` и `/health/ready`, причем readiness проверяет backend service API. Worker получил `pcntl`, `SIGTERM`, двухминутный grace period и controlled recycle.
+  - Data safety: migrations не запускаются при обычном `up` и доступны только как one-shot `operations` profile с `--force --isolated`; runbook требует DB/object-storage backup перед step и запрещает `down -v`, destructive Artisan commands и автоматический migration rollback.
+  - Проверки: production Compose config/runtime guard, Caddy validation, backend non-root image smoke, `task check` backend (167 tests, 884 assertions), frontend audit/lint/оба typecheck/30 Vitest files и 112 tests/build/38 E2E, bot Ruff/mypy/3 pytest tests прошли. Exact frontend/bot base-image pull локально уперся в Docker Hub `DeadlineExceeded`, поэтому их image builds дополнительно являются обязательными CI jobs; standalone frontend runtime проверен локальным HTTP smoke.
+  - Эксплуатация: versioned release/rollback procedure описана в `.docs/PRODUCTION_RUNTIME.md`. Фактический deploy на внешний staging и датированный rollback report остаются задачей deployment platform `P1-CI-002`, так как staging credentials/infrastructure в workspace отсутствуют.
 
 - [ ] `P0-OPS-002` Реализовать согласованный backup/restore DB и object storage.
   - Факт: runbook и автоматический restore drill отсутствуют; media metadata и files должны восстанавливаться в согласованную точку.
@@ -310,10 +316,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: versioned media DTO с original/card/gallery/width/height/placeholder; запретить или sanitize SVG; production storage должен выбрасывать и логировать write failures.
   - Критерий готовности: frontend использует нужную conversion; API tests и browser network assertions подтверждают размеры; SVG policy покрыта security test.
 
-- [ ] `P1-BE-011` Сделать импорт категорий воспроизводимым и безопасным.
+- [x] `P1-BE-011` Сделать импорт категорий воспроизводимым и безопасным.
   - Факт: importer не использует параметр source последовательно; parser зависит от DOM Prom.ua; сопоставление parent/name создает дубли при rename/move; удаленные элементы не деактивируются; arbitrary URL повышает SSRF-риск.
   - План: stable external IDs, source/version/checksum/import manifest, preview diff/approval/rollback, allowlist hosts, deactivate missing, fixtures contract tests; подтвердить право использования источника.
   - Критерий готовности: повторный import идемпотентен; rename/move не дублирует; diff показывает create/update/deactivate; network parser проверяется fixture без обращения к сайту.
+  - Выполнено `2026-07-17`: identity переведена на `external_source + external_id`; добавлены snapshot checksum, persisted preview diff, explicit approval, stale-state guard, deactivate missing и rollback.
+  - Source rights: соглашение Prom.ua запрещает автоматизированное получение/копирование контента и не передает права на чужой контент; network import отключен до письменного разрешения, решение и ссылки зафиксированы в `.docs/CATEGORY_IMPORT.md`.
+  - Tests: синтетические fixtures проверяют parser contract без HTTP, повторный import, rename, move, deactivate и rollback; CLI tests запрещают network без rights reference.
 
 - [ ] `P1-BE-012` Оптимизировать импорт локаций без потери контроля.
   - Факт: Russia importer загружает большие JSON целиком, выполняет per-row save в большой transaction и многократно инвалидирует cache; удаленные source records остаются active.
@@ -379,10 +388,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: server-known/session hint или lazy auth bootstrap без раскрытия; polling только authenticated+visible, backoff и refresh on open/focus; centralized mutation error handling.
   - Критерий готовности: anonymous first view не вызывает `/me`; hidden tab не poll; offline/500 не создает unhandled promise; request budget E2E соблюден.
 
-- [ ] `P1-FE-009` Исправить auth form semantics и доступность.
+- [x] `P1-FE-009` Исправить auth form semantics и доступность.
   - Факт: формы используют `autocomplete="off"`, email местами не имеет корректного input type/autocomplete; это мешает password managers и assistive technology.
   - План: `email`/`username`, `current-password`, `new-password`, `one-time-code`; labels/descriptions/errors связать ARIA; focus management dialogs.
   - Критерий готовности: axe critical violations отсутствуют; keyboard-only auth/profile flows проходят; password manager semantics проверены.
+  - Выполнено `2026-07-17`: auth/profile controls получили корректные `type` и WHATWG autocomplete tokens; общий `FormField` связывает label, description и alert error через ARIA.
+  - Dialog focus: privacy/profile/verification dialogs задают initial focus, удерживают keyboard focus через Radix и возвращают его на исходную кнопку; OTP оформлен как six-digit group с `one-time-code`.
+  - Tests: axe не находит critical violations на sign-in/sign-up/forgot/reset и privacy/verification dialogs; E2E выполняет sign-in и email verification только клавиатурой, а DOM assertions фиксируют password-manager contract.
 
 - [ ] `P1-FE-010` Добавить route-level loading/error/metadata/robots/sitemap.
   - Факт: в App Router найден только `not-found.tsx`; нет `error.tsx`, `loading.tsx`, `robots.ts`, `sitemap.ts`, page metadata/generateMetadata для основных сущностей.
@@ -477,11 +489,12 @@ Snabix уже имеет хорошую основу для модульного
   - Альтернатива: реальная ports-and-adapters boundary с domain entities/read DTO и Laravel-free interfaces, но стоимость сейчас выше пользы.
   - Критерий готовности: ADR, dependency rules и один refactored vertical slice; новые модули следуют выбранному пути.
 
-- [ ] `P2-NAME-001` Нормализовать backend CLI class naming и namespaces.
-  - Факт: `SharedCLICleanupStorage`, `CatalogCLIImportCategories`, `AuthCLIMakeAdminUser`, `MediaCLICleanupOrphanFiles` кодируют модуль и CLI в имени вместо namespace/роли.
+- [x] `P2-NAME-001` Нормализовать backend CLI class naming и namespaces.
+  - Факт: legacy CLI-классы кодировали модуль и транспорт в имени вместо namespace и роли.
   - План: `App\Shared\CLI\CleanupStorageCommand`, `App\Catalog\CLI\ImportCategoriesCommand`, `App\Auth\CLI\CreateAdminCommand`, `App\Media\CLI\CleanupOrphanFilesCommand`; Artisan signature остается стабильной.
   - Почему: имя отвечает «что делает класс», namespace отвечает «где он живет»; проще искать и читать DI.
   - Критерий готовности: команды зарегистрированы, docs/tests обновлены, старые class names отсутствуют.
+  - Выполнено `2026-07-17`: все семь project CLI-команд перенесены в namespaces соответствующих модулей и получили role-based suffix `Command`; registration test фиксирует прежние Artisan signatures.
 
 - [ ] `P2-NAME-002` Уточнить review vocabulary и разнести обязанности.
   - Факт: `reviewee` технически корректно, но продукт говорит о продавце; `UserReviewService` одновременно валидирует eligibility, создает review и пересчитывает aggregate.
@@ -499,7 +512,7 @@ Snabix уже имеет хорошую основу для модульного
   - Критерий готовности: conventions в API docs; contract tests не допускают случайные variants; rename имеет deprecation window.
 
 - [ ] `P2-CODE-001` Декомпозировать крупные backend production-файлы по обязанностям.
-  - Текущий baseline: `SharedCLICleanupStorage.php` 357, `NewsPostForm.php` 349, `ListingAttributeValueSynchronizer.php` 331, `CategoryAttributeDefinitionNormalizer.php` 325, `SystemHealthChecksWidget.php` 324.
+  - Текущий baseline: `CleanupStorageCommand.php` 357, `NewsPostForm.php` 349, `ListingAttributeValueSynchronizer.php` 331, `CategoryAttributeDefinitionNormalizer.php` 325, `SystemHealthChecksWidget.php` 324.
   - План: command orchestration + services/reporting; Filament schema sections; attribute validation/dependency/persistence split; health check providers/view model.
   - Критерий готовности: каждый затронутый файл ниже установленной границы либо имеет отдельное датированное исключение с причиной; tests не ухудшены.
 

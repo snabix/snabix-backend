@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Shared\CLI;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -30,7 +30,7 @@ use const DIRECTORY_SEPARATOR;
 use const FNM_PATHNAME;
 
 #[AsCommand(name: 'shared:cleanup-storage')]
-class SharedCLICleanupStorage extends Command
+class CleanupStorageCommand extends Command
 {
     protected $signature   = 'shared:cleanup-storage
         {--scope=* : Ограничить очистку одним или несколькими scope из config/storage-cleanup.php}

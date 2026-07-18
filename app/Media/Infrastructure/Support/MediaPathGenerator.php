@@ -29,16 +29,37 @@ class MediaPathGenerator implements PathGenerator
 
     private function getBasePath(Media $media): string
     {
-        $prefix        = config('media-library.prefix', '');
-        $prefix        = trim(is_string($prefix) ? $prefix : '', '/');
-        $directory     = $this->resolveDirectory($media);
-        $collection    = Str::slug($media->collection_name ?: 'default');
-        $mediaIdentity = $this->resolveMediaIdentity($media);
-        $path          = $directory . '/' . $collection . '/' . $mediaIdentity;
+        $storedBasePath = $this->storedBasePath($media);
+
+        if ($storedBasePath !== null) {
+            return $storedBasePath;
+        }
+
+        $prefix         = config('media-library.prefix', '');
+        $prefix         = trim(is_string($prefix) ? $prefix : '', '/');
+        $directory      = $this->resolveDirectory($media);
+        $collection     = Str::slug($media->collection_name ?: 'default');
+        $mediaIdentity  = $this->resolveMediaIdentity($media);
+        $path           = $directory . '/' . $collection . '/' . $mediaIdentity;
 
         return $prefix !== ''
             ? $prefix . '/' . $path
             : $path;
+    }
+
+    private function storedBasePath(Media $media): ?string
+    {
+        if (! $media instanceof EloquentMedia) {
+            return null;
+        }
+
+        $storageKey = $media->storage_key;
+
+        if (! is_string($storageKey) || ! str_contains($storageKey, '/')) {
+            return null;
+        }
+
+        return substr($storageKey, 0, (int) strrpos($storageKey, '/'));
     }
 
     private function resolveMediaIdentity(Media $media): string

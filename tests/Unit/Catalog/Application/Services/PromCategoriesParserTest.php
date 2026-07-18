@@ -5,52 +5,51 @@ declare(strict_types=1);
 namespace Tests\Unit\Catalog\Application\Services;
 
 use App\Catalog\Application\Services\PromCategoriesParser;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class PromCategoriesParserTest extends TestCase
 {
-    public function test_it_parses_prom_categories_tree_from_html_snippet(): void
+    /**
+     * @return iterable<string, array{string, string, string}>
+     */
+    public static function fixtureProvider(): iterable
     {
-        $html   = <<<'HTML'
-            <div id="spa-root">
-              <div data-qaid="category-block">
-                <div data-qaid="category_name">
-                  <a href="/Krasota-i-zdorove">Красота и здоровье</a>
-                </div>
-                <div data-qaid="sub_category_block">
-                  <div>
-                    <div>
-                      <div>
-                        <a class="aV5Sw" href="/Kosmetika-po-uhodu">Косметика по уходу</a>
-                      </div>
-                      <div data-qaid="sub_category_name"><a href="/Uhod-za-litsom">Уход за лицом</a></div>
-                      <div data-qaid="sub_category_name"><a href="/Uhod-za-volosami">Уход за волосами</a></div>
-                    </div>
-                    <div>
-                      <div>
-                        <a class="aV5Sw" href="/Tovary-dlya-zdorovya">Товары для здоровья</a>
-                      </div>
-                      <div data-qaid="sub_category_name"><a href="/Massazhery">Массажеры</a></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            HTML;
+        yield 'initial contract' => [
+            'prom-categories-v1.html',
+            'Root Alpha',
+            'Leaf One',
+        ];
+        yield 'rename and move contract' => [
+            'prom-categories-v2.html',
+            'Root Alpha Renamed',
+            'Leaf One Renamed',
+        ];
+    }
 
-        $parser = new PromCategoriesParser();
-        $nodes  = $parser->parse($html);
+    #[DataProvider('fixtureProvider')]
+    public function test_it_parses_stable_external_ids_from_local_contract_fixture(
+        string $fixture,
+        string $rootName,
+        string $leafName,
+    ): void {
+        $html  = file_get_contents(dirname(__DIR__, 4) . '/Fixtures/catalog/' . $fixture);
 
-        $this->assertCount(1, $nodes);
-        $this->assertSame('Красота и здоровье', $nodes[0]->name);
-        $this->assertSame(0, $nodes[0]->sortOrder);
-        $this->assertCount(2, $nodes[0]->children);
-        $this->assertSame('Косметика по уходу', $nodes[0]->children[0]->name);
-        $this->assertCount(2, $nodes[0]->children[0]->children);
-        $this->assertSame('Уход за лицом', $nodes[0]->children[0]->children[0]->name);
-        $this->assertSame(0, $nodes[0]->children[0]->children[0]->sortOrder);
-        $this->assertSame('Товары для здоровья', $nodes[0]->children[1]->name);
-        $this->assertCount(1, $nodes[0]->children[1]->children);
-        $this->assertSame('Массажеры', $nodes[0]->children[1]->children[0]->name);
+        $this->assertIsString($html);
+
+        $nodes = (new PromCategoriesParser())->parse($html);
+
+        $this->assertCount(2, $nodes);
+        $this->assertSame('id:root-a', $nodes[0]->externalId);
+        $this->assertSame($rootName, $nodes[0]->name);
+        $this->assertSame('id:root-b', $nodes[1]->externalId);
+
+        $group = $fixture === 'prom-categories-v1.html'
+            ? $nodes[0]->children[0]
+            : $nodes[1]->children[0];
+
+        $this->assertSame('id:group-one', $group->externalId);
+        $this->assertSame('id:leaf-one', $group->children[0]->externalId);
+        $this->assertSame($leafName, $group->children[0]->name);
     }
 }

@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+
+exec php artisan runtime:ready "${1:-app}" --no-ansi --quiet

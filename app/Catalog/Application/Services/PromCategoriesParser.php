@@ -14,7 +14,7 @@ readonly class PromCategoriesParser
     /**
      * @return array<int, ParsedCategoryNode>
      */
-    public function parse(string $html, string $baseUrl = 'https://prom.ua'): array
+    public function parse(string $html): array
     {
         libxml_use_internal_errors(true);
 
@@ -102,17 +102,37 @@ readonly class PromCategoriesParser
      */
     private function makeNodeFromLink(DOMElement $link, int $sortOrder, array $children = []): ?ParsedCategoryNode
     {
-        $name = $this->sanitizeText($link->textContent);
+        $name       = $this->sanitizeText($link->textContent);
+        $externalId = $this->externalId($link);
 
-        if ($name === '') {
+        if ($name === '' || $externalId === null) {
             return null;
         }
 
         return new ParsedCategoryNode(
+            externalId: $externalId,
             name: $name,
             sortOrder: $sortOrder,
             children: $children,
         );
+    }
+
+    private function externalId(DOMElement $link): ?string
+    {
+        $explicitId = trim($link->getAttribute('data-category-id'));
+
+        if ($explicitId !== '') {
+            return 'id:' . $explicitId;
+        }
+
+        $href       = trim($link->getAttribute('href'));
+        $path       = parse_url($href, PHP_URL_PATH);
+
+        if (! is_string($path) || trim($path, '/') === '') {
+            return null;
+        }
+
+        return 'path:/' . trim(rawurldecode($path), '/');
     }
 
     private function firstElement(DOMXPath $xpath, string $query, DOMElement $context): ?DOMElement

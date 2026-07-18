@@ -36,6 +36,19 @@ return [
     'disk_name'                                 => env('MEDIA_DISK', 'public'),
 
     /*
+     * New files are copied to this temporary disk and verified before their
+     * permanent object and database metadata are committed.
+     */
+    'staging_disk_name'                         => env('MEDIA_STAGING_DISK', 'local'),
+
+    'staging_prefix'                            => env('MEDIA_STAGING_PREFIX', 'media-staging'),
+
+    /*
+     * Failed after-commit cleanup is retried on this queue.
+     */
+    'cleanup_queue_name'                        => env('MEDIA_CLEANUP_QUEUE', 'media-maintenance'),
+
+    /*
      * The maximum file size of an item in bytes.
      * Adding a larger file will result in an exception.
      */

@@ -5,80 +5,39 @@ declare(strict_types=1);
 namespace App\Catalog\Application\Services;
 
 use App\Catalog\Application\Support\ParsedCategoryNode;
-use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
-use Closure;
-use Illuminate\Support\Facades\DB;
-use Throwable;
+use App\Catalog\Infrastructure\Models\EloquentCategoryImportManifest;
 
 readonly class CategoryImporter
 {
     public function __construct(
-        private CategoryRepositoryInterface $categoryRepository,
+        private CategoryImportPlanner $planner,
+        private CategoryImportExecutor $executor,
     ) {}
 
     /**
-     * @param  array<int, ParsedCategoryNode>    $nodes
-     * @return array{created: int, updated: int}
-     *
-     * @throws Throwable
+     * @param array<int, ParsedCategoryNode> $nodes
      */
-    public function import(
-        array    $nodes,
-        string   $source,
-        ?Closure $progressCallback = null,
-    ): array {
-        $stats = [
-            'created' => 0,
-            'updated' => 0,
-        ];
-
-        DB::transaction(
-            function () use ($nodes, $progressCallback, &$stats): void {
-                foreach ($nodes as $node) {
-                    $this->persistNode($node, null, $stats, $progressCallback);
-                }
-            },
+    public function preview(
+        array $nodes,
+        string $source,
+        string $sourceVersion,
+        ?string $sourceUrl,
+    ): EloquentCategoryImportManifest {
+        return $this->planner->preview(
+            nodes: $nodes,
+            source: $source,
+            sourceVersion: $sourceVersion,
+            sourceUrl: $sourceUrl,
         );
-
-        return $stats;
     }
 
-    /**
-     * @param array{created: int, updated: int} $stats
-     */
-    private function persistNode(
-        ParsedCategoryNode $node,
-        ?string            $parentId,
-        array              &$stats,
-        ?Closure           $progressCallback = null,
-    ): void {
-        $category      = $this->categoryRepository->findByParentAndName($parentId, $node->name);
+    public function apply(string $manifestId): EloquentCategoryImportManifest
+    {
+        return $this->executor->apply($manifestId);
+    }
 
-        if ($category === null) {
-            $stats['created']++;
-        } else {
-            $stats['updated']++;
-        }
-
-        $savedCategory = $this->categoryRepository->save(
-            [
-                'parent_id'  => $parentId,
-                'name'       => $node->name,
-                'sort_order' => $node->sortOrder,
-                'is_active'  => true,
-            ],
-            $category?->id,
-        );
-
-        $progressCallback?->__invoke($node, $savedCategory);
-
-        foreach ($node->children as $child) {
-            $this->persistNode(
-                node: $child,
-                parentId: $savedCategory->id,
-                stats: $stats,
-                progressCallback: $progressCallback,
-            );
-        }
+    public function rollback(string $manifestId): EloquentCategoryImportManifest
+    {
+        return $this->executor->rollback($manifestId);
     }
 }

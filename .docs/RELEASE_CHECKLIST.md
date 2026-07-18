@@ -2,6 +2,18 @@
 
 Документ описывает проверки перед релизом backend-части Snabix.
 
+## Production runtime
+
+- локальный `docker-compose.yml` не используется для deployment;
+- release env содержит только versioned image tags или OCI digests и проходит
+  `task runtime:validate`;
+- PostgreSQL, Redis и RabbitMQ не опубликованы наружу production stack;
+- перед миграцией записаны идентификаторы DB backup и object-storage snapshot;
+- `migrate` выполнен отдельным `operations` step, обычный `up` миграции не запускает;
+- `app`, `worker`, `scheduler`, `frontend`, `web` и `bot` перешли в healthy;
+- сохранен предыдущий release env, а rollback drill выполнен по
+  `.docs/PRODUCTION_RUNTIME.md`.
+
 ## 1. Объем изменений
 
 - Проверь, какие домены затронуты.
@@ -42,6 +54,11 @@ docker compose exec app php artisan media:cleanup-orphans
 ```
 
 Не запускай `media:cleanup-orphans --force` автоматически во время релиза. Сначала нужно просмотреть dry-run.
+
+Импорт категорий выполняется только через manifest workflow из
+`.docs/CATEGORY_IMPORT.md`. Перед `--apply --approve` проверь source/version,
+checksum и полный diff. Network source без документированного права использования
+и `CATALOG_IMPORT_PROM_RIGHTS_REFERENCE` запрещен.
 
 ## 3. Безопасность базы
 

@@ -4,22 +4,17 @@ declare(strict_types=1);
 
 namespace App\Media\Application\Services;
 
-use App\Media\Application\Support\MediaTypeDetector;
-use App\Media\Domain\Enums\MediaType;
-use App\Media\Domain\Enums\MediaVisibility;
+use App\Media\Application\Data\PreparedMediaFile;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use RuntimeException;
-use Spatie\MediaLibrary\MediaCollections\Filesystem;
-use Spatie\MediaLibrary\Support\PathGenerator\PathGeneratorFactory;
 use Throwable;
 
 readonly class MediaStorageService
 {
     public function __construct(
-        private MediaTypeDetector $typeDetector,
+        private MediaAttributesFactory $attributes,
+        private MediaStorageOperationManager $operations,
     ) {}
 
     /**
@@ -28,88 +23,79 @@ readonly class MediaStorageService
      */
     public function createFromStoredUpload(string $sourceDisk, string $sourcePath, array $attributes): EloquentMedia
     {
-        return DB::transaction(function () use ($sourceDisk, $sourcePath, $attributes): EloquentMedia {
-            $source     = Storage::disk($sourceDisk);
+        $source      = $this->operations->inspect($sourceDisk, $sourcePath);
+        $media       = new EloquentMedia();
+        $media->uuid = (string) Str::uuid();
+        $media->forceFill($this->attributes->forCreate($source, $attributes));
+        $prepared    = $this->operations->prepare($source, $media);
 
-            if (! $source->exists($sourcePath)) {
-                throw new RuntimeException('Uploaded media file was not found.');
-            }
+        try {
+            $created = DB::transaction(function () use ($media, $prepared): EloquentMedia {
+                $media->storage_key = $prepared->permanent->path;
+                $media->save();
 
-            $fileName   = $this->normalizeFileName(basename($sourcePath));
-            $mimeType   = $source->mimeType($sourcePath) ?: null;
-            $size       = $source->size($sourcePath);
-            $targetDisk = $this->resolveDisk($attributes);
-            $mediaType  = $this->resolveMediaType($attributes['media_type'] ?? null, $mimeType, $fileName);
+                DB::afterCommit(function () use ($prepared): void {
+                    $this->operations->cleanup([
+                        $prepared->source->object(),
+                        $prepared->staged->object(),
+                    ]);
+                });
 
-            $media      = EloquentMedia::query()->create([
-                'model_type'            => $attributes['model_type'] ?? null,
-                'model_id'              => $attributes['model_id'] ?? null,
-                'collection_name'       => $attributes['collection_name'] ?? 'default',
-                'name'                  => $attributes['name'] ?: pathinfo($fileName, PATHINFO_FILENAME),
-                'file_name'             => $fileName,
-                'mime_type'             => $mimeType,
-                'disk'                  => $targetDisk,
-                'conversions_disk'      => $targetDisk,
-                'size'                  => $size,
-                'manipulations'         => [],
-                'custom_properties'     => [],
-                'generated_conversions' => [],
-                'responsive_images'     => [],
-                'media_type'            => $mediaType,
-                'visibility'            => $attributes['visibility'] ?? MediaVisibility::PUBLIC,
-                'uploaded_by_admin_id'  => $attributes['uploaded_by_admin_id'] ?? null,
-                'description'           => $attributes['description'] ?? null,
-            ]);
+                return $media;
+            });
+        } catch (Throwable $exception) {
+            $this->operations->cleanupPrepared($prepared);
 
-            $this->storeMediaFile($media, $sourceDisk, $sourcePath, $fileName);
+            throw $exception;
+        }
 
-            return $media->refresh();
-        });
+        return $created->refresh();
     }
 
     /**
      * @param  array<string, mixed> $attributes
      * @throws Throwable
      */
-    public function replaceFromStoredUpload(EloquentMedia $media, string $sourceDisk, string $sourcePath, array $attributes): EloquentMedia
-    {
-        return DB::transaction(function () use ($media, $sourceDisk, $sourcePath, $attributes): EloquentMedia {
-            $source     = Storage::disk($sourceDisk);
+    public function replaceFromStoredUpload(
+        EloquentMedia $media,
+        string $sourceDisk,
+        string $sourcePath,
+        array $attributes,
+    ): EloquentMedia {
+        $source      = $this->operations->inspect($sourceDisk, $sourcePath);
+        $oldObjects  = $this->operations->mediaObjects($media);
+        $snapshot    = $this->operations->snapshot($media);
+        $replacement = $this->attributes->forReplacement($media, $source, $attributes);
+        $candidate   = clone $media;
+        $candidate->forceFill($replacement);
+        $prepared    = $this->operations->prepare($source, $candidate);
 
-            if (! $source->exists($sourcePath)) {
-                throw new RuntimeException('Uploaded replacement media file was not found.');
-            }
+        try {
+            $updated = DB::transaction(function () use (
+                $media,
+                $snapshot,
+                $replacement,
+                $prepared,
+                $oldObjects,
+            ): EloquentMedia {
+                $current = $this->lockedCurrent($media);
+                $this->operations->assertSnapshot($current, $snapshot);
+                $current->forceFill([
+                    ...$replacement,
+                    'storage_key' => $prepared->permanent->path,
+                ])->saveQuietly();
 
-            /** @var Filesystem $filesystem */
-            $filesystem = app(Filesystem::class);
-            $filesystem->removeAllFiles($media);
+                $this->cleanupReplacementAfterCommit($prepared, $oldObjects);
 
-            $fileName   = $this->normalizeFileName(basename($sourcePath));
-            $mimeType   = $source->mimeType($sourcePath) ?: null;
-            $targetDisk = $this->resolveDisk($attributes);
+                return $current;
+            });
+        } catch (Throwable $exception) {
+            $this->operations->cleanupPrepared($prepared);
 
-            $media->forceFill([
-                'model_type'            => $attributes['model_type'] ?? $media->model_type,
-                'model_id'              => $attributes['model_id'] ?? $media->model_id,
-                'collection_name'       => $attributes['collection_name'] ?? $media->collection_name,
-                'name'                  => $attributes['name'] ?? $media->name,
-                'file_name'             => $fileName,
-                'mime_type'             => $mimeType,
-                'disk'                  => $targetDisk,
-                'conversions_disk'      => $targetDisk,
-                'size'                  => $source->size($sourcePath),
-                'media_type'            => $this->resolveMediaType($attributes['media_type'] ?? null, $mimeType, $fileName),
-                'visibility'            => $attributes['visibility'] ?? $media->visibility,
-                'uploaded_by_admin_id'  => $attributes['uploaded_by_admin_id'] ?? $media->uploaded_by_admin_id,
-                'description'           => $attributes['description'] ?? $media->description,
-                'generated_conversions' => [],
-                'responsive_images'     => [],
-            ])->saveQuietly();
+            throw $exception;
+        }
 
-            $this->storeMediaFile($media, $sourceDisk, $sourcePath, $fileName);
-
-            return $media->refresh();
-        });
+        return $updated->refresh();
     }
 
     /**
@@ -118,92 +104,94 @@ readonly class MediaStorageService
      */
     public function updateMetadata(EloquentMedia $media, array $attributes): EloquentMedia
     {
-        return DB::transaction(function () use ($media, $attributes): EloquentMedia {
-            $oldDisk = $media->disk;
-            $oldPath = PathGeneratorFactory::create($media)->getPath($media) . $media->file_name;
+        $attributes = $this->attributes->normalizeMetadata($attributes);
+        $candidate  = clone $media;
+        $candidate->forceFill($attributes);
+        $snapshot   = $this->operations->snapshot($media);
 
-            $media->update($attributes);
+        if (! $this->attributes->locationChanged($media, $candidate)) {
+            return DB::transaction(function () use ($media, $snapshot, $attributes): EloquentMedia {
+                $current = $this->lockedCurrent($media);
+                $this->operations->assertSnapshot($current, $snapshot);
+                $current->forceFill($attributes)->saveQuietly();
 
-            $newPath = PathGeneratorFactory::create($media)->getPath($media) . $media->file_name;
+                return $current->refresh();
+            });
+        }
 
-            if ($oldDisk === $media->disk && $oldPath === $newPath) {
-                return $media->refresh();
-            }
-
-            $stream  = Storage::disk($oldDisk)->readStream($oldPath);
-
-            if (! is_resource($stream)) {
-                throw new RuntimeException('Unable to read existing media file.');
-            }
-
-            Storage::disk($media->disk)->put($newPath, $stream);
-
-            fclose($stream);
-
-            Storage::disk($oldDisk)->delete($oldPath);
-
-            return $media->refresh();
-        });
+        return $this->moveForMetadataUpdate($media, $candidate, $snapshot, $attributes);
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param array{disk: mixed, file_name: mixed, collection_name: mixed, media_type: mixed, storage_key: mixed} $snapshot
+     * @param array<string, mixed>                                                                                $attributes
+     *
+     * @throws Throwable
      */
-    private function resolveDisk(array $attributes): string
-    {
-        $visibility = $attributes['visibility'] ?? MediaVisibility::PUBLIC;
+    private function moveForMetadataUpdate(
+        EloquentMedia $media,
+        EloquentMedia $candidate,
+        array $snapshot,
+        array $attributes,
+    ): EloquentMedia {
+        $source     = $this->operations->inspectMedia($media);
+        $oldObjects = $this->operations->mediaObjects($media);
+        $prepared   = $this->operations->prepare($source, $candidate);
 
-        if (! $visibility instanceof MediaVisibility) {
-            $visibility = is_int($visibility) || is_string($visibility) && is_numeric($visibility)
-                ? MediaVisibility::from((int) $visibility)
-                : MediaVisibility::PUBLIC;
+        try {
+            $updated = DB::transaction(function () use (
+                $media,
+                $snapshot,
+                $attributes,
+                $prepared,
+                $oldObjects,
+            ): EloquentMedia {
+                $current = $this->lockedCurrent($media);
+                $this->operations->assertSnapshot($current, $snapshot);
+                $current->forceFill([
+                    ...$attributes,
+                    'storage_key'           => $prepared->permanent->path,
+                    'generated_conversions' => [],
+                    'responsive_images'     => [],
+                ])->saveQuietly();
+
+                DB::afterCommit(function () use ($prepared, $oldObjects): void {
+                    $this->operations->cleanup([
+                        $prepared->staged->object(),
+                        ...$oldObjects,
+                    ]);
+                });
+
+                return $current;
+            });
+        } catch (Throwable $exception) {
+            $this->operations->cleanupPrepared($prepared);
+
+            throw $exception;
         }
 
-        $disk       = $attributes['disk'] ?? null;
-
-        return is_string($disk) && $disk !== ''
-            ? $disk
-            : $visibility->disk();
+        return $updated->refresh();
     }
 
-    private function resolveMediaType(mixed $mediaType, ?string $mimeType, string $fileName): MediaType
+    /**
+     * @param list<\App\Media\Application\Data\MediaStorageObject> $oldObjects
+     */
+    private function cleanupReplacementAfterCommit(PreparedMediaFile $prepared, array $oldObjects): void
     {
-        if ($mediaType instanceof MediaType) {
-            return $mediaType;
-        }
-
-        if (is_numeric($mediaType)) {
-            return MediaType::from((int) $mediaType);
-        }
-
-        return $this->typeDetector->detect($mimeType, pathinfo($fileName, PATHINFO_EXTENSION) ?: null);
+        DB::afterCommit(function () use ($prepared, $oldObjects): void {
+            $this->operations->cleanup([
+                $prepared->source->object(),
+                $prepared->staged->object(),
+                ...$oldObjects,
+            ]);
+        });
     }
 
-    private function storeMediaFile(EloquentMedia $media, string $sourceDisk, string $sourcePath, string $fileName): void
+    private function lockedCurrent(EloquentMedia $media): EloquentMedia
     {
-        $stream        = Storage::disk($sourceDisk)->readStream($sourcePath);
-
-        if (! is_resource($stream)) {
-            throw new RuntimeException('Unable to read uploaded media file.');
-        }
-
-        $pathGenerator = PathGeneratorFactory::create($media);
-
-        Storage::disk($media->disk)->put($pathGenerator->getPath($media) . $fileName, $stream);
-
-        fclose($stream);
-
-        Storage::disk($sourceDisk)->delete($sourcePath);
-    }
-
-    private function normalizeFileName(string $fileName): string
-    {
-        $extension      = pathinfo($fileName, PATHINFO_EXTENSION);
-        $name           = pathinfo($fileName, PATHINFO_FILENAME);
-        $normalizedName = Str::slug($name) ?: 'media-file';
-
-        return $extension !== ''
-            ? $normalizedName . '.' . strtolower($extension)
-            : $normalizedName;
+        return EloquentMedia::query()
+            ->whereKey($media->getKey())
+            ->lockForUpdate()
+            ->firstOrFail();
     }
 }
