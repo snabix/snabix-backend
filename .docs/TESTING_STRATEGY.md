@@ -49,6 +49,7 @@ php artisan scramble:analyze
 - Listing: создание, обновление, удаление, статусы, избранное.
 - Media: загрузка, замена, удаление, порядок, orphan cleanup.
 - Notifications: preferences, database channel, mail channel, read/delete state.
+- Database writes: прямые invalid writes, именованные constraints, unique race-window и idempotent replay.
 - CLI: admin-команды, cleanup-команды.
 - Docs/contracts: Scramble и DTO-контракты.
 
@@ -63,6 +64,7 @@ php artisan scramble:analyze
 - notification delivery;
 - cleanup-команда;
 - миграция с важной бизнес-логикой;
+- конкурентная create/update операция или новый unique constraint;
 - обработка 401/419;
 - service API для bot.
 

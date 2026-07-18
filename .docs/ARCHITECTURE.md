@@ -133,6 +133,19 @@ Backend разделен по доменным модулям:
 - Состояние формы на frontend является UX-состоянием, а не источником истины.
 - Telegram admin ids хранятся в bot env, но бизнес-данные остаются на backend.
 
+## Целостность конкурентных записей
+
+PostgreSQL является последней границей целостности для marketplace write-моделей:
+
+- listing type/status/condition, price, currency и views закреплены именованными `CHECK`;
+- review rating/status и разные reviewer/reviewee закреплены именованными `CHECK`;
+- seller rating aggregate ограничен диапазоном `1..5` и согласован с reviews count;
+- уникальные email и review обрабатываются по конкретному имени constraint после rollback транзакции и возвращают `422`, а не `500`;
+- sign-up и create review поддерживают `Idempotency-Key`, request fingerprint и replay ранее созданного ресурса;
+- пересчет seller rating выполняется под row lock пользователя, чтобы параллельные отзывы не перезаписывали aggregate устаревшим значением.
+
+Idempotency records имеют ограниченный срок хранения и удаляются scheduler-задачей. Исходные ключи и payload в таблице не сохраняются.
+
 ## Очереди и асинхронная работа
 
 RabbitMQ используется для очередей `notifications` и `media-maintenance`.

@@ -258,12 +258,16 @@ Snabix уже имеет хорошую основу для модульного
 
 ## P1 - Backend и данные
 
-- [ ] `P1-BE-001` Усилить DB invariants и обработку конкурентных записей.
+- [x] `P1-BE-001` Усилить DB invariants и обработку конкурентных записей.
   - Факт: rating/listing enums, currency, price/rating ranges не полностью закреплены CHECK constraints. Duplicate email и duplicate review проверяются до insert, что оставляет race до unique violation.
   - Риск: невалидные состояния из CLI/admin/race; unique violation превращается в 500 вместо 409/422.
   - Где смотреть: users/listings/reviews migrations, signup и review services.
   - План: DB CHECK/enum-compatible constraints, catch named unique violations, idempotency keys для create actions, concurrency tests.
   - Критерий готовности: invalid direct insert отклоняется DB; параллельные signup/review возвращают предсказуемый API response без 500.
+  - Выполнено `2026-07-18`: добавлены именованные PostgreSQL CHECK для listings, reviews и seller rating aggregate; race по `users_email_unique` и `user_reviews_reviewer_id_listing_id_unique` преобразуется в `422` после rollback.
+  - Idempotency: sign-up и create review принимают `Idempotency-Key`, хранят HMAC actor/key/request fingerprint, повторяют ранее созданный resource и возвращают `409 request.idempotency-conflict` при измененном payload.
+  - Concurrency: seller aggregate пересчитывается под `FOR UPDATE` lock; feature-тесты внедряют конкурирующую запись строго после pre-check и подтверждают отсутствие `500`.
+  - Evidence: `database/migrations/2026_07_18_000000_harden_marketplace_write_invariants.php`, `tests/Feature/Database/MarketplaceWriteInvariantTest.php`, `tests/Feature/Auth/SignUpTest.php`, `tests/Feature/Review/UserReviewWriteSafetyTest.php`, `.docs/API_DTO_CONTRACTS.md`.
 
 - [ ] `P1-BE-002` Расширить lifecycle объявления для реального marketplace.
   - Факт: statuses ограничены draft/pending/published/rejected/archived; нет reserved/sold/completed/paused/expired. Owner может редактировать published listing без обязательной повторной модерации; delete hard-удаляет историю.

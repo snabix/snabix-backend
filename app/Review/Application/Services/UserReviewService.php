@@ -9,11 +9,21 @@ use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Review\Domain\Enums\UserReviewStatus;
 use App\Review\Infrastructure\Models\EloquentUserReview;
+use App\Shared\Application\DTO\IdempotencyResult;
+use App\Shared\Domain\Exceptions\IdempotencyConflictException;
+use App\Shared\Infrastructure\Database\UniqueConstraintViolationDetector;
+use App\Shared\Infrastructure\Services\IdempotencyService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final readonly class UserReviewService
 {
+    public function __construct(
+        private IdempotencyService $idempotencyService,
+        private UniqueConstraintViolationDetector $uniqueConstraintViolationDetector,
+    ) {}
+
     /**
      * @throws ValidationException
      */
@@ -23,6 +33,7 @@ final readonly class UserReviewService
         string $listingId,
         int $rating,
         ?string $comment,
+        ?string $idempotencyKey = null,
     ): EloquentUserReview {
         if ($reviewerId === $revieweeId) {
             throw ValidationException::withMessages([
@@ -30,52 +41,142 @@ final readonly class UserReviewService
             ]);
         }
 
-        return DB::transaction(function () use ($reviewerId, $revieweeId, $listingId, $rating, $comment): EloquentUserReview {
-            $listing         = EloquentListing::query()
-                ->whereKey($listingId)
-                ->where('status', ListingStatus::PUBLISHED)
-                ->first();
+        try {
+            $review = $this->idempotencyService->execute(
+                idempotencyKey: $idempotencyKey,
+                scope: 'review.create',
+                actorKey: $reviewerId,
+                payload: [
+                    'revieweeId' => $revieweeId,
+                    'listingId'  => $listingId,
+                    'rating'     => $rating,
+                    'comment'    => $comment,
+                ],
+                operation: function () use (
+                    $reviewerId,
+                    $revieweeId,
+                    $listingId,
+                    $rating,
+                    $comment,
+                ): IdempotencyResult {
+                    $created = $this->createReview(
+                        $reviewerId,
+                        $revieweeId,
+                        $listingId,
+                        $rating,
+                        $comment,
+                    );
 
-            if (! $listing instanceof EloquentListing) {
-                throw ValidationException::withMessages([
-                    'listingId' => 'Можно оставить отзыв только по опубликованному объявлению.',
-                ]);
+                    return new IdempotencyResult(
+                        resourceId: $created->id,
+                        value: $created,
+                    );
+                },
+                replay: fn(string $reviewId): EloquentUserReview => $this->replayReview(
+                    $reviewId,
+                    $reviewerId,
+                    $revieweeId,
+                ),
+            );
+        } catch (UniqueConstraintViolationException $exception) {
+            if (! $this->uniqueConstraintViolationDetector->matches(
+                $exception,
+                'user_reviews_reviewer_id_listing_id_unique',
+            )) {
+                throw $exception;
             }
 
-            if ($listing->user_id !== $revieweeId) {
-                throw ValidationException::withMessages([
-                    'listingId' => 'Объявление не принадлежит выбранному пользователю.',
-                ]);
-            }
+            $this->throwAlreadyReviewed();
+        }
 
-            $alreadyReviewed = EloquentUserReview::query()
-                ->where('reviewer_id', $reviewerId)
-                ->where('listing_id', $listingId)
-                ->exists();
-
-            if ($alreadyReviewed) {
-                throw ValidationException::withMessages([
-                    'listingId' => 'Вы уже оставили отзыв по этому объявлению.',
-                ]);
-            }
-
-            $review          = EloquentUserReview::query()->create([
-                'reviewer_id'  => $reviewerId,
-                'reviewee_id'  => $revieweeId,
-                'listing_id'   => $listingId,
-                'rating'       => $rating,
-                'comment'      => $comment,
-                'status'       => UserReviewStatus::PUBLISHED,
-                'published_at' => now(),
-            ]);
-
-            $this->refreshSellerRating($revieweeId);
-
-            return $review->load(['reviewer', 'listing']);
-        });
+        return $review;
     }
 
-    public function refreshSellerRating(string $revieweeId): void
+    private function createReview(
+        string $reviewerId,
+        string $revieweeId,
+        string $listingId,
+        int $rating,
+        ?string $comment,
+    ): EloquentUserReview {
+        $seller          = EloquentUser::query()
+            ->whereKey($revieweeId)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $seller instanceof EloquentUser) {
+            throw ValidationException::withMessages([
+                'revieweeId' => 'Пользователь для отзыва не найден.',
+            ]);
+        }
+
+        $listing         = EloquentListing::query()
+            ->whereKey($listingId)
+            ->where('status', ListingStatus::PUBLISHED)
+            ->first();
+
+        if (! $listing instanceof EloquentListing) {
+            throw ValidationException::withMessages([
+                'listingId' => 'Можно оставить отзыв только по опубликованному объявлению.',
+            ]);
+        }
+
+        if ($listing->user_id !== $revieweeId) {
+            throw ValidationException::withMessages([
+                'listingId' => 'Объявление не принадлежит выбранному пользователю.',
+            ]);
+        }
+
+        $alreadyReviewed = EloquentUserReview::query()
+            ->where('reviewer_id', $reviewerId)
+            ->where('listing_id', $listingId)
+            ->exists();
+
+        if ($alreadyReviewed) {
+            $this->throwAlreadyReviewed();
+        }
+
+        $review          = EloquentUserReview::query()->create([
+            'reviewer_id'  => $reviewerId,
+            'reviewee_id'  => $revieweeId,
+            'listing_id'   => $listingId,
+            'rating'       => $rating,
+            'comment'      => $comment,
+            'status'       => UserReviewStatus::PUBLISHED,
+            'published_at' => now(),
+        ]);
+
+        $this->refreshSellerRating($revieweeId);
+
+        return $review->load(['reviewer', 'listing']);
+    }
+
+    private function replayReview(
+        string $reviewId,
+        string $reviewerId,
+        string $revieweeId,
+    ): EloquentUserReview {
+        $review = EloquentUserReview::query()
+            ->whereKey($reviewId)
+            ->where('reviewer_id', $reviewerId)
+            ->where('reviewee_id', $revieweeId)
+            ->first();
+
+        if (! $review instanceof EloquentUserReview) {
+            throw new IdempotencyConflictException();
+        }
+
+        return $review->load(['reviewer', 'listing']);
+    }
+
+    private function throwAlreadyReviewed(): never
+    {
+        throw ValidationException::withMessages([
+            'listingId' => 'Вы уже оставили отзыв по этому объявлению.',
+        ]);
+    }
+
+    private function refreshSellerRating(string $revieweeId): void
     {
         $stats        = DB::table('user_reviews')
             ->where('reviewee_id', $revieweeId)

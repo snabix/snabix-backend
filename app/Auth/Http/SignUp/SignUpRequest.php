@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Auth\Http\SignUp;
 
+use App\Shared\Http\Requests\ResolvesIdempotencyKey;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 class SignUpRequest extends FormRequest
 {
+    use ResolvesIdempotencyKey;
+
     /**
      * @return array<string, array<int, string|Password>>
      */
@@ -18,7 +21,7 @@ class SignUpRequest extends FormRequest
             'firstName'            => ['nullable', 'string', 'max:100'],
             'lastName'             => ['nullable', 'string', 'max:100'],
             'phoneNumber'          => ['nullable', 'string', 'max:20'],
-            'email'                => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email'                => ['required', 'string', 'email', 'max:255'],
             'password'             => ['required', 'confirmed', Password::default()],
             'passwordConfirmation' => ['required', 'string'],
         ];
@@ -30,7 +33,7 @@ class SignUpRequest extends FormRequest
     }
 
     /**
-     * @return array{firstName: string|null, lastName: string|null, phoneNumber: ?string, email: string, password: string, passwordConfirmation: string}
+     * @return array{firstName: string|null, lastName: string|null, phoneNumber: ?string, email: string, password: string, passwordConfirmation: string, idempotencyKey: ?string}
      */
     public function inputData(): array
     {
@@ -43,6 +46,7 @@ class SignUpRequest extends FormRequest
             'email'                => $this->string('email')->toString(),
             'password'             => $this->string('password')->toString(),
             'passwordConfirmation' => $this->string('passwordConfirmation')->toString(),
+            'idempotencyKey'       => $this->idempotencyKey(),
         ];
     }
 

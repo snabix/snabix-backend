@@ -15,5 +15,6 @@ class SignUpInput extends Input
         public readonly ?string $phoneNumber,
         public readonly string $password,
         public readonly string $passwordConfirmation,
+        public readonly ?string $idempotencyKey,
     ) {}
 }
