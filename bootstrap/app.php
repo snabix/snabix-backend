@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
 use App\Bot\Infrastructure\Middleware\EnsureBotServiceToken;
-use App\CLI\DevelopmentCLIBootstrapDemoData;
+use App\Development\CLI\BootstrapDemoDataCommand;
 use App\Shared\Infrastructure\Middleware\LogRequestActivity;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withCommands([
-        DevelopmentCLIBootstrapDemoData::class,
+        BootstrapDemoDataCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();

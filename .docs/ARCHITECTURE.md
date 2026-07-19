@@ -135,7 +135,7 @@ Backend разделен по доменным модулям:
 
 ## Очереди и асинхронная работа
 
-RabbitMQ используется для очереди `notifications`.
+RabbitMQ используется для очередей `notifications` и `media-maintenance`.
 
 Локальный запуск:
 

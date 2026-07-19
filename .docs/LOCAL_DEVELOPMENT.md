@@ -46,7 +46,7 @@ task --version
 ## Docker-сервисы
 
 - `app`: PHP-FPM приложение Laravel.
-- `queue-worker`: обработчик очереди `notifications`.
+- `queue-worker`: обработчик очередей `notifications` и `media-maintenance`.
 - `caddy`: HTTP-сервер на порту `8080`.
 - `db`: основная PostgreSQL база `snabix`.
 - `db-test`: тестовая PostgreSQL база `snabix_test`.
@@ -140,12 +140,30 @@ SNABIX_BOOTSTRAP_ADMIN_EMAIL=admin@example.test
 SNABIX_BOOTSTRAP_ADMIN_PASSWORD=generated-local-password
 ```
 
-После проверки окружения локальную базу можно пересоздать и заполнить импортами:
+После проверки окружения локальную базу можно пересоздать:
 
 ```bash
 docker compose exec app php artisan migrate:fresh --force
-docker compose exec app php artisan app:bootstrap-demo-data
 ```
+
+Network import Prom.ua отключен до получения письменного разрешения. Для
+bootstrap используй утвержденную fixture:
+
+```bash
+docker compose exec app php artisan app:bootstrap-demo-data \
+  --category-version=licensed-v1 \
+  --category-fixture=storage/app/imports/categories/catalog.html
+```
+
+Если утвержденного source snapshot пока нет, явно пропусти импорт категорий:
+
+```bash
+docker compose exec app php artisan app:bootstrap-demo-data \
+  --skip-category-import \
+  --skip-listings
+```
+
+Полный preview/apply/rollback workflow описан в `.docs/CATEGORY_IMPORT.md`.
 
 Если Laravel пишет `This command is prohibited from running in this environment`,
 значит destructive-команды для текущего окружения заблокированы. Проверь `APP_ENV`,

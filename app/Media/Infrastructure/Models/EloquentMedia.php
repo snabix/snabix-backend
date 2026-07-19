@@ -15,6 +15,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property      int                $id
+ * @property      string|null        $storage_key
  * @property      MediaType          $media_type
  * @property      MediaVisibility    $visibility
  * @property      int|null           $uploaded_by_admin_id

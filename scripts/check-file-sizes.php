@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $trackedFiles = [
-    'app/CLI/SharedCLICleanupStorage.php' => [
+    'app/Shared/CLI/CleanupStorageCommand.php' => [
         'maxLines' => 357,
         'decision' => 'decompose on next functional change or document why it remains large',
     ],

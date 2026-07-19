@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Media\CLI;
 
 use App\Media\Domain\Enums\MediaType;
 use App\Media\Infrastructure\Models\EloquentMedia;
@@ -29,7 +29,7 @@ use function unlink;
 use const DIRECTORY_SEPARATOR;
 
 #[AsCommand(name: 'media:cleanup-orphans')]
-class MediaCLICleanupOrphanFiles extends Command
+class CleanupOrphanFilesCommand extends Command
 {
     protected $signature   = 'media:cleanup-orphans
         {--disk=* : Ограничить проверку конкретным disk из filesystems.php}

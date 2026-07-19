@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\CLI;
+namespace App\Location\CLI;
 
 use App\Location\Application\Services\RussiaLocationImporter;
 use App\Shared\Infrastructure\Services\SystemLogManager;
@@ -11,7 +11,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Throwable;
 
 #[AsCommand(name: 'location:import-russia')]
-class LocationCLIImportRussiaLocations extends Command
+class ImportRussiaLocationsCommand extends Command
 {
     protected $signature   = 'location:import-russia
         {--regions= : Путь к russia-regions.json}

@@ -17,6 +17,8 @@
 - DTO объявления теперь нормализует legacy `address_snapshot`, чтобы старые или неполные адреса не ломали загрузку личных объявлений и ответ после создания.
 
 ### Added
+- Добавлен production runtime из versioned non-root images для backend, frontend и Telegram-бота: standalone frontend, bot readiness, отдельные app/worker/scheduler процессы, controlled migrations и проверяемый rollback без владения PostgreSQL volume.
+- Добавлен воспроизводимый импорт категорий со stable external IDs, source version/checksum, persisted preview manifest, diff, explicit approval, deactivate missing и rollback.
 - Добавлены environment matrix и заполняемый HTTPS staging smoke report для проверки auth/session/CSRF flow без сохранения секретов.
 - Backend CI и Taskfile получили строгий audit production Composer-зависимостей; добавлен Filament smoke-тест login, dashboard, Shield permissions, media/category forms и listing moderation page.
 - Добавлен единый актуальный технический аудит backend, frontend и Telegram-бота с release blockers, планом развития и проверяемыми критериями готовности.
@@ -29,6 +31,8 @@
 - Добавлен комплект проектной документации по архитектуре, локальной разработке, релизам, секретам, тестированию, уведомлениям, lifecycle объявлений, lifecycle медиа и Telegram-боту.
 
 ### Changed
+- Live import Prom.ua по умолчанию отключен согласно условиям источника; network fetch требует письменный rights reference, exact HTTPS host allowlist и explicit stable IDs.
+- Project CLI-классы перенесены из общего namespace в модули и получили role-based имена с suffix `Command`; публичные Artisan signatures сохранены.
 - Смена пароля теперь ротирует текущую session и CSRF token и завершает остальные сессии пользователя; восстановление пароля завершает все его сессии и требует нового входа.
 
 ## [0.6.31] - 2026-06-28

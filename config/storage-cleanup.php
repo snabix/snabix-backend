@@ -30,6 +30,7 @@ return [
                 'filament-media-temp/*',
                 'filament-category-icons-temp/*',
                 'livewire-tmp/*',
+                env('MEDIA_STAGING_PREFIX', 'media-staging') . '/*/*',
             ],
             'delete_empty_directories' => true,
         ],
