@@ -369,10 +369,14 @@ Snabix уже имеет хорошую основу для модульного
   - План: backend public seller DTO с immutable public ID или unique slug, privacy fields allowlist, listings/reviews pagination; route `/sellers/{publicIdOrSlug}`.
   - Критерий готовности: два одинаковых имени не конфликтуют; rename сохраняет redirect; contact/privacy policy и share links покрыты E2E.
 
-- [ ] `P1-FE-003` Исправить hydration strategy вместо глобального подавления предупреждений.
+- [x] `P1-FE-003` Исправить hydration strategy вместо глобального подавления предупреждений.
   - Факт: `suppressHydrationWarning` стоит на `<html>` и `<body>` и скрывает расхождения всего дерева.
   - План: определить источник theme mismatch, применить suppression только к атрибуту theme root либо server cookie/init script; добавить hydration regression test.
   - Критерий готовности: global suppression удален, console E2E не содержит hydration/script warnings в light/dark/system modes.
+  - Выполнено `2026-07-19`, frontend-реализация: `3500d1c`. До React hydration `beforeInteractive` bootstrap в корневом `<head>` читает сохраненный режим, учитывает системную цветовую схему и синхронно применяет `class`, `data-theme`, `data-theme-mode` и `color-scheme`.
+  - Глобальное подавление удалено с `<body>`; одноступенчатый `suppressHydrationWarning` оставлен только на `<html>`, атрибуты которого намеренно меняет bootstrap. Остальное React-дерево снова сообщает о реальных расхождениях.
+  - Theme state нормализован до `light`/`dark`/`system`; старые `manual`/`auto` preferences мигрируются без потери выбора, а `system` реагирует на изменение `prefers-color-scheme` во время сессии.
+  - Regression: Playwright проверяет light, dark и system, включая live system change, и отклоняет hydration/script warnings из console/page errors. Прошли `115` Vitest tests, lint, оба typecheck, production build и `46` Playwright E2E; production audit не содержит high/critical.
 
 - [ ] `P1-FE-004` Усилить CSP и media origin policy.
   - Факт: production `script-src` содержит `'unsafe-inline'`; img/media разрешают весь `https:` несмотря на более узкие `remotePatterns` Next.
