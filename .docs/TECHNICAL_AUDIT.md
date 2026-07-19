@@ -388,11 +388,16 @@ Snabix уже имеет хорошую основу для модульного
   - План: перенести header в `widgets/header`; auth session events в shared-level contract или app provider; добавить ESLint restricted imports/FSD boundary plugin после оценки совместимости.
   - Критерий готовности: автоматическое правило запрещает shared -> entities/features/screens/widgets; существующие нарушения устранены без circular imports.
 
-- [ ] `P1-FE-006` Сократить лишние Client Component boundaries и неправильный suffix `Action`.
+- [x] `P1-FE-006` Сократить лишние Client Component boundaries и неправильный suffix `Action`.
   - Факт: найдено 68 файлов с `"use client"` и сотни props вида `onRetryAction`, `onChangeAction`, хотя это обычные callbacks, а не Next Server Actions.
   - Риск: увеличенный client graph, путаница архитектурного смысла и шумные API компонентов.
   - План: client boundary только у state/effect/browser providers; leaf presentation остается server-compatible; обычные callbacks называются `onRetry`, `onChange`, `onOpenChange`; `Action` сохраняется только для реальных server actions, если они появятся.
   - Критерий готовности: зафиксирован baseline уменьшения client modules/JS; lint/build/tests green; naming rule отражен в AGENTS.
+  - Выполнено `2026-07-19`, frontend-реализация: `7f07ae3`. Проверенный before-edit baseline составлял `66` явных client entry points и `460` употреблений `on*Action`; после рефакторинга осталось `53` boundaries (`-19,7%`) и `0` неправильно названных callbacks.
+  - Статическая лента категорий главной вынесена из client graph, а filters/favorites/pagination оставлены отдельным client island. Route-specific JS главной уменьшился с `64 904` до `61 084` raw bytes (`-5,9%`) и с `18 548` до `17 807` gzip bytes (`-4,0%`) на Node `22.23.1`/Next `16.2.10`.
+  - `npm run architecture:client` входит в lint, контролирует budget `53` и запрещает `on*Action`; ESLint и `AGENTS.md` закрепляют обычные callback names и резервируют `Action` для настоящих Server Actions.
+  - shadcn review зафиксирован в `$PROJECT_ROOT/snabix-frontend/docs/CLIENT_COMPONENTS_AND_SHADCN.md`: внедрены server-compatible `Field` и `Spinner`, массовая Radix-to-Base UI миграция отклонена без отдельного ADR/измерений; `Input Group`, `Native Select`, `Item`, `Button Group` и Carousel классифицированы по целесообразности.
+  - Прошли filesize, lint/architecture guard, оба typecheck, `115` Vitest tests, production build на Node `22.23.1` и `46` Playwright E2E. No-JS SSR regression подтверждает server-rendered категории; production audit не содержит high/critical.
 
 - [ ] `P1-FE-007` Ввести единую server-state strategy.
   - Факт: category/location используют дублирующиеся Zustand TTL caches; screens повторяют `useEffect/isMounted/loading/error/pagination`; retry иногда делает `window.location.reload()`.
