@@ -528,10 +528,11 @@ Snabix уже имеет хорошую основу для модульного
   - План: `onOpenChange`, `onRetry`, `onSubmit`, `onFavoriteToggle`; зарезервировать Server Action naming для функций с соответствующей семантикой.
   - Критерий готовности: новые компоненты не добавляют fake Action props; mechanical migration идет по feature и не смешивается с behavior changes.
 
-- [ ] `P2-NAME-004` Зафиксировать naming полей между DB/API/frontend.
+- [x] `P2-NAME-004` Зафиксировать naming полей между DB/API/frontend.
   - Факт: DB использует snake_case, API camelCase, но встречаются semantic variants `fullname/fullName`, `about/description`, generic `type/status` и numeric enum values.
   - План: schema conventions: `...Id`, timestamp ISO 8601, money minor units/currency, public stable IDs, enum strings на API boundary; compatibility adapters для миграций.
   - Критерий готовности: conventions в API docs; contract tests не допускают случайные variants; rename имеет deprecation window.
+  - Выполнено `2026-07-19`: API закрепил semantic string fields `listingKind`, `listingStatus`, `itemCondition`, `catalogKind`, `valueType`, `publicationStatus`, `reviewStatus` и money pair `priceAmountMinor`/`priceCurrency`; frontend нормализует wire DTO в canonical domain types. Numeric/generic aliases изолированы в compatibility-слое до `2026-10-31`, а contract/feature/E2E tests проверяют новый формат и rollback-совместимость.
 
 - [ ] `P2-CODE-001` Декомпозировать крупные backend production-файлы по обязанностям.
   - Текущий baseline: `CleanupStorageCommand.php` 357, `NewsPostForm.php` 349, `ListingAttributeValueSynchronizer.php` 331, `CategoryAttributeDefinitionNormalizer.php` 325, `SystemHealthChecksWidget.php` 324.

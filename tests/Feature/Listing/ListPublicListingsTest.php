@@ -53,6 +53,12 @@ class ListPublicListingsTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonCount(1, 'data.items')
             ->assertJsonPath('data.items.0.title', 'Горный велосипед')
+            ->assertJsonPath('data.items.0.listingKind', 'product')
+            ->assertJsonPath('data.items.0.listingStatus', 'published')
+            ->assertJsonPath('data.items.0.itemCondition', 'used')
+            ->assertJsonPath('data.items.0.priceAmountMinor', 30000)
+            ->assertJsonPath('data.items.0.priceCurrency', 'RUB')
+            ->assertJsonPath('data.items.0.category.catalogKind', 'product')
             ->assertJsonPath('data.meta.currentPage', 1)
             ->assertJsonPath('data.meta.perPage', 15)
             ->assertJsonPath('data.meta.total', 1)
@@ -183,9 +189,9 @@ class ListPublicListingsTest extends FeatureTestCase
 
         $this
             ->getJson(sprintf(
-                '/api/v1/public/listings?categoryId=%s&type=%d&minPrice=80000&maxPrice=90000&sort=price_desc',
+                '/api/v1/public/listings?categoryId=%s&listingKind=%s&minPriceAmountMinor=80000&maxPriceAmountMinor=90000&sort=price_desc',
                 $rootCategory->id,
-                ListingType::PRODUCT->value,
+                ListingType::PRODUCT->apiName(),
             ))
             ->assertOk()
             ->assertJsonCount(1, 'data.items')

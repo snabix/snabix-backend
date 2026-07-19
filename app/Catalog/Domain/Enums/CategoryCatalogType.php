@@ -26,4 +26,12 @@ enum CategoryCatalogType: int
             self::SERVICE => 'Услуги',
         };
     }
+
+    public function apiName(): string
+    {
+        return match ($this) {
+            self::PRODUCT => 'product',
+            self::SERVICE => 'service',
+        };
+    }
 }

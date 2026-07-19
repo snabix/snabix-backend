@@ -12,6 +12,15 @@ final readonly class ListingPayloadVisibilityPolicy
     private const array PUBLIC_FIELDS = [
         'id',
         'category',
+        'listingKind',
+        'listingKindLabel',
+        'listingStatus',
+        'listingStatusLabel',
+        'itemCondition',
+        'itemConditionLabel',
+        'priceAmountMinor',
+        'priceCurrency',
+        // Deprecated compatibility aliases. Remove after 2026-10-31.
         'type',
         'typeLabel',
         'status',

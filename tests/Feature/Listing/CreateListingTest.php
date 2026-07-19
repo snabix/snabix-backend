@@ -54,12 +54,12 @@ class CreateListingTest extends FeatureTestCase
             ->actingAs($user)
             ->postJson('/api/v1/listings', [
                 'categoryId'      => $category->id,
-                'type'            => 1,
-                'condition'       => 2,
+                'listingKind'     => 'product',
+                'itemCondition'   => 'used',
                 'title'           => 'Редуктор Bosch',
                 'description'     => 'Оригинальная запасная часть в хорошем состоянии.',
-                'price'           => 14500,
-                'currency'        => 'rub',
+                'priceAmountMinor'=> 14500,
+                'priceCurrency'   => 'rub',
                 'isNegotiable'    => true,
                 'attributeValues' => [
                     $brandAttribute->id      => 'Bosch',
@@ -68,9 +68,17 @@ class CreateListingTest extends FeatureTestCase
             ])
             ->assertCreated()
             ->assertJsonPath('data.title', 'Редуктор Bosch')
+            ->assertJsonPath('data.listingKind', 'product')
+            ->assertJsonPath('data.listingStatus', 'pendingReview')
+            ->assertJsonPath('data.itemCondition', 'used')
+            ->assertJsonPath('data.priceAmountMinor', 14500)
+            ->assertJsonPath('data.priceCurrency', 'RUB')
+            // Legacy aliases stay available through the documented deprecation window.
+            ->assertJsonPath('data.type', 1)
             ->assertJsonPath('data.status', ListingStatus::PENDING_REVIEW->value)
             ->assertJsonPath('data.category.id', $category->id)
             ->assertJsonPath('data.attributeValues.0.displayValue', 'Bosch')
+            ->assertJsonPath('data.attributeValues.0.valueType', 'select')
             ->assertJsonPath('data.attributeValues.1.displayValue', 'Да');
 
         $this->assertDatabaseHas('system_logs', [

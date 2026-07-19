@@ -16,20 +16,23 @@ class NewsPostPayloadMapper
     public function map(EloquentNewsPost $post, bool $includeBlocks = false): array
     {
         $payload = [
-            'id'             => $post->id,
-            'status'         => $post->status->value,
-            'statusLabel'    => $post->status->label(),
-            'title'          => $post->title,
-            'slug'           => $post->slug,
-            'category'       => $post->category,
-            'eyebrow'        => $post->eyebrow,
-            'description'    => $post->description,
-            'thesis'         => $post->thesis,
-            'readingTime'    => $post->reading_time,
-            'isFeatured'     => $post->is_featured,
-            'viewsCount'     => $post->views_count,
-            'imageUrl'       => $post->coverMedia?->getFullUrl(),
-            'coverMedia'     => $post->coverMedia === null
+            'id'                     => $post->id,
+            'publicationStatus'      => $post->status->apiName(),
+            'publicationStatusLabel' => $post->status->label(),
+            // Deprecated compatibility aliases. Remove after 2026-10-31.
+            'status'                 => $post->status->value,
+            'statusLabel'            => $post->status->label(),
+            'title'                  => $post->title,
+            'slug'                   => $post->slug,
+            'category'               => $post->category,
+            'eyebrow'                => $post->eyebrow,
+            'description'            => $post->description,
+            'thesis'                 => $post->thesis,
+            'readingTime'            => $post->reading_time,
+            'isFeatured'             => $post->is_featured,
+            'viewsCount'             => $post->views_count,
+            'imageUrl'               => $post->coverMedia?->getFullUrl(),
+            'coverMedia'             => $post->coverMedia === null
                 ? null
                 : [
                     'id'       => $post->coverMedia->id,
@@ -37,16 +40,16 @@ class NewsPostPayloadMapper
                     'fileName' => $post->coverMedia->file_name,
                     'mimeType' => $post->coverMedia->mime_type,
                 ],
-            'author'         => $post->authorAdmin === null
+            'author'                 => $post->authorAdmin === null
                 ? null
                 : [
                     'id'    => $post->authorAdmin->id,
                     'name'  => $post->authorAdmin->name,
                     'email' => $post->authorAdmin->email,
                 ],
-            'publishedAt'    => $post->published_at?->toIso8601String(),
-            'createdAt'      => $post->created_at?->toIso8601String(),
-            'updatedAt'      => $post->updated_at?->toIso8601String(),
+            'publishedAt'            => $post->published_at?->toIso8601String(),
+            'createdAt'              => $post->created_at?->toIso8601String(),
+            'updatedAt'              => $post->updated_at?->toIso8601String(),
         ];
 
         if ($includeBlocks) {

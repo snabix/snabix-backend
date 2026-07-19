@@ -6,6 +6,7 @@ namespace App\Listing\Http\ListListings;
 
 use App\Listing\Domain\Enums\ListingStatus;
 use App\Listing\Domain\Enums\ListingType;
+use App\Listing\Http\Support\ResolvesListingApiFields;
 use App\Shared\Http\Requests\ResolvesAuthenticatedUserId;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -13,6 +14,7 @@ use Illuminate\Validation\Rule;
 class ListListingsRequest extends FormRequest
 {
     use ResolvesAuthenticatedUserId;
+    use ResolvesListingApiFields;
 
     /**
      * @return array<string, array<int, mixed>>
@@ -20,11 +22,14 @@ class ListListingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page'       => ['nullable', 'integer', 'min:1'],
-            'perPage'    => ['nullable', 'integer', 'min:1', 'max:48'],
-            'status'     => ['nullable', 'integer', Rule::enum(ListingStatus::class)],
-            'type'       => ['nullable', 'integer', Rule::enum(ListingType::class)],
-            'categoryId' => ['nullable', 'uuid', 'exists:categories,id'],
+            'page'          => ['nullable', 'integer', 'min:1'],
+            'perPage'       => ['nullable', 'integer', 'min:1', 'max:48'],
+            'listingStatus' => ['nullable', 'string', Rule::in(self::listingStatusValues()), 'prohibits:status'],
+            'listingKind'   => ['nullable', 'string', Rule::in(self::listingKindValues()), 'prohibits:type'],
+            // Deprecated compatibility aliases. Remove after 2026-10-31.
+            'status'        => ['nullable', 'integer', Rule::enum(ListingStatus::class)],
+            'type'          => ['nullable', 'integer', Rule::enum(ListingType::class)],
+            'categoryId'    => ['nullable', 'uuid', 'exists:categories,id'],
         ];
     }
 
@@ -37,17 +42,10 @@ class ListListingsRequest extends FormRequest
             'userId'     => $this->userId(),
             'page'       => $this->integer('page', 1),
             'perPage'    => $this->integer('perPage', 12),
-            'status'     => $this->nullableIntegerInput('status'),
-            'type'       => $this->nullableIntegerInput('type'),
+            'status'     => $this->nullableListingStatusValue(),
+            'type'       => $this->nullableListingTypeValue(),
             'categoryId' => $this->nullableStringInput('categoryId'),
         ];
-    }
-
-    public function nullableIntegerInput(string $key): ?int
-    {
-        $value = $this->input($key);
-
-        return is_numeric($value) ? (int) $value : null;
     }
 
     public function nullableStringInput(string $key): ?string

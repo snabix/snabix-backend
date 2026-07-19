@@ -28,7 +28,10 @@ class UserReviewTest extends FeatureTestCase
             ->assertJsonPath('data.rating', 5)
             ->assertJsonPath('data.comment', 'Быстро договорились и аккуратно подготовили товар.')
             ->assertJsonPath('data.revieweeId', $seller->id)
-            ->assertJsonPath('data.listing.id', $listing->id);
+            ->assertJsonPath('data.listing.id', $listing->id)
+            ->assertJsonPath('data.reviewStatus', 'published')
+            ->assertJsonPath('data.reviewStatusLabel', 'Опубликован')
+            ->assertJsonPath('data.status', 'published');
 
         $this->assertDatabaseHas('user_reviews', [
             'id'          => $response->json('data.id'),
@@ -106,6 +109,7 @@ class UserReviewTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonCount(1, 'data.items')
             ->assertJsonPath('data.items.0.rating', 4)
+            ->assertJsonPath('data.items.0.reviewStatus', 'published')
             ->assertJsonPath('data.items.0.reviewer.firstName', 'Иван')
             ->assertJsonPath('data.items.0.listing.title', $listing->title);
     }
