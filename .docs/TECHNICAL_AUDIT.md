@@ -544,10 +544,11 @@ Snabix уже имеет хорошую основу для модульного
   - План: отделять data/model, semantic sections и reusable UI; не создавать десятки одноразовых wrappers.
   - Критерий готовности: изменяемый legacy-файл не растет; extracted unit имеет собственную ответственность/test.
 
-- [ ] `P2-CODE-003` Удалить dead/stale frontend code и зависимости.
+- [x] `P2-CODE-003` Удалить dead/stale frontend code и зависимости.
   - Факт: `shared/lib/access-token.ts` не используется и противоречит Sanctum cookie flow; `mock-data.ts` содержит фальшивые метрики; `fallback-posts.ts` является тестовой fixture в production tree; `@fiddle-digital/string-tune` и `embla-carousel-react` не имеют найденного runtime usage, Framer Motion используется точечно.
   - План: подтвердить `rg`/bundle usage, удалить dead modules/deps; fixture переместить в test; простую theme animation заменить CSS только если bundle benefit измерим.
   - Критерий готовности: dependency graph/build green, bundle report фиксирует эффект, docs/legal copy не ссылается на access token localStorage.
+  - Выполнено `2026-07-20`: удалены access-token helper, фальшивые метрики, static fallback posts и неиспользуемые String Tune/Embla зависимости; blog fixture перенесена в test tree. Единственная Framer Motion анимация заменена CSS transitions с reduced-motion, после чего общий layout JS уменьшился с `221 463 B` до `180 352 B` gzip (`-18,6%`). Evidence: frontend `docs/DEAD_CODE_AND_BUNDLE_AUDIT.md` и `npm run bundle:report`.
 
 - [ ] `P2-CODE-004` Удалить дубли и architectural leftovers backend.
   - Факт: найден дублирующий/мертвый `EloquentListingPolicy.php` рядом с фактическим `ListingPolicy.php`; generic scaffold descriptions в `composer.json`; некоторые docs обещают уже реализованные как future.
