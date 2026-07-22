@@ -198,7 +198,7 @@ Snabix уже имеет хорошую основу для модульного
   - Критерий готовности: fault-injection tests на copy/delete/DB exception подтверждают сохранность старого файла и последующую уборку временного; операции идемпотентны.
 
 - [ ] `P0-ACCOUNT-001` Спроектировать и реализовать деактивацию/удаление аккаунта без orphan media и случайной потери обязательных данных.
-  - Факт: frontend показывает действия деактивации/удаления, но backend endpoints отсутствуют. DB cascade удалит listings, однако polymorphic Spatie media не гарантирует model events при DB cascade и может оставить строки/файлы.
+  - Факт: backend endpoints отсутствуют, поэтому capability contract скрывает действия во frontend. DB cascade удалит listings, однако polymorphic Spatie media не гарантирует model events при DB cascade и может оставить строки/файлы.
   - Риск: UI обещает несуществующую функцию; hard delete может нарушить retention требований или оставить персональные файлы.
   - Где смотреть: `settings-account-page.tsx`, users/listings/media migrations, Eloquent model events, notification/review/system log relations.
   - План: определить состояния `active/deactivated/deletion_requested`; отдельный erasure orchestrator перечисляет profile, sessions, listings, media, reviews, favorites, notifications и logs; заранее определить anonymize/delete/retain для каждого типа данных.
@@ -594,10 +594,14 @@ Snabix уже имеет хорошую основу для модульного
   - Добавлен документированный visual baseline и Playwright-матрица для `/`, `/?categoryId=1`, `/listings/listing-1`: light/dark, 360/390/768/1440 px, screenshots, WCAG A/AA axe, overflow и touch-target checks.
   - Проверено: responsive matrix 24/24, полный E2E 72/72 (2 workers), lint, обычный и full typecheck, 119 Vitest tests, filesize guard и production build проходят.
 
-- [ ] `P2-UX-002` Разделить реализованные и будущие настройки пользователя.
+- [x] `P2-UX-002` Разделить реализованные и будущие настройки пользователя.
   - Факт: account deactivation/delete UI не подключен; notification preferences перечисляют события без producers; seller profile placeholder доступен как route.
   - План: disabled с честным статусом только если это полезно либо скрывать до backend capability; capability contract вместо ручного рассинхрона.
   - Критерий готовности: пользователь не может нажать действие, которое только закрывает dialog без результата; E2E подтверждает каждую видимую команду.
+  - Выполнено `2026-07-22`: backend публикует публичный `/api/v1/capabilities` с состоянием account actions, допустимыми notification event keys и seller profiles. Preferences API возвращает и принимает только три события с реальными producers: moderation, favorite и security login; зарезервированные события отклоняются validation до появления producer.
+  - Frontend удалил фиктивные dialog actions деактивации/удаления и незавершенную настройку языка/региона, скрывает пустые notification sections и закрывает seller placeholder реальным `404` по fail-closed capability. Мертвые seller-link компоненты удалены, чтобы route нельзя было случайно вернуть через карточку объявления.
+  - Защита от регрессии: backend feature tests фиксируют capability payload и запрет future preference; frontend E2E проверяет отсутствие неработающих команд, отсутствие пустой секции и недоступность seller route. Реализованные theme/notification controls остаются интерактивными и покрыты существующим E2E.
+  - Проверено: backend `task check` (`204` теста, `1238` assertions, PHPStan `684/684`, CS Fixer, Scramble и contracts); frontend lint, оба typecheck, `135` unit tests, `9` contract tests, production build, filesize guard и полный Playwright E2E `76/76`.
 
 - [ ] `P2-OPS-001` Ввести retention для notifications и business logs.
   - Факт: system logs имеют retention config/schedule; notifications retention отсутствует; удаление значимых событий может конфликтовать с audit/legal needs.

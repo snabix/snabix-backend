@@ -22,6 +22,7 @@ use App\Auth\Http\UpdateProfile\UpdateProfileController;
 use App\Auth\Http\UpdateProfileAvatar\UpdateProfileAvatarController;
 use App\Auth\Http\VerifyEmail\VerifyEmailController;
 use App\Bot\Http\BotServiceController;
+use App\Capability\Http\PlatformCapabilitiesController;
 use App\Catalog\Http\GetCategoryAttributes\GetCategoryAttributesController;
 use App\Catalog\Http\ListRootCategories\ListRootCategoriesController;
 use App\Catalog\Http\ShowCategoryBranch\ShowCategoryBranchController;
@@ -52,6 +53,9 @@ use App\Review\Http\ListUserReviews\ListUserReviewsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    Route::get('capabilities', PlatformCapabilitiesController::class)
+        ->middleware('throttle:marketplace.catalog-read');
+
     Route::prefix('auth')->group(function () {
         Route::post('sign-up', SignUpController::class)
             ->middleware('throttle:auth.sign-up');

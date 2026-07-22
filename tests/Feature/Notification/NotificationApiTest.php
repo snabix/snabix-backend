@@ -52,7 +52,10 @@ class NotificationApiTest extends FeatureTestCase
 
         $response        = $this->getJson('/api/v1/notifications/preferences')
             ->assertOk()
-            ->assertJsonCount(11, 'data.items');
+            ->assertJsonCount(3, 'data.items')
+            ->assertJsonPath('data.items.0.key', 'listing_moderation')
+            ->assertJsonPath('data.items.1.key', 'favorite_listings')
+            ->assertJsonPath('data.items.2.key', 'security_login');
 
         $items           = self::preferenceItems($response->json('data.items'));
         $security        = collect($items)->firstWhere('key', 'security_login');
@@ -129,23 +132,39 @@ class NotificationApiTest extends FeatureTestCase
 
         $this->putJson('/api/v1/notifications/preferences', [
             'items' => [[
-                'key'          => 'price_changes',
+                'key'          => 'favorite_listings',
                 'siteEnabled'  => false,
                 'emailEnabled' => false,
             ]],
         ])->assertOk();
 
         $response    = $this->deleteJson('/api/v1/notifications/preferences')->assertOk();
-        $priceChange = collect(self::preferenceItems($response->json('data.items')))->firstWhere('key', 'price_changes');
+        $favorite    = collect(self::preferenceItems($response->json('data.items')))->firstWhere('key', 'favorite_listings');
 
-        $this->assertNotNull($priceChange);
-        $this->assertTrue($priceChange['siteEnabled']);
-        $this->assertTrue($priceChange['emailEnabled']);
+        $this->assertNotNull($favorite);
+        $this->assertTrue($favorite['siteEnabled']);
+        $this->assertFalse($favorite['emailEnabled']);
 
         $this->assertDatabaseMissing('notification_preferences', [
             'user_id'   => $user->getKey(),
-            'event_key' => 'price_changes',
+            'event_key' => 'favorite_listings',
         ]);
+    }
+
+    public function test_future_notification_event_cannot_be_saved_before_its_producer_exists(): void
+    {
+        $user = EloquentUser::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->putJson('/api/v1/notifications/preferences', [
+            'items' => [[
+                'key'          => 'price_changes',
+                'siteEnabled'  => true,
+                'emailEnabled' => true,
+            ]],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('items.0.key');
     }
 
     public function test_successful_sign_in_dispatches_security_notification(): void
