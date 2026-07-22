@@ -101,6 +101,14 @@
 - Media attachments поддерживают upload, reorder, выбор главного изображения и удаление; storage-операции выполняются через `MediaStorageService` с компенсационной очисткой.
 - Следующие большие зоны развития: publication/availability lifecycle, подтвержденные взаимодействия для отзывов и масштабирование поиска после появления измеримых требований.
 
+## Импорт справочника локаций
+
+- Следуй двухфазному workflow из `.docs/LOCATION_IMPORT.md`: streaming prepare в staging, затем transactional batch promotion.
+- `kladr_id` является стабильной identity; rename и перенос города не должны создавать новую запись.
+- Snapshot России считается полным: missing records деактивируются без физического удаления. Изменение этой policy требует отдельной миграции source ownership.
+- Не возвращай per-row Eloquent `save()` и cache invalidation в importer. Location cache меняет версию один раз после успешного commit.
+- Новая версия source обязана сохранять manifest/checksum и проходить full-cardinality performance test.
+
 ## Что проверять перед завершением
 
 - endpoint добавлен в `routes/api.php`;

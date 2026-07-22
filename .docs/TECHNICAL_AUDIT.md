@@ -338,10 +338,13 @@ Snabix уже имеет хорошую основу для модульного
   - Source rights: соглашение Prom.ua запрещает автоматизированное получение/копирование контента и не передает права на чужой контент; network import отключен до письменного разрешения, решение и ссылки зафиксированы в `.docs/CATEGORY_IMPORT.md`.
   - Tests: синтетические fixtures проверяют parser contract без HTTP, повторный import, rename, move, deactivate и rollback; CLI tests запрещают network без rights reference.
 
-- [ ] `P1-BE-012` Оптимизировать импорт локаций без потери контроля.
+- [x] `P1-BE-012` Оптимизировать импорт локаций без потери контроля.
   - Факт: Russia importer загружает большие JSON целиком, выполняет per-row save в большой transaction и многократно инвалидирует cache; удаленные source records остаются active.
   - План: stream/chunk parse, staging table и batch upsert, один cache version bump after commit, source manifest/checksum, deactivate policy и preview stats.
   - Критерий готовности: импорт полного набора укладывается в memory/time budget, повторяем, прерывание не оставляет partial state, reference tests проходят.
+  - Выполнено `2026-07-22`: JSON читается потоково через `halaxa/json-machine`, нормализованные записи помещаются в manifest-scoped staging пакетами и применяются batch upsert внутри одной PostgreSQL transaction. Snapshot identity закреплена за `kladr_id`; отсутствующие записи мягко деактивируются, а location cache получает ровно один version bump после commit.
+  - Контроль: manifest хранит безопасные имена файлов, размеры, SHA-256 и source version; dry-run сохраняет preview statistics без production writes. Distributed lock исключает параллельные импорты, stale staging очищается, а fault-injection test подтверждает rollback после уже начатого region upsert.
+  - Budgets: CI fixture соответствует cardinality `83` региона / `1102` города и ограничен `96 MiB`, `30 s`, `60` SQL queries. Реальный локальный snapshot: `243 ms`, `74,448,896` bytes peak, `36` queries. Подробная policy зафиксирована в `.docs/LOCATION_IMPORT.md`.
 
 - [ ] `P1-BE-013` Оптимизировать public listing/location queries на реальных данных.
   - Факт: `%term% ILIKE`, JSON snapshot filters и category descendants требуют EXPLAIN; pagination sort не везде имеет уникальный tie-breaker; popular sort использует счетчик, который не инкрементируется.

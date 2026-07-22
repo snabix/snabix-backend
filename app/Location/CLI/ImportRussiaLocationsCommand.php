@@ -34,13 +34,27 @@ class ImportRussiaLocationsCommand extends Command
 
         try {
             if ($dryRun) {
-                $preview = $importer->preview($regionsPath, $citiesPath);
+                $preview = $importer->preview($regionsPath, $citiesPath, $fresh);
 
                 $this->components->info(sprintf(
-                    'Файлы корректны. Регионов: %d, городов: %d.',
-                    $preview['regions'],
-                    $preview['cities'],
+                    'Preview готов. Регионы: +%d / обновить %d / деактивировать %d. Города: +%d / обновить %d / деактивировать %d.',
+                    $this->integer($preview, 'regions_created'),
+                    $this->integer($preview, 'regions_updated'),
+                    $this->integer($preview, 'regions_deactivated'),
+                    $this->integer($preview, 'cities_created'),
+                    $this->integer($preview, 'cities_updated'),
+                    $this->integer($preview, 'cities_deactivated'),
                 ));
+                $this->components->bulletList([
+                    'Manifest: ' . $this->string($preview, 'manifest_id'),
+                    'Source version: ' . $this->string($preview, 'source_version'),
+                    sprintf(
+                        'Записей: %d регионов, %d городов. Peak memory: %.1f MB.',
+                        $this->integer($preview, 'regions'),
+                        $this->integer($preview, 'cities'),
+                        $this->integer($preview, 'peak_memory_bytes') / 1024 / 1024,
+                    ),
+                ]);
 
                 return self::SUCCESS;
             }
@@ -52,22 +66,29 @@ class ImportRussiaLocationsCommand extends Command
                 message: 'Импорт регионов и городов России успешно завершён.',
                 action: 'import_russia_locations',
                 context: [
-                    'regions_path'    => $regionsPath,
-                    'cities_path'     => $citiesPath,
-                    'fresh'           => $fresh,
-                    'regions_created' => $stats['regions_created'],
-                    'regions_updated' => $stats['regions_updated'],
-                    'cities_created'  => $stats['cities_created'],
-                    'cities_updated'  => $stats['cities_updated'],
+                    'regions_file'       => basename($regionsPath),
+                    'cities_file'        => basename($citiesPath),
+                    'fresh'              => $fresh,
+                    'manifest_id'        => $this->string($stats, 'manifest_id'),
+                    'source_version'     => $this->string($stats, 'source_version'),
+                    'regions_created'    => $this->integer($stats, 'regions_created'),
+                    'regions_updated'    => $this->integer($stats, 'regions_updated'),
+                    'regions_deactivated'=> $this->integer($stats, 'regions_deactivated'),
+                    'cities_created'     => $this->integer($stats, 'cities_created'),
+                    'cities_updated'     => $this->integer($stats, 'cities_updated'),
+                    'cities_deactivated' => $this->integer($stats, 'cities_deactivated'),
+                    'total_duration_ms'  => $this->integer($stats, 'total_duration_ms'),
                 ],
             );
 
             $this->components->info(sprintf(
-                'Импорт завершён. Регионы: +%d / обновлено %d. Города: +%d / обновлено %d.',
-                $stats['regions_created'],
-                $stats['regions_updated'],
-                $stats['cities_created'],
-                $stats['cities_updated'],
+                'Импорт завершён. Регионы: +%d / обновлено %d / деактивировано %d. Города: +%d / обновлено %d / деактивировано %d.',
+                $this->integer($stats, 'regions_created'),
+                $this->integer($stats, 'regions_updated'),
+                $this->integer($stats, 'regions_deactivated'),
+                $this->integer($stats, 'cities_created'),
+                $this->integer($stats, 'cities_updated'),
+                $this->integer($stats, 'cities_deactivated'),
             ));
 
             return self::SUCCESS;
@@ -77,8 +98,8 @@ class ImportRussiaLocationsCommand extends Command
                 message: 'Импорт регионов и городов России завершился ошибкой.',
                 action: 'import_russia_locations',
                 context: [
-                    'regions_path' => $regionsPath,
-                    'cities_path'  => $citiesPath,
+                    'regions_file' => basename($regionsPath),
+                    'cities_file'  => basename($citiesPath),
                     'fresh'        => $fresh,
                     'exception'    => $exception->getMessage(),
                 ],
@@ -97,5 +118,25 @@ class ImportRussiaLocationsCommand extends Command
         }
 
         return base_path($fileName);
+    }
+
+    /**
+     * @param array<string, int|string> $values
+     */
+    private function integer(array $values, string $key): int
+    {
+        $value = $values[$key] ?? 0;
+
+        return is_int($value) ? $value : 0;
+    }
+
+    /**
+     * @param array<string, int|string> $values
+     */
+    private function string(array $values, string $key): string
+    {
+        $value = $values[$key] ?? '';
+
+        return is_string($value) ? $value : '';
     }
 }

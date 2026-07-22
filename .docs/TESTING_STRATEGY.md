@@ -51,6 +51,7 @@ php artisan scramble:analyze
 - Notifications: preferences, database channel, mail channel, read/delete state.
 - Database writes: прямые invalid writes, именованные constraints, unique race-window и idempotent replay.
 - CLI: admin-команды, cleanup-команды.
+- Location import: manifest/checksum, idempotency, deactivation, rollback, abandoned staging и full-cardinality budgets.
 - Docs/contracts: Scramble и DTO-контракты.
 
 ## Когда добавлять тест

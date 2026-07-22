@@ -21,6 +21,10 @@ final class ReferenceDataCache
 
     private bool $catalogInvalidationPending  = false;
 
+    private int $locationBatchDepth           = 0;
+
+    private bool $locationInvalidationPending = false;
+
     /**
      * @template TValue
      *
@@ -97,7 +101,46 @@ final class ReferenceDataCache
 
     public function invalidateLocation(): void
     {
+        if ($this->locationBatchDepth > 0) {
+            $this->locationInvalidationPending = true;
+
+            return;
+        }
+
         $this->bumpVersion(self::LOCATION_VERSION_KEY);
+    }
+
+    /**
+     * @template TValue
+     *
+     * @param  Closure(): TValue $callback
+     * @return TValue
+     */
+    public function batchLocationInvalidation(Closure $callback): mixed
+    {
+        $isOutermostBatch = $this->locationBatchDepth === 0;
+        $this->locationBatchDepth++;
+
+        try {
+            $result = $callback();
+        } catch (Throwable $exception) {
+            $this->locationBatchDepth--;
+
+            if ($isOutermostBatch) {
+                $this->locationInvalidationPending = false;
+            }
+
+            throw $exception;
+        }
+
+        $this->locationBatchDepth--;
+
+        if ($isOutermostBatch && $this->locationInvalidationPending) {
+            $this->locationInvalidationPending = false;
+            $this->bumpVersion(self::LOCATION_VERSION_KEY);
+        }
+
+        return $result;
     }
 
     private function versionedKey(string $versionKey, string $key): string
