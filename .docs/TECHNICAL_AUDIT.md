@@ -523,10 +523,11 @@ Snabix уже имеет хорошую основу для модульного
   - План: если отзывы только продавцу - `seller_id`/`subject_user_id`; `CreateUserReviewHandler`, `ReviewEligibilityPolicy`, `SellerRatingProjector`. Не переименовывать колонку без API migration plan.
   - Критерий готовности: ubiquitous language закреплен ADR/API docs; mapper/DB/API используют однозначные термины.
 
-- [ ] `P2-NAME-003` Нормализовать frontend callback naming.
+- [x] `P2-NAME-003` Нормализовать frontend callback naming.
   - Факт: suffix `Action` используется для обычных React callbacks почти во всех UI-слоях.
   - План: `onOpenChange`, `onRetry`, `onSubmit`, `onFavoriteToggle`; зарезервировать Server Action naming для функций с соответствующей семантикой.
   - Критерий готовности: новые компоненты не добавляют fake Action props; mechanical migration идет по feature и не смешивается с behavior changes.
+  - Выполнено `2026-07-22`: механическая миграция по frontend feature/UI-слоям заменила `460` обычных callback names `on*Action` на React naming без изменения поведения. ESLint и `npm run architecture:client` запрещают регрессию, `Action` зарезервирован в `AGENTS.md` и architecture docs для настоящих Server Actions.
 
 - [x] `P2-NAME-004` Зафиксировать naming полей между DB/API/frontend.
   - Факт: DB использует snake_case, API camelCase, но встречаются semantic variants `fullname/fullName`, `about/description`, generic `type/status` и numeric enum values.
