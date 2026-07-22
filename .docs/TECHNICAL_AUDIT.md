@@ -85,7 +85,7 @@ Snabix уже имеет хорошую основу для модульного
 
 | Файл | Состояние | Что требуется |
 | --- | --- | --- |
-| `.docs/AGENTS.md` | Частично актуален | Правила полезны, но код уведомлений и Review уже нарушает заявленный `Request -> Input -> Handler -> Output -> Response`; убрать устаревшее описание media/moderation как будущих зон. |
+| `.docs/AGENTS.md` | Частично актуален | Статус media/moderation актуализирован `2026-07-22`; код уведомлений и Review по-прежнему имеет обоснованные исключения из заявленного `Request -> Input -> Handler -> Output -> Response`. |
 | `.docs/API_DTO_CONTRACTS.md` | Устарел | Добавить `regionId`, `cityId`, `region`, `city`, `isNegotiable`, актуальные sort; исправить envelope 401/419 с `error` на фактический `code`; включить reviews и export. |
 | `.docs/ARCHITECTURE.md` | Частично актуален | Привести topology, очередь, scheduler, bot и deployment к факту; честно назвать архитектуру pragmatic modular layered, пока Domain зависит от Eloquent/Laravel. |
 | `.docs/FILE_SIZE_GUIDELINES.md` | Политика актуальна, baseline устарел | Обновить список крупных файлов и требовать ID этого аудита для исключений. |
@@ -554,9 +554,12 @@ Snabix уже имеет хорошую основу для модульного
   - Критерий готовности: dependency graph/build green, bundle report фиксирует эффект, docs/legal copy не ссылается на access token localStorage.
   - Выполнено `2026-07-20`: удалены access-token helper, фальшивые метрики, static fallback posts и неиспользуемые String Tune/Embla зависимости; blog fixture перенесена в test tree. Единственная Framer Motion анимация заменена CSS transitions с reduced-motion, после чего общий layout JS уменьшился с `221 463 B` до `180 352 B` gzip (`-18,6%`). Evidence: frontend `docs/DEAD_CODE_AND_BUNDLE_AUDIT.md` и `npm run bundle:report`.
 
-- [ ] `P2-CODE-004` Удалить дубли и architectural leftovers backend.
+- [x] `P2-CODE-004` Удалить дубли и architectural leftovers backend.
   - Факт: найден дублирующий/мертвый `EloquentListingPolicy.php` рядом с фактическим `ListingPolicy.php`; generic scaffold descriptions в `composer.json`; некоторые docs обещают уже реализованные как future.
   - Критерий готовности: usage проверен, dead class удален, package metadata описывает Snabix, autoload/static checks проходят.
+  - Выполнено `2026-07-22`: через registration/reference audit подтверждено, что `EloquentListing` использует расширенный `ListingPolicy`, а scaffold `EloquentListingPolicy` не зарегистрирован и не импортируется; мертвый класс удален. Composer package переименован в `snabix/backend`, description/keywords описывают региональный marketplace, lock content hash синхронизирован без изменения locked dependencies.
+  - Documentation drift: `.docs/AGENTS.md` теперь фиксирует уже работающие moderation actions, обязательное уведомление владельца и media lifecycle; будущими оставлены только действительно не реализованные publication/availability, interaction eligibility и доказанное масштабирование поиска.
+  - Проверено: `composer validate --strict`, optimized autoload с `--strict-psr --strict-ambiguous`, отсутствие старого class name через `rg`, PHP CS Fixer dry-run, PHPStan `663/663`, Scramble analysis и `185` тестов (`993` assertions).
 
 - [ ] `P2-CODE-005` Исправить ReferenceDataCache atomicity и invalidation ownership.
   - Факт: version key меняется через get+set, что теряет concurrent increments; model-level invalidation вызывает много bump при batch import.
