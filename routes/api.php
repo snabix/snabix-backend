@@ -94,43 +94,80 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::prefix('categories')->group(function () {
-        Route::get('/list', ListRootCategoriesController::class);
-        Route::get('/{categoryId}/branch', ShowCategoryBranchController::class);
-        Route::get('/{categoryId}/attributes', GetCategoryAttributesController::class);
+        Route::get('/list', ListRootCategoriesController::class)
+            ->middleware('throttle:marketplace.catalog-read');
+        Route::get('/{categoryId}/branch', ShowCategoryBranchController::class)
+            ->middleware('throttle:marketplace.catalog-read');
+        Route::get('/{categoryId}/attributes', GetCategoryAttributesController::class)
+            ->middleware('throttle:marketplace.catalog-read');
     });
 
     Route::prefix('locations')->group(function () {
-        Route::get('/regions', ListRegionsController::class);
-        Route::get('/cities', ListCitiesController::class);
+        Route::get('/regions', ListRegionsController::class)
+            ->middleware('throttle:marketplace.location-read');
+        Route::get('/cities', ListCitiesController::class)
+            ->middleware('throttle:marketplace.location-read');
     });
 
     Route::prefix('news')->group(function () {
-        Route::get('/', ListPublishedNewsPostsController::class);
-        Route::get('/{slug}', ShowPublishedNewsPostController::class);
+        Route::get('/', ListPublishedNewsPostsController::class)
+            ->middleware('throttle:marketplace.news-read');
+        Route::get('/{slug}', ShowPublishedNewsPostController::class)
+            ->middleware('throttle:marketplace.news-read');
     });
 
-    Route::get('public/listings', ListPublicListingsController::class);
-    Route::get('public/listings/{listingId}', ShowPublicListingController::class);
+    Route::get('public/listings', ListPublicListingsController::class)
+        ->middleware('throttle:marketplace.listing-read');
+    Route::get('public/listings/{listingId}', ShowPublicListingController::class)
+        ->middleware('throttle:marketplace.listing-read');
 
-    Route::get('users/{userId}/reviews', ListUserReviewsController::class);
+    Route::get('users/{userId}/reviews', ListUserReviewsController::class)
+        ->middleware('throttle:marketplace.review-read');
     Route::post('users/{userId}/reviews', CreateUserReviewController::class)
-        ->middleware('auth:sanctum');
+        ->middleware([
+            'auth:sanctum',
+            'marketplace.verified:review.create',
+            'throttle:marketplace.review-create',
+        ]);
 
     Route::prefix('listings')->middleware('auth:sanctum')->group(function () {
-        Route::get('/', ListListingsController::class);
-        Route::get('/favorites', ListFavoriteListingsController::class);
-        Route::post('/', CreateListingController::class);
-        Route::post('/{listingId}/archive', ArchiveListingController::class);
-        Route::post('/{listingId}/submit-for-review', SubmitListingForReviewController::class);
-        Route::post('/{listingId}/media', UploadListingMediaController::class);
-        Route::patch('/{listingId}/media/reorder', ReorderListingMediaController::class);
-        Route::patch('/{listingId}/media/{mediaId}/main', SetMainListingMediaController::class);
-        Route::delete('/{listingId}/media/{mediaId}', DeleteListingMediaController::class);
-        Route::post('/{listingId}/favorite', AddListingFavoriteController::class);
-        Route::delete('/{listingId}/favorite', RemoveListingFavoriteController::class);
-        Route::get('/{listingId}', ShowListingController::class);
-        Route::patch('/{listingId}', UpdateListingController::class);
-        Route::delete('/{listingId}', DeleteListingController::class);
+        Route::get('/', ListListingsController::class)
+            ->middleware('throttle:marketplace.account-listing-read');
+        Route::get('/favorites', ListFavoriteListingsController::class)
+            ->middleware('throttle:marketplace.account-listing-read');
+        Route::post('/', CreateListingController::class)
+            ->middleware([
+                'marketplace.verified:listing.create',
+                'throttle:marketplace.listing-create',
+            ]);
+        Route::post('/{listingId}/archive', ArchiveListingController::class)
+            ->middleware('throttle:marketplace.listing-write');
+        Route::post('/{listingId}/submit-for-review', SubmitListingForReviewController::class)
+            ->middleware([
+                'marketplace.verified:listing.submit-for-review',
+                'throttle:marketplace.listing-submit',
+            ]);
+        Route::post('/{listingId}/media', UploadListingMediaController::class)
+            ->middleware([
+                'marketplace.verified:listing.media.upload',
+                'throttle:marketplace.listing-media-write',
+            ]);
+        Route::patch('/{listingId}/media/reorder', ReorderListingMediaController::class)
+            ->middleware('throttle:marketplace.listing-media-write');
+        Route::patch('/{listingId}/media/{mediaId}/main', SetMainListingMediaController::class)
+            ->middleware('throttle:marketplace.listing-media-write');
+        Route::delete('/{listingId}/media/{mediaId}', DeleteListingMediaController::class)
+            ->middleware('throttle:marketplace.listing-media-write');
+        Route::post('/{listingId}/favorite', AddListingFavoriteController::class)
+            ->middleware('throttle:marketplace.favorite-write');
+        Route::delete('/{listingId}/favorite', RemoveListingFavoriteController::class)
+            ->middleware('throttle:marketplace.favorite-write');
+        Route::get('/{listingId}', ShowListingController::class)
+            ->middleware('throttle:marketplace.account-listing-read');
+        Route::patch('/{listingId}', UpdateListingController::class)
+            ->middleware('throttle:marketplace.listing-write');
+        Route::delete('/{listingId}', DeleteListingController::class)
+            ->middleware('throttle:marketplace.listing-write');
     });
 
     Route::prefix('notifications')->middleware('auth:sanctum')->group(function () {

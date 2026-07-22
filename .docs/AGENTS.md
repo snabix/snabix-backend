@@ -91,6 +91,8 @@
 ## Listings и marketplace-ядро
 
 - Публичные DTO объявлений не должны раскрывать приватные owner/contact поля.
+- Для marketplace routes соблюдай `.docs/MARKETPLACE_ABUSE_POLICY.md`: публичное чтение получает отдельный resource bucket, mutations - user/IP limits, а создание trust-sensitive контента требует подтвержденный email.
+- Не добавляй общий агрессивный throttle на все public GET endpoints и не обходи лимиты по User-Agent. Новый endpoint должен попасть в route-contract test abuse policy.
 - Личные списки и публичные списки объявлений используют пагинацию `items/meta`.
 - Пользовательское создание объявления по умолчанию отправляет его на проверку; черновик создаётся только явным `saveAsDraft`.
 - Переходы статусов объявлений должны идти через `ListingStatusTransitionPolicy`.

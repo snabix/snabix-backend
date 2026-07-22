@@ -315,10 +315,14 @@ Snabix уже имеет хорошую основу для модульного
   - Presentation policy: приватные письма и Filament используют реальное имя либо email аккаунта; публичный review DTO сохраняет nullable-поля без раскрытия email, frontend показывает нейтральное `Пользователь`.
   - Tests: signup/profile/update/reset/export/review/Filament и migration regression покрывают пользователя без имени; backend `task check` — `184` tests / `960` assertions, frontend — `113` unit / `38` E2E.
 
-- [ ] `P1-BE-009` Ввести verification/abuse policy для marketplace actions.
+- [x] `P1-BE-009` Ввести verification/abuse policy для marketplace actions.
   - Факт: email verification не обязательна для создания объявления/отзыва; public catalog/location/news/reviews и часть authenticated mutations не имеют специализированных rate limits.
   - План: risk-based throttles по user/IP/action, verified email для trust-sensitive actions, cooldowns, structured abuse events; не блокировать поисковых роботов общим агрессивным лимитом.
   - Критерий готовности: documented limits и tests на 429/reset window; high-risk action недоступно неподтвержденному аккаунту.
+  - Выполнено `2026-07-22`: обязательная email verification добавлена для создания объявления/черновика, submit for review, upload media и публикации отзыва. Update/archive/delete существующих данных и удаление media остаются доступны авторизованному владельцу после смены email.
+  - Rate limits: public catalog/location/listing/news/review reads разделены на независимые IP buckets; authenticated listing/review/media/favorite actions используют одновременные user/IP buckets. Единый `429` contract сохраняет `Retry-After`, а `403` сообщает стабильный `auth.email-verification-required` code.
+  - Observability/docs: blocked actions пишутся в `system_logs` как structured `abuse` warning без request payload; полная матрица лимитов, crawler rationale, reset semantics и proxy/cache требования зафиксированы в `.docs/MARKETPLACE_ABUSE_POLICY.md`.
+  - Tests: feature suite проверяет unverified create/review, `429` headers/body, реальное истечение decay window, независимость public buckets и middleware каждого marketplace route. Backend `task check` — `197` tests / `1168` assertions.
 
 - [ ] `P1-BE-010` Доставлять media conversions через API, а не оригиналы.
   - Факт: conversions card/gallery существуют, но listing payload в основном ориентируется на original URL; avatar допускает SVG; filesystem `throw/report` policy может скрывать ошибки.
