@@ -33,6 +33,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -63,7 +72,7 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate --ansi
-          sudo sh -c 'echo "127.0.0.1 db-test" >> /etc/hosts'
+          sudo sh -c 'echo "127.0.0.1 db-test redis" >> /etc/hosts'
 
       - name: File size baseline
         run: php scripts/check-file-sizes.php
