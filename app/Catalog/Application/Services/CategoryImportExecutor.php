@@ -8,6 +8,7 @@ use App\Catalog\Application\Support\CategoryImportChange;
 use App\Catalog\Domain\Enums\CategoryImportAction;
 use App\Catalog\Domain\Enums\CategoryImportStatus;
 use App\Catalog\Infrastructure\Models\EloquentCategoryImportManifest;
+use App\Shared\Application\Support\ReferenceDataCache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -15,11 +16,12 @@ readonly class CategoryImportExecutor
 {
     public function __construct(
         private CategoryImportStateService $stateService,
+        private ReferenceDataCache $cache,
     ) {}
 
     public function apply(string $manifestId): EloquentCategoryImportManifest
     {
-        return DB::transaction(function () use ($manifestId): EloquentCategoryImportManifest {
+        return $this->cache->batchCatalogInvalidation(fn(): EloquentCategoryImportManifest => DB::transaction(function () use ($manifestId): EloquentCategoryImportManifest {
             $manifest = $this->lockedManifest($manifestId);
 
             if ($manifest->status !== CategoryImportStatus::PREVIEW) {
@@ -38,12 +40,12 @@ readonly class CategoryImportExecutor
             ])->save();
 
             return $manifest->fresh() ?? $manifest;
-        });
+        }));
     }
 
     public function rollback(string $manifestId): EloquentCategoryImportManifest
     {
-        return DB::transaction(function () use ($manifestId): EloquentCategoryImportManifest {
+        return $this->cache->batchCatalogInvalidation(fn(): EloquentCategoryImportManifest => DB::transaction(function () use ($manifestId): EloquentCategoryImportManifest {
             $manifest = $this->lockedManifest($manifestId);
 
             if ($manifest->status !== CategoryImportStatus::APPLIED) {
@@ -61,7 +63,7 @@ readonly class CategoryImportExecutor
             ])->save();
 
             return $manifest->fresh() ?? $manifest;
-        });
+        }));
     }
 
     private function lockedManifest(string $manifestId): EloquentCategoryImportManifest

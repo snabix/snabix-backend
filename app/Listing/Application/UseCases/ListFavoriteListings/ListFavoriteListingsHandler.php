@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Listing\Application\UseCases\ListFavoriteListings;
 
 use App\Listing\Application\Services\ListingFavoriteService;
-use App\Listing\Application\Support\ListingPayloadMapper;
 use App\Listing\Application\Support\PaginationPayloadMapper;
+use App\Listing\Application\Support\PublicListingPayloadMapper;
 use App\Listing\Infrastructure\Models\EloquentListing;
 
 readonly class ListFavoriteListingsHandler
 {
     public function __construct(
         private ListingFavoriteService $listingFavoriteService,
-        private ListingPayloadMapper $listingPayloadMapper,
+        private PublicListingPayloadMapper $listingPayloadMapper,
         private PaginationPayloadMapper $paginationPayloadMapper,
     ) {}
 

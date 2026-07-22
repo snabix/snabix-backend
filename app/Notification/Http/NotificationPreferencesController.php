@@ -53,7 +53,14 @@ class NotificationPreferencesRequest extends FormRequest
 
         return [
             'items'                => ['required', 'array'],
-            'items.*.key'          => ['required', 'string', Rule::enum(NotificationEventType::class)],
+            'items.*.key'          => [
+                'required',
+                'string',
+                Rule::in(array_map(
+                    static fn(NotificationEventType $type): string => $type->value,
+                    NotificationEventType::availableCases(),
+                )),
+            ],
             'items.*.siteEnabled'  => ['required', 'boolean'],
             'items.*.emailEnabled' => ['required', 'boolean'],
         ];

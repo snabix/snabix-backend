@@ -23,7 +23,10 @@ readonly class ShowCategoryBranchHandler
             'item' => $this->cache->rememberCatalog(
                 'catalog:branch:' . $input->categoryId . ':only-active:' . (int) $input->onlyActive,
                 function () use ($input): array {
-                    $rootCategory = $this->categoryRepository->findById($input->categoryId);
+                    $rootCategory = $this->categoryRepository->findById(
+                        $input->categoryId,
+                        $input->onlyActive,
+                    );
 
                     if ($rootCategory === null) {
                         throw (new ModelNotFoundException())->setModel(EloquentCategory::class, [$input->categoryId]);
@@ -32,9 +35,9 @@ readonly class ShowCategoryBranchHandler
                     return $this->mapCategory(
                         $rootCategory,
                         $this->categoryRepository->listBranch(
-                            $input->categoryId,
-                            $input->onlyActive,
+                            $rootCategory,
                         ),
+                        $input->onlyActive,
                     );
                 },
             ),
@@ -48,10 +51,16 @@ readonly class ShowCategoryBranchHandler
     private function mapCategory(
         EloquentCategory $category,
         Collection $branchCategories,
+        bool $onlyActive,
     ): array {
         $children = $branchCategories
             ->where('parent_id', $category->id)
-            ->map(fn(EloquentCategory $child): array => $this->mapCategory($child, $branchCategories))
+            ->filter(fn(EloquentCategory $child): bool => ! $onlyActive || $child->is_active)
+            ->map(fn(EloquentCategory $child): array => $this->mapCategory(
+                $child,
+                $branchCategories,
+                $onlyActive,
+            ))
             ->values()
             ->all();
 

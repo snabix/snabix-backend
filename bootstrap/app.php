@@ -6,6 +6,7 @@ use App\Auth\Infrastructure\Exceptions\NotFoundException;
 use App\Bot\Infrastructure\Middleware\EnsureBotServiceToken;
 use App\Development\CLI\BootstrapDemoDataCommand;
 use App\Shared\Domain\Exceptions\IdempotencyConflictException;
+use App\Shared\Infrastructure\Middleware\EnsureMarketplaceEmailIsVerified;
 use App\Shared\Infrastructure\Middleware\LogRequestActivity;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -29,7 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->appendToGroup('api', LogRequestActivity::class);
         $middleware->alias([
-            'bot.service' => EnsureBotServiceToken::class,
+            'bot.service'         => EnsureBotServiceToken::class,
+            'marketplace.verified'=> EnsureMarketplaceEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

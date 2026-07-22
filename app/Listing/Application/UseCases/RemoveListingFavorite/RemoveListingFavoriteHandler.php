@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Listing\Application\UseCases\RemoveListingFavorite;
 
 use App\Listing\Application\Services\ListingFavoriteService;
-use App\Listing\Application\Support\ListingPayloadMapper;
+use App\Listing\Application\Support\PublicListingPayloadMapper;
 
 readonly class RemoveListingFavoriteHandler
 {
     public function __construct(
         private ListingFavoriteService $listingFavoriteService,
-        private ListingPayloadMapper $listingPayloadMapper,
+        private PublicListingPayloadMapper $listingPayloadMapper,
     ) {}
 
     public function execute(RemoveListingFavoriteInput $input): RemoveListingFavoriteOutput

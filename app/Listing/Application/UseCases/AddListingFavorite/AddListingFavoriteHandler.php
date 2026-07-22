@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Listing\Application\UseCases\AddListingFavorite;
 
 use App\Listing\Application\Services\ListingFavoriteService;
-use App\Listing\Application\Support\ListingPayloadMapper;
+use App\Listing\Application\Support\PublicListingPayloadMapper;
 
 readonly class AddListingFavoriteHandler
 {
     public function __construct(
         private ListingFavoriteService $listingFavoriteService,
-        private ListingPayloadMapper $listingPayloadMapper,
+        private PublicListingPayloadMapper $listingPayloadMapper,
     ) {}
 
     public function execute(AddListingFavoriteInput $input): AddListingFavoriteOutput

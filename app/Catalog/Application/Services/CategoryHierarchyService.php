@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Catalog\Application\Services;
 
 use App\Catalog\Infrastructure\Models\EloquentCategory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -22,28 +23,31 @@ class CategoryHierarchyService
             ]);
         }
 
-        $visited         = [];
-        $currentParentId = $parentId;
+        $parent = EloquentCategory::query()->find($parentId);
 
-        while ($currentParentId !== null) {
-            if ($category->exists && $currentParentId === $category->id) {
-                throw ValidationException::withMessages([
-                    'parent_id' => 'Нельзя выбрать дочернюю категорию родителем текущей категории.',
-                ]);
-            }
+        if ($parent === null) {
+            throw ValidationException::withMessages([
+                'parent_id' => 'Родительская категория не найдена.',
+            ]);
+        }
 
-            if (in_array($currentParentId, $visited, true)) {
-                break;
-            }
-
-            $visited[]       = $currentParentId;
-            $parent          = EloquentCategory::query()->find($currentParentId);
-            $currentParentId = $parent?->parent_id;
+        if (
+            $category->exists
+            && is_string($category->path)
+            && is_string($parent->path)
+            && ($parent->path === $category->path || Str::startsWith($parent->path, $category->path . '/'))
+        ) {
+            throw ValidationException::withMessages([
+                'parent_id' => 'Нельзя выбрать дочернюю категорию родителем текущей категории.',
+            ]);
         }
     }
 
-    public function sync(EloquentCategory $category): void
-    {
+    public function sync(
+        EloquentCategory $category,
+        ?string $previousPath,
+        int $previousDepth,
+    ): void {
         $category->refresh();
 
         $parent = $category->parentCategory()->first();
@@ -57,14 +61,26 @@ class CategoryHierarchyService
             ])->saveQuietly();
         }
 
-        EloquentCategory::query()
-            ->where('parent_id', $category->id)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->each(function (EloquentCategory $child): void {
-                $this->sync($child);
-            });
+        if ($previousPath === null || $previousPath === $path) {
+            return;
+        }
+
+        DB::update(
+            <<<'SQL'
+                UPDATE categories
+                SET path = replace(path, ?, ?),
+                    depth = depth + ?,
+                    updated_at = ?
+                WHERE path LIKE ?
+                SQL,
+            [
+                $previousPath,
+                $path,
+                $depth - $previousDepth,
+                now(),
+                $previousPath . '/%',
+            ],
+        );
     }
 
     public function indentedName(EloquentCategory $category): string

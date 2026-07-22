@@ -18,6 +18,26 @@ enum NotificationEventType: string
     case PROMOTIONS_NEWS    = 'promotions_news';
     case EMAIL_DIGEST       = 'email_digest';
 
+    /**
+     * @return list<self>
+     */
+    public static function availableCases(): array
+    {
+        return array_values(array_filter(
+            self::cases(),
+            static fn(self $type): bool => $type->hasProducer(),
+        ));
+    }
+
+    public function hasProducer(): bool
+    {
+        return in_array($this, [
+            self::LISTING_MODERATION,
+            self::FAVORITE_LISTINGS,
+            self::SECURITY_LOGIN,
+        ], true);
+    }
+
     public function category(): string
     {
         return match ($this) {

@@ -33,7 +33,7 @@ class ListingFavoriteService
             }
         }
 
-        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
+        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'user']) ?? $listing;
     }
 
     public function remove(
@@ -47,7 +47,7 @@ class ListingFavoriteService
             ->where('listing_id', $listing->id)
             ->delete();
 
-        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia']) ?? $listing;
+        return $listing->fresh(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'user']) ?? $listing;
     }
 
     /**
@@ -59,7 +59,7 @@ class ListingFavoriteService
         int $perPage = 12,
     ): LengthAwarePaginator {
         return EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'user'])
             ->where('status', ListingStatus::PUBLISHED)
             ->whereHas(
                 'favorites',
@@ -83,7 +83,7 @@ class ListingFavoriteService
         string $listingId,
     ): EloquentListing {
         $listing = EloquentListing::query()
-            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia'])
+            ->with(['category', 'attributeValues.attributeDefinition', 'orderedMedia', 'user'])
             ->whereKey($listingId)
             ->where('status', ListingStatus::PUBLISHED)
             ->first();
