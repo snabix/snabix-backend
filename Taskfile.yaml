@@ -88,6 +88,7 @@ tasks:
       - task "cs:dry"
       - task stan
       - task "docs:scramble"
+      - task "contracts:check"
       - task test
 
   docs:scramble:
@@ -98,7 +99,13 @@ tasks:
   docs:scramble-export:
     desc: Scramble — экспортировать OpenAPI JSON
     cmds:
-      - docker compose exec -T app php artisan scramble:export
+      - docker compose exec -T app php artisan scramble:export --path=storage/api-docs/openapi.json --no-interaction
+
+  contracts:check:
+    desc: Проверить OpenAPI artifact и backend/frontend listing contract
+    cmds:
+      - task "docs:scramble-export"
+      - php scripts/check-api-contracts.php --openapi=storage/api-docs/openapi.json
 
   shell:
     desc: Зайти в контейнер

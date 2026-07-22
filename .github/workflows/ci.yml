@@ -86,6 +86,28 @@ jobs:
       - name: Tests
         run: php artisan test
 
+      - name: Export and validate API contracts
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: pgsql
+          DB_HOST: db-test
+          DB_PORT: 5432
+          DB_DATABASE: snabix_test
+          DB_USERNAME: root
+          DB_PASSWORD: 1234
+          DB_URL: ""
+        run: |
+          php artisan scramble:export --path=storage/api-docs/openapi.json --no-interaction
+          php scripts/check-api-contracts.php --openapi=storage/api-docs/openapi.json
+
+      - name: Upload OpenAPI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snabix-backend-openapi
+          path: storage/api-docs/openapi.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Build production image
         run: >-
           docker build

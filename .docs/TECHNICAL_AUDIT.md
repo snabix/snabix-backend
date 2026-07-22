@@ -430,10 +430,11 @@ Snabix уже имеет хорошую основу для модульного
   - План: различать 404/401/5xx/network/schema; use server fetch/revalidate tags; показывать retryable service error.
   - Критерий готовности: contract tests на 404 и 500; cache invalidation documented; outage не индексируется как настоящий 404.
 
-- [ ] `P1-FE-012` Автоматизировать backend/frontend contract drift.
+- [x] `P1-FE-012` Автоматизировать backend/frontend contract drift.
   - Факт: Scramble и Zod существуют отдельно; документация DTO уже расходится с кодом.
   - План: экспорт OpenAPI artifact backend, generate/validate selected API schemas или consumer-driven contract snapshots; не заменять domain adapters сырыми generated types.
   - Критерий готовности: несовместимое удаление/rename поля ломает CI обоих контрактов; public/private listing privacy assertions обязательны.
+  - Выполнено 2026-07-22: backend CI экспортирует полный Scramble OpenAPI artifact и валидирует выбранные listing operations; versioned `contracts/listings.v1.json` проверяется реальными provider HTTP feature-тестами и frontend Zod consumer-тестом. Public contract запрещает owner/contact/moderation/full-media поля, а frontend adapters сохранены как отдельная domain boundary. Полные backend checks и frontend lint/typecheck/unit/build/E2E (`72/72`) проходят.
 
 - [ ] `P1-FE-013` Расширить E2E и accessibility matrix.
   - Факт: 31 E2E проходит только в Desktop Chromium и в основном на API mocks.
