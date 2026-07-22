@@ -180,12 +180,15 @@ Snabix уже имеет хорошую основу для модульного
 
 ### Приватность и целостность данных
 
-- [ ] `P0-PRIV-001` Исключить приватные поля из favorites API.
+- [x] `P0-PRIV-001` Исключить приватные поля из favorites API. Закрыто 2026-07-22.
   - Факт: `AddListingFavoriteHandler`, `RemoveListingFavoriteHandler` и `ListFavoriteListingsHandler` используют `ListingPayloadMapper`, предназначенный для owner/private view, тогда как публичные endpoints используют `PublicListingPayloadMapper`.
   - Риск: авторизованный пользователь может получить `userId`, контактные поля, `rejectionReason` и другие приватные данные чужого опубликованного объявления через favorite endpoints. List также может создавать N+1 на owner relation.
   - Где смотреть: `app/Listing/Application/UseCases/*ListingFavorite*`, `app/Listing/Application/Support/ListingPayloadMapper.php`, `PublicListingPayloadMapper.php`, `tests/Feature/Listing/ListingFavoriteTest.php`.
   - План: возвращать public card DTO для чужих favorites; если owner нужен собственному объявлению, выбирать projection по authorization context, а не по endpoint случайно.
   - Критерий готовности: feature-тесты add/remove/list явно проверяют отсутствие всех private/contact/moderation полей; query-count test исключает N+1; frontend contract остается зеленым.
+  - Выполнено: add/remove/list favorites используют только `PublicListingPayloadMapper`; owner/private projection остается доступной через owner endpoints, а факт авторизации или избранного не расширяет видимость объявления.
+  - Защита от регрессии: favorite queries eager-load продавца для публичного rating summary; feature-тесты проверяют отсутствие `userId`, контактов, причины отклонения и private media во всех трех ответах, а query-count test с восемью разными продавцами фиксирует отсутствие N+1.
+  - Проверки: backend `task check` прошел (`188` тестов, `1091` assertions), frontend contract suite прошел (`9/9`).
 
 - [x] `P0-DATA-001` Сделать media create/replace/move отказоустойчивыми. Закрыто 2026-07-17.
   - Факт: `MediaStorageService` выполняет файловые copy/delete внутри DB transaction. Replace удаляет старый файл до гарантированного сохранения нового; rollback БД не может вернуть удаленный объект storage.
@@ -195,7 +198,7 @@ Snabix уже имеет хорошую основу для модульного
   - Критерий готовности: fault-injection tests на copy/delete/DB exception подтверждают сохранность старого файла и последующую уборку временного; операции идемпотентны.
 
 - [ ] `P0-ACCOUNT-001` Спроектировать и реализовать деактивацию/удаление аккаунта без orphan media и случайной потери обязательных данных.
-  - Факт: frontend показывает действия деактивации/удаления, но backend endpoints отсутствуют. DB cascade удалит listings, однако polymorphic Spatie media не гарантирует model events при DB cascade и может оставить строки/файлы.
+  - Факт: backend endpoints отсутствуют, поэтому capability contract скрывает действия во frontend. DB cascade удалит listings, однако polymorphic Spatie media не гарантирует model events при DB cascade и может оставить строки/файлы.
   - Риск: UI обещает несуществующую функцию; hard delete может нарушить retention требований или оставить персональные файлы.
   - Где смотреть: `settings-account-page.tsx`, users/listings/media migrations, Eloquent model events, notification/review/system log relations.
   - План: определить состояния `active/deactivated/deletion_requested`; отдельный erasure orchestrator перечисляет profile, sessions, listings, media, reviews, favorites, notifications и logs; заранее определить anonymize/delete/retain для каждого типа данных.
@@ -312,10 +315,14 @@ Snabix уже имеет хорошую основу для модульного
   - Presentation policy: приватные письма и Filament используют реальное имя либо email аккаунта; публичный review DTO сохраняет nullable-поля без раскрытия email, frontend показывает нейтральное `Пользователь`.
   - Tests: signup/profile/update/reset/export/review/Filament и migration regression покрывают пользователя без имени; backend `task check` — `184` tests / `960` assertions, frontend — `113` unit / `38` E2E.
 
-- [ ] `P1-BE-009` Ввести verification/abuse policy для marketplace actions.
+- [x] `P1-BE-009` Ввести verification/abuse policy для marketplace actions.
   - Факт: email verification не обязательна для создания объявления/отзыва; public catalog/location/news/reviews и часть authenticated mutations не имеют специализированных rate limits.
   - План: risk-based throttles по user/IP/action, verified email для trust-sensitive actions, cooldowns, structured abuse events; не блокировать поисковых роботов общим агрессивным лимитом.
   - Критерий готовности: documented limits и tests на 429/reset window; high-risk action недоступно неподтвержденному аккаунту.
+  - Выполнено `2026-07-22`: обязательная email verification добавлена для создания объявления/черновика, submit for review, upload media и публикации отзыва. Update/archive/delete существующих данных и удаление media остаются доступны авторизованному владельцу после смены email.
+  - Rate limits: public catalog/location/listing/news/review reads разделены на независимые IP buckets; authenticated listing/review/media/favorite actions используют одновременные user/IP buckets. Единый `429` contract сохраняет `Retry-After`, а `403` сообщает стабильный `auth.email-verification-required` code.
+  - Observability/docs: blocked actions пишутся в `system_logs` как structured `abuse` warning без request payload; полная матрица лимитов, crawler rationale, reset semantics и proxy/cache требования зафиксированы в `.docs/MARKETPLACE_ABUSE_POLICY.md`.
+  - Tests: feature suite проверяет unverified create/review, `429` headers/body, реальное истечение decay window, независимость public buckets и middleware каждого marketplace route. Backend `task check` — `197` tests / `1168` assertions.
 
 - [ ] `P1-BE-010` Доставлять media conversions через API, а не оригиналы.
   - Факт: conversions card/gallery существуют, но listing payload в основном ориентируется на original URL; avatar допускает SVG; filesystem `throw/report` policy может скрывать ошибки.
@@ -331,20 +338,26 @@ Snabix уже имеет хорошую основу для модульного
   - Source rights: соглашение Prom.ua запрещает автоматизированное получение/копирование контента и не передает права на чужой контент; network import отключен до письменного разрешения, решение и ссылки зафиксированы в `.docs/CATEGORY_IMPORT.md`.
   - Tests: синтетические fixtures проверяют parser contract без HTTP, повторный import, rename, move, deactivate и rollback; CLI tests запрещают network без rights reference.
 
-- [ ] `P1-BE-012` Оптимизировать импорт локаций без потери контроля.
+- [x] `P1-BE-012` Оптимизировать импорт локаций без потери контроля.
   - Факт: Russia importer загружает большие JSON целиком, выполняет per-row save в большой transaction и многократно инвалидирует cache; удаленные source records остаются active.
   - План: stream/chunk parse, staging table и batch upsert, один cache version bump after commit, source manifest/checksum, deactivate policy и preview stats.
   - Критерий готовности: импорт полного набора укладывается в memory/time budget, повторяем, прерывание не оставляет partial state, reference tests проходят.
+  - Выполнено `2026-07-22`: JSON читается потоково через `halaxa/json-machine`, нормализованные записи помещаются в manifest-scoped staging пакетами и применяются batch upsert внутри одной PostgreSQL transaction. Snapshot identity закреплена за `kladr_id`; отсутствующие записи мягко деактивируются, а location cache получает ровно один version bump после commit.
+  - Контроль: manifest хранит безопасные имена файлов, размеры, SHA-256 и source version; dry-run сохраняет preview statistics без production writes. Distributed lock исключает параллельные импорты, stale staging очищается, а fault-injection test подтверждает rollback после уже начатого region upsert.
+  - Budgets: CI fixture соответствует cardinality `83` региона / `1102` города и ограничен `96 MiB`, `30 s`, `60` SQL queries. Реальный локальный snapshot: `243 ms`, `74,448,896` bytes peak, `36` queries. Подробная policy зафиксирована в `.docs/LOCATION_IMPORT.md`.
 
 - [ ] `P1-BE-013` Оптимизировать public listing/location queries на реальных данных.
   - Факт: `%term% ILIKE`, JSON snapshot filters и category descendants требуют EXPLAIN; pagination sort не везде имеет уникальный tie-breaker; popular sort использует счетчик, который не инкрементируется.
   - План: seed/anonymized scale dataset, `EXPLAIN (ANALYZE, BUFFERS)`, pg_trgm/partial/composite indexes по доказанным запросам, stable `id` tie-breaker, view events с anti-fraud aggregation.
   - Критерий готовности: сохранены планы запросов и p95 budget; indexes используются; popular sort подтвержден тестом и не накручивается простым refresh.
 
-- [ ] `P1-BE-014` Исправить cache invalidation и category tree edge cases.
+- [x] `P1-BE-014` Исправить cache invalidation и category tree edge cases.
   - Факт: version bump реализован через неатомарные get/set; hierarchy updates создают N+1/bump per save; branch ограничен глубиной; inactive root может протащить active descendants.
   - План: atomic increment/lock, transaction-level single invalidation, recursive DTO или documented depth, only-active на всем ancestor chain.
   - Критерий готовности: concurrent invalidation test, arbitrary depth fixture, query budget, inactive ancestor никогда не появляется в public tree.
+  - Выполнено `2026-07-22`: версия catalog cache инициализируется под distributed lock и увеличивается атомарным `increment`; singleton cache service объединяет model events во вложенных repository/import transactions в одну invalidation после успешного commit, а rollback не меняет версию.
+  - Category hierarchy: проверка циклов использует materialized path без обхода родителей; rename/move обновляет path/depth всех descendants одним SQL; branch DTO строится рекурсивно без ограничения глубины, а `only_active` проверяет root и всю ancestor chain и исключает целую inactive subtree.
+  - Tests/budgets: `8` параллельных process invalidations повышают версию с `1` до `9`; fixture глубины `6` читается не более чем за `4` category/media queries; изменение дерева глубины `8` укладывается в `8` category queries и один version bump; inactive root/ancestor/child не протаскивают descendants в public tree. Backend `task check` — `193` tests / `1117` assertions.
 
 - [ ] `P1-BE-015` Покрыть service API bot контрактами и scoped credentials.
   - Факт: статический bearer token дает доступ ко всем bot service endpoints; rotation/version/scopes отсутствуют; backend feature tests для Bot module не найдены; health проверяет controller reachability, а stats выполняет пять count queries.
@@ -407,10 +420,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: public cache - Next `fetch`/RSC; private reactive server state - TanStack Query с query keys/invalidation/retry policy; Zustand оставить для UI/client-only state.
   - Критерий готовности: ADR и pilot на notifications/favorites; нет дублирующего fetch при remount; mutation инвалидирует только нужные queries; hard reload retry удален.
 
-- [ ] `P1-FE-008` Оптимизировать session bootstrap и notification polling.
+- [x] `P1-FE-008` Оптимизировать session bootstrap и notification polling. Закрыто 2026-07-22.
   - Факт: global provider вызывает `/me` и на anonymous public page; authenticated header опрашивает notifications каждые 30 секунд даже при скрытой вкладке; часть async handlers может дать unhandled rejection.
   - План: server-known/session hint или lazy auth bootstrap без раскрытия; polling только authenticated+visible, backoff и refresh on open/focus; centralized mutation error handling.
   - Критерий готовности: anonymous first view не вызывает `/me`; hidden tab не poll; offline/500 не создает unhandled promise; request budget E2E соблюден.
+  - Выполнено во frontend-коммите `bacb768`: добавлен неприватный boolean session hint без user data/token; public anonymous route сразу получает guest state без `/auth/me`, а protected route и ранее подтвержденная сессия проверяются через backend как источник истины. Hint централизованно удаляется при logout, `401` и `419`.
+  - Notification interval заменен управляемым scheduler: polling работает только для authenticated user в visible/online вкладке, pending GET дедуплицируется, focus/open/online обновляют feed с freshness guard, ошибки включают exponential backoff от 60 секунд до 5 минут. Принудительный refresh после mutation не запускается параллельно, а ставится в очередь; mutation errors завершаются toast без unhandled rejection.
+  - Request budget E2E фиксирует `0` запросов `/auth/me` и `/notifications` для anonymous first view и ровно по одному начальному запросу для authenticated header. Прошли production audit, filesize, lint/FSD guard, оба typecheck, contracts `9/9`, production build, `35` Vitest-файлов/`135` тестов и `74` Playwright E2E.
 
 - [x] `P1-FE-009` Исправить auth form semantics и доступность.
   - Факт: формы используют `autocomplete="off"`, email местами не имеет корректного input type/autocomplete; это мешает password managers и assistive technology.
@@ -578,10 +594,14 @@ Snabix уже имеет хорошую основу для модульного
   - Добавлен документированный visual baseline и Playwright-матрица для `/`, `/?categoryId=1`, `/listings/listing-1`: light/dark, 360/390/768/1440 px, screenshots, WCAG A/AA axe, overflow и touch-target checks.
   - Проверено: responsive matrix 24/24, полный E2E 72/72 (2 workers), lint, обычный и full typecheck, 119 Vitest tests, filesize guard и production build проходят.
 
-- [ ] `P2-UX-002` Разделить реализованные и будущие настройки пользователя.
+- [x] `P2-UX-002` Разделить реализованные и будущие настройки пользователя.
   - Факт: account deactivation/delete UI не подключен; notification preferences перечисляют события без producers; seller profile placeholder доступен как route.
   - План: disabled с честным статусом только если это полезно либо скрывать до backend capability; capability contract вместо ручного рассинхрона.
   - Критерий готовности: пользователь не может нажать действие, которое только закрывает dialog без результата; E2E подтверждает каждую видимую команду.
+  - Выполнено `2026-07-22`: backend публикует публичный `/api/v1/capabilities` с состоянием account actions, допустимыми notification event keys и seller profiles. Preferences API возвращает и принимает только три события с реальными producers: moderation, favorite и security login; зарезервированные события отклоняются validation до появления producer.
+  - Frontend удалил фиктивные dialog actions деактивации/удаления и незавершенную настройку языка/региона, скрывает пустые notification sections и закрывает seller placeholder реальным `404` по fail-closed capability. Мертвые seller-link компоненты удалены, чтобы route нельзя было случайно вернуть через карточку объявления.
+  - Защита от регрессии: backend feature tests фиксируют capability payload и запрет future preference; frontend E2E проверяет отсутствие неработающих команд, отсутствие пустой секции и недоступность seller route. Реализованные theme/notification controls остаются интерактивными и покрыты существующим E2E.
+  - Проверено: backend `task check` (`204` теста, `1238` assertions, PHPStan `684/684`, CS Fixer, Scramble и contracts); frontend lint, оба typecheck, `135` unit tests, `9` contract tests, production build, filesize guard и полный Playwright E2E `76/76`.
 
 - [ ] `P2-OPS-001` Ввести retention для notifications и business logs.
   - Факт: system logs имеют retention config/schedule; notifications retention отсутствует; удаление значимых событий может конфликтовать с audit/legal needs.

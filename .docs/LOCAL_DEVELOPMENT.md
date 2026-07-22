@@ -165,6 +165,17 @@ docker compose exec app php artisan app:bootstrap-demo-data \
 
 Полный preview/apply/rollback workflow описан в `.docs/CATEGORY_IMPORT.md`.
 
+Импорт локаций также начинается с preview:
+
+```bash
+docker compose exec app php artisan location:import-russia --dry-run
+docker compose exec app php artisan location:import-russia
+```
+
+Snapshot регионов и городов считается полным: отсутствующие в нем записи будут
+деактивированы, но не удалены. Manifest/checksum, staging workflow, ограничения
+`--fresh` и performance budget описаны в `.docs/LOCATION_IMPORT.md`.
+
 Если Laravel пишет `This command is prohibited from running in this environment`,
 значит destructive-команды для текущего окружения заблокированы. Проверь `APP_ENV`,
 подключение к базе и не обходи блокировку, пока не убедился, что это локальная dev-база.

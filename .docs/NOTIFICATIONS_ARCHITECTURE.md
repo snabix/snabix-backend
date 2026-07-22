@@ -27,17 +27,21 @@ Snabix поддерживает два канала уведомлений:
 
 ## Типы событий
 
-Текущие ключи:
+Реализованные producers и доступные пользователю настройки:
+
+- `listing_moderation`
+- `favorite_listings`
+- `security_login`
+
+Зарезервированные доменные ключи без producers пока не выдаются preferences API
+и не отображаются frontend:
 
 - `new_messages`
 - `listing_replies`
-- `listing_moderation`
-- `favorite_listings`
 - `listing_views`
 - `recommendations`
 - `price_changes`
 - `listing_expiration`
-- `security_login`
 - `promotions_news`
 - `email_digest`
 
@@ -101,6 +105,8 @@ sequenceDiagram
 - `isRequiredSite()`
 
 Сохраненные preferences переопределяют defaults. Исключение: обязательные site-уведомления нельзя отключить.
+`NotificationEventType::availableCases()` является backend capability boundary:
+API принимает и возвращает только события, для которых существует producer.
 
 ## Локальная проверка email
 
@@ -126,8 +132,8 @@ docker compose exec app php artisan queue:restart
 1. Добавить case в `NotificationEventType`.
 2. Описать category, title, description и default channels.
 3. Создать или переиспользовать domain event.
-4. Добавить listener.
-5. Создать `PlatformNotification`.
+4. Добавить listener и `PlatformNotification` producer.
+5. Включить case в `hasProducer()` только после появления producer и tests.
 6. Добавить feature-тест.
 7. Проверить database channel.
 8. Проверить email channel через Mailpit.

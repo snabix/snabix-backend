@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Providers;
 
 use App\Mail\Application\Contracts\MailSender;
 use App\Mail\Infrastructure\Services\LaravelMailSender;
+use App\Shared\Application\Support\ReferenceDataCache;
 use App\Shared\Domain\Contracts\HasherInterface;
 use App\Shared\Domain\Contracts\SessionAuthenticatorInterface;
 use App\Shared\Infrastructure\Models\EloquentSystemLog;
@@ -28,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(ReferenceDataCache::class);
+
         $this->app->bind(
             HasherInterface::class,
             HasherService::class,

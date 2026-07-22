@@ -58,6 +58,7 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
       MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      SNABIX_BOT_SERVICE_TOKEN: ${SNABIX_BOT_SERVICE_TOKEN}
       TZ: Europe/Moscow
     depends_on:
       db:

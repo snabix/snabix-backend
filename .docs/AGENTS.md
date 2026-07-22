@@ -91,6 +91,8 @@
 ## Listings и marketplace-ядро
 
 - Публичные DTO объявлений не должны раскрывать приватные owner/contact поля.
+- Для marketplace routes соблюдай `.docs/MARKETPLACE_ABUSE_POLICY.md`: публичное чтение получает отдельный resource bucket, mutations - user/IP limits, а создание trust-sensitive контента требует подтвержденный email.
+- Не добавляй общий агрессивный throttle на все public GET endpoints и не обходи лимиты по User-Agent. Новый endpoint должен попасть в route-contract test abuse policy.
 - Личные списки и публичные списки объявлений используют пагинацию `items/meta`.
 - Пользовательское создание объявления по умолчанию отправляет его на проверку; черновик создаётся только явным `saveAsDraft`.
 - Переходы статусов объявлений должны идти через `ListingStatusTransitionPolicy`.
@@ -98,6 +100,14 @@
 - Admin moderation actions реализованы в таблице и на странице просмотра через `ListingModerationActions`; смена статуса должна идти через `ListingModerationService` и отправлять обязательное уведомление владельцу.
 - Media attachments поддерживают upload, reorder, выбор главного изображения и удаление; storage-операции выполняются через `MediaStorageService` с компенсационной очисткой.
 - Следующие большие зоны развития: publication/availability lifecycle, подтвержденные взаимодействия для отзывов и масштабирование поиска после появления измеримых требований.
+
+## Импорт справочника локаций
+
+- Следуй двухфазному workflow из `.docs/LOCATION_IMPORT.md`: streaming prepare в staging, затем transactional batch promotion.
+- `kladr_id` является стабильной identity; rename и перенос города не должны создавать новую запись.
+- Snapshot России считается полным: missing records деактивируются без физического удаления. Изменение этой policy требует отдельной миграции source ownership.
+- Не возвращай per-row Eloquent `save()` и cache invalidation в importer. Location cache меняет версию один раз после успешного commit.
+- Новая версия source обязана сохранять manifest/checksum и проходить full-cardinality performance test.
 
 ## Что проверять перед завершением
 

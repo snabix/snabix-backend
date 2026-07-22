@@ -37,7 +37,7 @@ final class NotificationPreferenceService
                 'emailEnabled' => $type->isRequiredEmail() || $emailEnabled,
                 'isRequired'   => $type->isRequiredSite() || $type->isRequiredEmail(),
             ];
-        }, NotificationEventType::cases());
+        }, NotificationEventType::availableCases());
     }
 
     /**

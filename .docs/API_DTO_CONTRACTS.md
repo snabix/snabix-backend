@@ -176,13 +176,22 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 
 Используется для публичной витрины и карточек объявлений:
 
-| Endpoint                      | Назначение                                 |
-|-------------------------------|--------------------------------------------|
-| `GET /api/v1/public/listings` | Публичный список опубликованных объявлений |
+| Endpoint                                            | Назначение                                             |
+|-----------------------------------------------------|--------------------------------------------------------|
+| `GET /api/v1/public/listings`                       | Публичный список опубликованных объявлений             |
+| `GET /api/v1/public/listings/{listingId}`           | Публичная карточка опубликованного объявления           |
+| `POST /api/v1/listings/{listingId}/favorite`        | Добавление в избранное с публичной карточкой в ответе   |
+| `DELETE /api/v1/listings/{listingId}/favorite`      | Удаление из избранного с публичной карточкой в ответе   |
+| `GET /api/v1/listings/favorites`                    | Избранные объявления в формате публичных карточек       |
 
 Поддерживаемые query-фильтры: `categoryId`, `listingKind`, `minPriceAmountMinor`, `maxPriceAmountMinor`, `sort`. Значения `sort`: `newest`, `oldest`, `price_asc`, `price_desc`, `popular`.
 
 Поля `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media` в public DTO не возвращаются. В `attributeValues` попадают только характеристики с `showInCard = true`.
+
+Авторизация favorite endpoints дает право управлять связью избранного, но не
+расширяет видимость объявления. Даже собственное объявление в избранном
+возвращается как public card DTO; owner/private projection доступна через
+`/api/v1/listings` и `/api/v1/listings/{listingId}`.
 
 ```json
 {

@@ -8,13 +8,16 @@ use App\Catalog\Application\Services\CategoryHierarchyService;
 use App\Catalog\Application\Services\CategoryInputNormalizer;
 use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
+use App\Shared\Application\Support\ReferenceDataCache;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
 {
     public function __construct(
         private CategoryInputNormalizer  $categoryInputNormalizer,
         private CategoryHierarchyService $categoryHierarchyService,
+        private ReferenceDataCache       $cache,
     ) {}
 
     public function count(): int
@@ -74,30 +77,15 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
     /**
      * @return Collection<int, EloquentCategory>
      */
-    public function listBranch(string $categoryId, bool $onlyActive = true): Collection
+    public function listBranch(EloquentCategory $rootCategory): Collection
     {
-        $rootCategory = $this->findById($categoryId);
-
-        if ($rootCategory === null) {
-            return collect();
-        }
-
-        $query        = EloquentCategory::query()
+        return EloquentCategory::query()
             ->with('iconMedia')
             ->where('path', 'like', $rootCategory->path . '/%')
-            ->whereBetween('depth', [
-                $rootCategory->depth + 1,
-                $rootCategory->depth + 2,
-            ])
             ->orderBy('depth')
             ->orderBy('sort_order')
-            ->orderBy('name');
-
-        if ($onlyActive) {
-            $query->where('is_active', true);
-        }
-
-        return $query->get();
+            ->orderBy('name')
+            ->get();
     }
 
     /**
@@ -107,26 +95,69 @@ readonly class EloquentCategoryRepository implements CategoryRepositoryInterface
         array $attributes,
         ?string $id = null,
     ): EloquentCategory {
-        $category       = $id !== null
-            ? EloquentCategory::query()->findOrFail($id)
-            : new EloquentCategory();
-        $normalized     = $this->categoryInputNormalizer->normalize($attributes, $category);
-        $parentId       = is_string($normalized['parent_id']) ? $normalized['parent_id'] : null;
+        return $this->cache->batchCatalogInvalidation(fn(): EloquentCategory => DB::transaction(function () use ($attributes, $id): EloquentCategory {
+            $category       = $id !== null
+                ? EloquentCategory::query()->findOrFail($id)
+                : new EloquentCategory();
+            $previousPath   = is_string($category->path) ? $category->path : null;
+            $previousDepth  = $category->exists ? $category->depth : 0;
+            $normalized     = $this->categoryInputNormalizer->normalize($attributes, $category);
+            $parentId       = is_string($normalized['parent_id']) ? $normalized['parent_id'] : null;
 
-        $this->categoryHierarchyService->assertParentIsValid($category, $parentId);
+            $this->categoryHierarchyService->assertParentIsValid($category, $parentId);
 
-        $category->fill($normalized);
-        $category->save();
+            $category->fill($normalized);
+            $category->save();
 
-        $this->categoryHierarchyService->sync($category);
+            $this->categoryHierarchyService->sync($category, $previousPath, $previousDepth);
 
-        return $category->fresh(['parentCategory']) ?? $category;
+            return $category->fresh(['parentCategory']) ?? $category;
+        }));
     }
 
-    public function findById(string $id): ?EloquentCategory
+    public function findById(string $id, bool $onlyActive = false): ?EloquentCategory
     {
-        return EloquentCategory::query()
+        $query    = EloquentCategory::query()
             ->with('iconMedia')
-            ->find($id);
+            ->whereKey($id);
+
+        if ($onlyActive) {
+            $query->where('is_active', true);
+        }
+
+        $category = $query->first();
+
+        if ($category === null || ($onlyActive && ! $this->hasOnlyActiveAncestors($category))) {
+            return null;
+        }
+
+        return $category;
+    }
+
+    private function hasOnlyActiveAncestors(EloquentCategory $category): bool
+    {
+        if (! is_string($category->path) || $category->path === '') {
+            return false;
+        }
+
+        $segments      = explode('/', $category->path);
+        array_pop($segments);
+
+        if ($segments === []) {
+            return true;
+        }
+
+        $ancestorPaths = [];
+        $path          = '';
+
+        foreach ($segments as $segment) {
+            $path            = $path === '' ? $segment : $path . '/' . $segment;
+            $ancestorPaths[] = $path;
+        }
+
+        return ! EloquentCategory::query()
+            ->whereIn('path', $ancestorPaths)
+            ->where('is_active', false)
+            ->exists();
     }
 }

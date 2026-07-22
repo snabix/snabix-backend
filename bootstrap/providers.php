@@ -8,6 +8,7 @@ use App\Listing\Infrastructure\Providers\ListingServiceProvider;
 use App\Location\Infrastructure\Providers\LocationServiceProvider;
 use App\Media\Infrastructure\Providers\MediaServiceProvider;
 use App\News\Infrastructure\Providers\NewsServiceProvider;
+use App\Shared\Infrastructure\Providers\AbuseProtectionServiceProvider;
 use App\Shared\Infrastructure\Providers\AppServiceProvider;
 use App\Shared\Infrastructure\Providers\ConsoleServiceProvider;
 use App\Shared\Infrastructure\Providers\EventServiceProvider;
@@ -21,6 +22,7 @@ return [
     LocationServiceProvider::class,
     MediaServiceProvider::class,
     NewsServiceProvider::class,
+    AbuseProtectionServiceProvider::class,
     AppServiceProvider::class,
     ConsoleServiceProvider::class,
     EventServiceProvider::class,
