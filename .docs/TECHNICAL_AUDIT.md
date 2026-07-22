@@ -180,12 +180,15 @@ Snabix уже имеет хорошую основу для модульного
 
 ### Приватность и целостность данных
 
-- [ ] `P0-PRIV-001` Исключить приватные поля из favorites API.
+- [x] `P0-PRIV-001` Исключить приватные поля из favorites API. Закрыто 2026-07-22.
   - Факт: `AddListingFavoriteHandler`, `RemoveListingFavoriteHandler` и `ListFavoriteListingsHandler` используют `ListingPayloadMapper`, предназначенный для owner/private view, тогда как публичные endpoints используют `PublicListingPayloadMapper`.
   - Риск: авторизованный пользователь может получить `userId`, контактные поля, `rejectionReason` и другие приватные данные чужого опубликованного объявления через favorite endpoints. List также может создавать N+1 на owner relation.
   - Где смотреть: `app/Listing/Application/UseCases/*ListingFavorite*`, `app/Listing/Application/Support/ListingPayloadMapper.php`, `PublicListingPayloadMapper.php`, `tests/Feature/Listing/ListingFavoriteTest.php`.
   - План: возвращать public card DTO для чужих favorites; если owner нужен собственному объявлению, выбирать projection по authorization context, а не по endpoint случайно.
   - Критерий готовности: feature-тесты add/remove/list явно проверяют отсутствие всех private/contact/moderation полей; query-count test исключает N+1; frontend contract остается зеленым.
+  - Выполнено: add/remove/list favorites используют только `PublicListingPayloadMapper`; owner/private projection остается доступной через owner endpoints, а факт авторизации или избранного не расширяет видимость объявления.
+  - Защита от регрессии: favorite queries eager-load продавца для публичного rating summary; feature-тесты проверяют отсутствие `userId`, контактов, причины отклонения и private media во всех трех ответах, а query-count test с восемью разными продавцами фиксирует отсутствие N+1.
+  - Проверки: backend `task check` прошел (`188` тестов, `1091` assertions), frontend contract suite прошел (`9/9`).
 
 - [x] `P0-DATA-001` Сделать media create/replace/move отказоустойчивыми. Закрыто 2026-07-17.
   - Факт: `MediaStorageService` выполняет файловые copy/delete внутри DB transaction. Replace удаляет старый файл до гарантированного сохранения нового; rollback БД не может вернуть удаленный объект storage.

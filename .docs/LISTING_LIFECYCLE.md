@@ -149,6 +149,11 @@ Private DTO может отдавать management-поля, нужные вла
 - `DELETE /api/v1/listings/{listingId}/favorite`
 - `GET /api/v1/listings/favorites`
 
+Все три маршрута возвращают public card DTO без `userId`, контактов,
+`rejectionReason` и полного `media` payload. Аутентификация нужна для управления
+избранным, но не дает доступ к owner projection чужого объявления. Для
+собственного объявления management DTO доступен через личный список/просмотр.
+
 Если чужое объявление добавили в избранное, backend создает уведомление владельцу.
 
 ## Удаление
