@@ -24,12 +24,12 @@ interface CategoryRepositoryInterface
     /**
      * @return Collection<int, EloquentCategory>
      */
-    public function listBranch(string $categoryId, bool $onlyActive = true): Collection;
+    public function listBranch(EloquentCategory $rootCategory): Collection;
 
     /**
      * @param array<string, mixed> $attributes
      */
     public function save(array $attributes, ?string $id = null): EloquentCategory;
 
-    public function findById(string $id): ?EloquentCategory;
+    public function findById(string $id, bool $onlyActive = false): ?EloquentCategory;
 }

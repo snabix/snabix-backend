@@ -344,10 +344,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: seed/anonymized scale dataset, `EXPLAIN (ANALYZE, BUFFERS)`, pg_trgm/partial/composite indexes по доказанным запросам, stable `id` tie-breaker, view events с anti-fraud aggregation.
   - Критерий готовности: сохранены планы запросов и p95 budget; indexes используются; popular sort подтвержден тестом и не накручивается простым refresh.
 
-- [ ] `P1-BE-014` Исправить cache invalidation и category tree edge cases.
+- [x] `P1-BE-014` Исправить cache invalidation и category tree edge cases.
   - Факт: version bump реализован через неатомарные get/set; hierarchy updates создают N+1/bump per save; branch ограничен глубиной; inactive root может протащить active descendants.
   - План: atomic increment/lock, transaction-level single invalidation, recursive DTO или documented depth, only-active на всем ancestor chain.
   - Критерий готовности: concurrent invalidation test, arbitrary depth fixture, query budget, inactive ancestor никогда не появляется в public tree.
+  - Выполнено `2026-07-22`: версия catalog cache инициализируется под distributed lock и увеличивается атомарным `increment`; singleton cache service объединяет model events во вложенных repository/import transactions в одну invalidation после успешного commit, а rollback не меняет версию.
+  - Category hierarchy: проверка циклов использует materialized path без обхода родителей; rename/move обновляет path/depth всех descendants одним SQL; branch DTO строится рекурсивно без ограничения глубины, а `only_active` проверяет root и всю ancestor chain и исключает целую inactive subtree.
+  - Tests/budgets: `8` параллельных process invalidations повышают версию с `1` до `9`; fixture глубины `6` читается не более чем за `4` category/media queries; изменение дерева глубины `8` укладывается в `8` category queries и один version bump; inactive root/ancestor/child не протаскивают descendants в public tree. Backend `task check` — `193` tests / `1117` assertions.
 
 - [ ] `P1-BE-015` Покрыть service API bot контрактами и scoped credentials.
   - Факт: статический bearer token дает доступ ко всем bot service endpoints; rotation/version/scopes отсутствуют; backend feature tests для Bot module не найдены; health проверяет controller reachability, а stats выполняет пять count queries.
