@@ -383,10 +383,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: nonce/hash strategy с учетом актуальной документации Next 16; разрешить только фактические CDN/API origins; добавить `report-to` после настройки endpoint.
   - Критерий готовности: production smoke без CSP violations, inline injection не исполняется, unit tests проверяют allowlist и отсутствие broad wildcard.
 
-- [ ] `P1-FE-005` Восстановить Feature-Sliced boundaries.
+- [x] `P1-FE-005` Восстановить Feature-Sliced boundaries.
   - Факт: `src/shared/ui/header` импортирует entities/features, а shared Axios импортирует auth feature events. Это направленные зависимости снизу вверх.
   - План: перенести header в `widgets/header`; auth session events в shared-level contract или app provider; добавить ESLint restricted imports/FSD boundary plugin после оценки совместимости.
   - Критерий готовности: автоматическое правило запрещает shared -> entities/features/screens/widgets; существующие нарушения устранены без circular imports.
+  - Выполнено 2026-07-22: header перенесен в `src/widgets/header` и экспортируется через public API; внутренние импорты виджета сделаны относительными без обратной зависимости на barrel. Контракт `401/419` перенесен из auth feature в `src/shared/api/auth-session-events.ts`, поэтому Axios больше не зависит от верхнего слоя. Zod-схема категорий отвязана от entity types локальным wire/contract type.
+  - Guard: все TypeScript-файлы `src/shared` защищены native ESLint `no-restricted-imports` от импортов `app/entities/features/screens/widgets`; межслойные contract tests вынесены в `tests/contracts`. Выбор native rule не добавляет новую зависимость и покрывает alias/relative imports.
+  - Проверено: frontend `lint` + client-boundary budget `52/53`, оба typecheck, `119` Vitest tests, file-size guard, production build и `72/72` Playwright E2E; старые import paths отсутствуют, измененный граф не содержит обратных импортов/cycles.
 
 - [x] `P1-FE-006` Сократить лишние Client Component boundaries и неправильный suffix `Action`.
   - Факт: найдено 68 файлов с `"use client"` и сотни props вида `onRetryAction`, `onChangeAction`, хотя это обычные callbacks, а не Next Server Actions.
