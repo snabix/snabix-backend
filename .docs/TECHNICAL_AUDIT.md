@@ -562,10 +562,14 @@ Snabix уже имеет хорошую основу для модульного
 
 ## P2 - UX, качество и эксплуатационные улучшения
 
-- [ ] `P2-UX-001` Провести системный responsive/accessibility review marketplace UI.
+- [x] `P2-UX-001` Провести системный responsive/accessibility review marketplace UI.
   - Факт: есть крупные/nested card surfaces, неоднородные radii, отрицательный letter spacing и декоративные radial/orb classes; автоматической visual matrix нет.
   - План: токены typography/spacing/radius/focus, mobile 360/390, tablet, desktop; screenshots основных маршрутов; contrast/touch targets/overflow.
   - Критерий готовности: approved visual baseline, no overlap/overflow, WCAG AA для ключевых flows, изменения не превращают operational UI в landing page.
+  - Выполнено 2026-07-22: в frontend добавлены единые токены радиусов, spacing и focus ring; public marketplace, header, каталог, listing cards/media и footer переведены на более компактные operational surfaces без декоративных radial/orb backgrounds и отрицательного tracking.
+  - Исправлена accessibility-ошибка закрытого drawer фильтров: скрытая форма больше не остается в tab order и accessibility tree, открытое состояние имеет modal dialog semantics.
+  - Добавлен документированный visual baseline и Playwright-матрица для `/`, `/?categoryId=1`, `/listings/listing-1`: light/dark, 360/390/768/1440 px, screenshots, WCAG A/AA axe, overflow и touch-target checks.
+  - Проверено: responsive matrix 24/24, полный E2E 72/72 (2 workers), lint, обычный и full typecheck, 119 Vitest tests, filesize guard и production build проходят.
 
 - [ ] `P2-UX-002` Разделить реализованные и будущие настройки пользователя.
   - Факт: account deactivation/delete UI не подключен; notification preferences перечисляют события без producers; seller profile placeholder доступен как route.
