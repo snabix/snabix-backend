@@ -33,8 +33,8 @@ readonly class ProfileHandler
 
         return ProfileOutput::from([
             'id'              => $user->id->value(),
-            'firstName'       => $user->firstName->value(),
-            'lastName'        => $user->lastName->value(),
+            'firstName'       => $user->firstName?->value(),
+            'lastName'        => $user->lastName?->value(),
             'email'           => $user->email->value(),
             'phoneNumber'     => $user->phoneNumber?->value(),
             'description'     => $user->description,

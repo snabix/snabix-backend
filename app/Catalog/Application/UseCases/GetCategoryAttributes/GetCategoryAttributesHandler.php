@@ -41,6 +41,9 @@ readonly class GetCategoryAttributesHandler
         return [
             'category' => [
                 'id'               => $category->id,
+                'catalogKind'      => $category->catalog_type->apiName(),
+                'catalogKindLabel' => $category->catalog_type->label(),
+                // Deprecated compatibility aliases. Remove after 2026-10-31.
                 'catalogType'      => $category->catalog_type->value,
                 'catalogTypeLabel' => $category->catalog_type->label(),
                 'parentId'         => $category->parent_id,
@@ -56,6 +59,9 @@ readonly class GetCategoryAttributesHandler
                         'isInherited'       => $definition->category_id !== $category->id,
                         'name'              => $definition->name,
                         'slug'              => $definition->slug,
+                        'valueType'         => $definition->type->apiName(),
+                        'valueTypeLabel'    => $definition->type->label(),
+                        // Deprecated compatibility aliases. Remove after 2026-10-31.
                         'type'              => $definition->type->value,
                         'typeLabel'         => $definition->type->label(),
                         'unit'              => $definition->unit,

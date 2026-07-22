@@ -53,8 +53,8 @@ class EloquentUserRepository implements UserRepositoryInterface
         EloquentUser::query()->updateOrCreate(
             ['id' => $model->id->value()],
             [
-                'first_name'        => $model->firstName->value(),
-                'last_name'         => $model->lastName->value(),
+                'first_name'        => $model->firstName?->value(),
+                'last_name'         => $model->lastName?->value(),
                 'email'             => $model->email->value(),
                 'password'          => $model->password->value(),
                 'phone_number'      => $model->phoneNumber?->value(),
@@ -72,8 +72,8 @@ class EloquentUserRepository implements UserRepositoryInterface
 
         return new User(
             id: new UUID(is_string($userId) || is_int($userId) ? (string) $userId : ''),
-            firstName: new FirstName($this->resolveFirstName($user)),
-            lastName: new LastName($this->resolveLastName($user)),
+            firstName: filled($user->first_name) ? new FirstName($user->first_name) : null,
+            lastName: filled($user->last_name) ? new LastName($user->last_name) : null,
             email: new Email($user->email),
             password: new Password($user->password),
             isActive: $user->is_active,
@@ -84,15 +84,5 @@ class EloquentUserRepository implements UserRepositoryInterface
                 ? new DateTimeImmutable($user->email_verified_at->toDateTimeString())
                 : null,
         );
-    }
-
-    private function resolveFirstName(EloquentUser $user): string
-    {
-        return filled($user->first_name) ? $user->first_name : 'User';
-    }
-
-    private function resolveLastName(EloquentUser $user): string
-    {
-        return filled($user->last_name) ? $user->last_name : 'Account';
     }
 }

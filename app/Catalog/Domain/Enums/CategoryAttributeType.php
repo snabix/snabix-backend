@@ -34,4 +34,16 @@ enum CategoryAttributeType: int
             self::DATE        => 'Дата',
         };
     }
+
+    public function apiName(): string
+    {
+        return match ($this) {
+            self::TEXT        => 'text',
+            self::NUMBER      => 'number',
+            self::BOOLEAN     => 'boolean',
+            self::SELECT      => 'select',
+            self::MULTISELECT => 'multiSelect',
+            self::DATE        => 'date',
+        };
+    }
 }

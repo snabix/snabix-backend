@@ -19,11 +19,28 @@ enum ListingType: int
             ->all();
     }
 
+    public static function fromApiName(string $name): ?self
+    {
+        return match ($name) {
+            'product' => self::PRODUCT,
+            'service' => self::SERVICE,
+            default   => null,
+        };
+    }
+
     public function label(): string
     {
         return match ($this) {
             self::PRODUCT => 'Товар',
             self::SERVICE => 'Услуга',
+        };
+    }
+
+    public function apiName(): string
+    {
+        return match ($this) {
+            self::PRODUCT => 'product',
+            self::SERVICE => 'service',
         };
     }
 }

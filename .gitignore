@@ -26,6 +26,7 @@ Homestead.yaml
 Thumbs.db
 
 /storage/api-docs
+/storage/media-library/
 /storage/phpstan
 
 # Local audit reports

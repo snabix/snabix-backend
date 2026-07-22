@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Review\Http\CreateUserReview;
 
 use App\Shared\Http\Requests\ResolvesAuthenticatedUserId;
+use App\Shared\Http\Requests\ResolvesIdempotencyKey;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateUserReviewRequest extends FormRequest
 {
     use ResolvesAuthenticatedUserId;
+    use ResolvesIdempotencyKey;
 
     /**
      * @return array<string, list<mixed>>

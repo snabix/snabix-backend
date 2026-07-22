@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Auth\Infrastructure\Models;
 
+use App\Auth\Domain\Services\UserNameFormatter;
 use App\Media\Infrastructure\Models\EloquentMedia;
 use Database\Factories\EloquentUserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,16 +22,19 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 /**
  * Class EloquentUser
  *
- * @property string      $id
- * @property string      $first_name
- * @property string      $last_name
- * @property string      $email
- * @property boolean     $is_active
- * @property string      $phone_number
- * @property string|null $description
- * @property Carbon|null $date_of_birth
- * @property float|null  $seller_rating_avg
- * @property int         $seller_reviews_count
+ * @property      string      $id
+ * @property      string|null $first_name
+ * @property      string|null $last_name
+ * @property      string      $email
+ * @property      boolean     $is_active
+ * @property      string|null $phone_number
+ * @property      string|null $description
+ * @property      Carbon|null $date_of_birth
+ * @property      float|null  $seller_rating_avg
+ * @property      int         $seller_reviews_count
+ * @property-read string|null $full_name
+ * @property-read string      $account_label
+ * @property-read string      $admin_label
  *
  * @property Carbon      $created_at
  * @property Carbon      $updated_at
@@ -117,6 +122,42 @@ class EloquentUser extends Authenticatable implements HasMedia
             ->useDisk('public')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(
+            fn(): ?string => UserNameFormatter::fullName($this->first_name, $this->last_name),
+        );
+    }
+
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function accountLabel(): Attribute
+    {
+        return Attribute::get(
+            fn(): string => UserNameFormatter::accountLabel(
+                $this->first_name,
+                $this->last_name,
+                $this->email,
+            ),
+        );
+    }
+
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function adminLabel(): Attribute
+    {
+        return Attribute::get(
+            fn(): string => $this->full_name !== null
+                ? $this->full_name . ' · ' . $this->email
+                : $this->email,
+        );
     }
 
     /**

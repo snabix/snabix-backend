@@ -6,6 +6,7 @@ namespace App\Listing\Application\Support;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Catalog\Application\Services\CategoryBreadcrumbService;
+use App\Catalog\Domain\Enums\CategoryAttributeType;
 use App\Catalog\Infrastructure\Models\EloquentCategory;
 use App\Listing\Infrastructure\Models\EloquentListing;
 use App\Listing\Infrastructure\Models\EloquentListingAttributeValue;
@@ -31,43 +32,52 @@ final readonly class ListingPayloadAssembler
         $location = $this->locationPayload($listing);
         $seller   = $listing->user;
         $payload  = [
-            'id'               => $listing->id,
-            'userId'           => $listing->user_id,
-            'category'         => $this->categoryPayload($listing->category),
-            'type'             => $listing->type->value,
-            'typeLabel'        => $listing->type->label(),
-            'status'           => $listing->status->value,
-            'statusLabel'      => $listing->status->label(),
-            'condition'        => $listing->condition->value,
-            'conditionLabel'   => $listing->condition->label(),
-            'title'            => $listing->title,
-            'slug'             => $listing->slug,
-            'description'      => $listing->description,
-            'price'            => $listing->price,
-            'currency'         => $listing->currency,
-            'isNegotiable'     => $listing->is_negotiable,
-            'contactName'      => $listing->contact_name,
-            'contactPhone'     => $listing->contact_phone,
-            'contactEmail'     => $listing->contact_email,
-            'location'         => $location,
-            'region'           => $this->locationNestedString($location, 'region', 'name'),
-            'city'             => $this->locationNestedString($location, 'city', 'name'),
-            'addressLine'      => $this->locationString($location, 'addressLine'),
-            'fullLocation'     => $this->locationString($location, 'display'),
-            'imageUrl'         => $media->first()?->getFullUrl(),
-            'imageUrls'        => $media
+            'id'                => $listing->id,
+            'userId'            => $listing->user_id,
+            'category'          => $this->categoryPayload($listing->category),
+            'listingKind'       => $listing->type->apiName(),
+            'listingKindLabel'  => $listing->type->label(),
+            'listingStatus'     => $listing->status->apiName(),
+            'listingStatusLabel'=> $listing->status->label(),
+            'itemCondition'     => $listing->condition->apiName(),
+            'itemConditionLabel'=> $listing->condition->label(),
+            'priceAmountMinor'  => $listing->price,
+            'priceCurrency'     => $listing->currency,
+            // Deprecated compatibility aliases. Remove after 2026-10-31.
+            'type'              => $listing->type->value,
+            'typeLabel'         => $listing->type->label(),
+            'status'            => $listing->status->value,
+            'statusLabel'       => $listing->status->label(),
+            'condition'         => $listing->condition->value,
+            'conditionLabel'    => $listing->condition->label(),
+            'title'             => $listing->title,
+            'slug'              => $listing->slug,
+            'description'       => $listing->description,
+            'price'             => $listing->price,
+            'currency'          => $listing->currency,
+            'isNegotiable'      => $listing->is_negotiable,
+            'contactName'       => $listing->contact_name,
+            'contactPhone'      => $listing->contact_phone,
+            'contactEmail'      => $listing->contact_email,
+            'location'          => $location,
+            'region'            => $this->locationNestedString($location, 'region', 'name'),
+            'city'              => $this->locationNestedString($location, 'city', 'name'),
+            'addressLine'       => $this->locationString($location, 'addressLine'),
+            'fullLocation'      => $this->locationString($location, 'display'),
+            'imageUrl'          => $media->first()?->getFullUrl(),
+            'imageUrls'         => $media
                 ->map(fn(EloquentMedia $item): string => $item->getFullUrl())
                 ->values()
                 ->all(),
-            'media'            => $this->mediaPayload($media),
-            'sellerRating'     => $seller instanceof EloquentUser ? $seller->seller_rating_avg : null,
-            'sellerReviewCount'=> $seller instanceof EloquentUser ? $seller->seller_reviews_count : 0,
-            'viewsCount'       => $listing->views_count,
-            'isFeatured'       => $listing->is_featured,
-            'rejectionReason'  => $listing->rejection_reason,
-            'publishedAt'      => $listing->published_at?->toIso8601String(),
-            'expiresAt'        => $listing->expires_at?->toIso8601String(),
-            'attributeValues'  => $this->attributeValuesPayload($listing, $visibility),
+            'media'             => $this->mediaPayload($media),
+            'sellerRating'      => $seller instanceof EloquentUser ? $seller->seller_rating_avg : null,
+            'sellerReviewCount' => $seller instanceof EloquentUser ? $seller->seller_reviews_count : 0,
+            'viewsCount'        => $listing->views_count,
+            'isFeatured'        => $listing->is_featured,
+            'rejectionReason'   => $listing->rejection_reason,
+            'publishedAt'       => $listing->published_at?->toIso8601String(),
+            'expiresAt'         => $listing->expires_at?->toIso8601String(),
+            'attributeValues'   => $this->attributeValuesPayload($listing, $visibility),
         ];
 
         return $this->visibilityPolicy->apply($payload, $visibility);
@@ -113,6 +123,9 @@ final readonly class ListingPayloadAssembler
 
         return [
             'id'               => $category->id,
+            'catalogKind'      => $category->catalog_type->apiName(),
+            'catalogKindLabel' => $category->catalog_type->label(),
+            // Deprecated compatibility aliases. Remove after 2026-10-31.
             'catalogType'      => $category->catalog_type->value,
             'catalogTypeLabel' => $category->catalog_type->label(),
             'parentId'         => $category->parent_id,
@@ -272,6 +285,9 @@ final readonly class ListingPayloadAssembler
                 'schemaVersion'         => $attributeValue->attribute_schema_version,
                 'name'                  => $this->attributeSnapshotValue($attributeValue, 'name', $attributeValue->attributeDefinition?->name),
                 'slug'                  => $this->attributeSnapshotValue($attributeValue, 'slug', $attributeValue->attributeDefinition?->slug),
+                'valueType'             => $this->attributeValueType($attributeValue),
+                'valueTypeLabel'        => $this->attributeSnapshotValue($attributeValue, 'typeLabel', $attributeValue->attributeDefinition?->type?->label()),
+                // Deprecated compatibility aliases. Remove after 2026-10-31.
                 'type'                  => $this->attributeSnapshotValue($attributeValue, 'type', $attributeValue->attributeDefinition?->type?->value),
                 'typeLabel'             => $this->attributeSnapshotValue($attributeValue, 'typeLabel', $attributeValue->attributeDefinition?->type?->label()),
                 'value'                 => $attributeValue->value,
@@ -290,5 +306,18 @@ final readonly class ListingPayloadAssembler
         return is_array($snapshot) && array_key_exists($key, $snapshot)
             ? $snapshot[$key]
             : $fallback;
+    }
+
+    private function attributeValueType(EloquentListingAttributeValue $attributeValue): ?string
+    {
+        $type = $this->attributeSnapshotValue(
+            $attributeValue,
+            'type',
+            $attributeValue->attributeDefinition?->type?->value,
+        );
+
+        return is_numeric($type)
+            ? CategoryAttributeType::tryFrom((int) $type)?->apiName()
+            : null;
     }
 }

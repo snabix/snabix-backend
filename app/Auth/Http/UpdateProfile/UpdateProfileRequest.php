@@ -19,8 +19,8 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstName'   => ['required', 'string', 'max:100'],
-            'lastName'    => ['required', 'string', 'max:100'],
+            'firstName'   => ['present', 'nullable', 'string', 'min:2', 'max:100'],
+            'lastName'    => ['present', 'nullable', 'string', 'min:2', 'max:100'],
             'email'       => [
                 'required',
                 'email',
@@ -40,8 +40,8 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'userId'      => $this->userId(),
-            'firstName'   => $this->string('firstName')->toString(),
-            'lastName'    => $this->string('lastName')->toString(),
+            'firstName'   => $this->nullableStringInput('firstName'),
+            'lastName'    => $this->nullableStringInput('lastName'),
             'email'       => $this->string('email')->toString(),
             'phoneNumber' => $this->filled('phoneNumber')
                 ? $this->string('phoneNumber')->toString()
@@ -58,5 +58,10 @@ class UpdateProfileRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    private function nullableStringInput(string $key): ?string
+    {
+        return $this->filled($key) ? $this->string($key)->trim()->toString() : null;
     }
 }

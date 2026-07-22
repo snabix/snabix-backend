@@ -22,6 +22,18 @@ enum ListingStatus: int
             ->all();
     }
 
+    public static function fromApiName(string $name): ?self
+    {
+        return match ($name) {
+            'draft'         => self::DRAFT,
+            'pendingReview' => self::PENDING_REVIEW,
+            'published'     => self::PUBLISHED,
+            'rejected'      => self::REJECTED,
+            'archived'      => self::ARCHIVED,
+            default         => null,
+        };
+    }
+
     public function label(): string
     {
         return match ($this) {
@@ -30,6 +42,17 @@ enum ListingStatus: int
             self::PUBLISHED      => 'Опубликовано',
             self::REJECTED       => 'Отклонено',
             self::ARCHIVED       => 'В архиве',
+        };
+    }
+
+    public function apiName(): string
+    {
+        return match ($this) {
+            self::DRAFT          => 'draft',
+            self::PENDING_REVIEW => 'pendingReview',
+            self::PUBLISHED      => 'published',
+            self::REJECTED       => 'rejected',
+            self::ARCHIVED       => 'archived',
         };
     }
 }

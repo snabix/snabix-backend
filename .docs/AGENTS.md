@@ -74,6 +74,8 @@
 - Новые shared-инструменты складывай в `app/Shared`.
 - Не добавляй случайные helper-функции вне существующей структуры.
 - Если меняешь API, синхронизируй `Scramble`-документацию и тесты.
+- Для API-полей соблюдай `.docs/API_DTO_CONTRACTS.md`: JSON `lowerCamelCase`, semantic enum fields со string values, `...Id`, ISO 8601 `...At`, money в minor units + currency. Не добавляй новые generic `type/status` или numeric enum на API boundary.
+- Legacy aliases разрешены только в помеченном compatibility-слое и обязаны иметь дату удаления; новый frontend-код не должен их отправлять или сохранять в domain types.
 - Если меняешь поведение авторизации, проверь сценарии `sign-in`, `sign-up`, `verify-email`, `logout`, `me`.
 
 ## Админка и виджеты

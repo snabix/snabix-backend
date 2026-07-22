@@ -33,7 +33,7 @@ readonly class RequestProfileDataExportHandler
             'Ваши данные аккаунта SNABIX',
             'emails.profile-data-export',
             [
-                'accountLabel' => trim($user->first_name . ' ' . $user->last_name) ?: $user->email,
+                'accountLabel' => $user->account_label,
                 'requestedAt'  => now()->timezone($this->appTimezone())->format('d.m.Y H:i:s T'),
             ],
             [

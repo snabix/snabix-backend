@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Review;
 
 use App\Auth\Infrastructure\Models\EloquentUser;
-use App\Catalog\Domain\Contracts\CategoryRepositoryInterface;
-use App\Listing\Domain\Enums\ListingCondition;
-use App\Listing\Domain\Enums\ListingStatus;
-use App\Listing\Domain\Enums\ListingType;
-use App\Listing\Infrastructure\Models\EloquentListing;
 use Tests\Feature\FeatureTestCase;
 
 class UserReviewTest extends FeatureTestCase
 {
+    use CreatesPublishedListingForReview;
+
     public function test_user_can_review_seller_by_published_listing(): void
     {
         $reviewer = EloquentUser::factory()->create();
@@ -31,7 +28,10 @@ class UserReviewTest extends FeatureTestCase
             ->assertJsonPath('data.rating', 5)
             ->assertJsonPath('data.comment', 'Быстро договорились и аккуратно подготовили товар.')
             ->assertJsonPath('data.revieweeId', $seller->id)
-            ->assertJsonPath('data.listing.id', $listing->id);
+            ->assertJsonPath('data.listing.id', $listing->id)
+            ->assertJsonPath('data.reviewStatus', 'published')
+            ->assertJsonPath('data.reviewStatusLabel', 'Опубликован')
+            ->assertJsonPath('data.status', 'published');
 
         $this->assertDatabaseHas('user_reviews', [
             'id'          => $response->json('data.id'),
@@ -109,8 +109,26 @@ class UserReviewTest extends FeatureTestCase
             ->assertOk()
             ->assertJsonCount(1, 'data.items')
             ->assertJsonPath('data.items.0.rating', 4)
+            ->assertJsonPath('data.items.0.reviewStatus', 'published')
             ->assertJsonPath('data.items.0.reviewer.firstName', 'Иван')
             ->assertJsonPath('data.items.0.listing.title', $listing->title);
+    }
+
+    public function test_public_review_keeps_missing_reviewer_name_nullable(): void
+    {
+        $reviewer = EloquentUser::factory()->withoutName()->create();
+        $seller   = EloquentUser::factory()->create();
+        $listing  = $this->createPublishedListing($seller->id);
+
+        $this
+            ->actingAs($reviewer)
+            ->postJson('/api/v1/users/' . $seller->id . '/reviews', [
+                'listingId' => $listing->id,
+                'rating'    => 5,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.reviewer.firstName', null)
+            ->assertJsonPath('data.reviewer.lastName', null);
     }
 
     public function test_public_listing_payload_includes_seller_rating_aggregate(): void
@@ -133,29 +151,5 @@ class UserReviewTest extends FeatureTestCase
             ->assertJsonPath('data.items.0.id', $listing->id)
             ->assertJsonPath('data.items.0.sellerRating', 4)
             ->assertJsonPath('data.items.0.sellerReviewCount', 1);
-    }
-
-    private function createPublishedListing(string $sellerId): EloquentListing
-    {
-        $category = app(CategoryRepositoryInterface::class)->save([
-            'name'         => 'Отзывы',
-            'slug'         => 'otzyvy-' . substr($sellerId, 0, 8),
-            'catalog_type' => 1,
-        ]);
-
-        return EloquentListing::query()->create([
-            'user_id'       => $sellerId,
-            'category_id'   => $category->id,
-            'type'          => ListingType::PRODUCT,
-            'status'        => ListingStatus::PUBLISHED,
-            'condition'     => ListingCondition::USED,
-            'title'         => 'Тестовое объявление',
-            'slug'          => 'testovoe-obyavlenie-' . substr($sellerId, 0, 8),
-            'description'   => 'Описание объявления для отзыва.',
-            'price'         => 10000,
-            'currency'      => 'RUB',
-            'is_negotiable' => false,
-            'published_at'  => now(),
-        ]);
     }
 }

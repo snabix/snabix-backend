@@ -16,8 +16,8 @@ class UpdateProfileAvatarResponse extends OutputResource
     /**
      * @return array{
      *     id: string,
-     *     firstName: string,
-     *     lastName: string,
+     *     firstName: string|null,
+     *     lastName: string|null,
      *     email: string,
      *     phoneNumber: string|null,
      *     description: string|null,
