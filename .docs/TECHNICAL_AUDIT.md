@@ -410,10 +410,13 @@ Snabix уже имеет хорошую основу для модульного
   - План: public cache - Next `fetch`/RSC; private reactive server state - TanStack Query с query keys/invalidation/retry policy; Zustand оставить для UI/client-only state.
   - Критерий готовности: ADR и pilot на notifications/favorites; нет дублирующего fetch при remount; mutation инвалидирует только нужные queries; hard reload retry удален.
 
-- [ ] `P1-FE-008` Оптимизировать session bootstrap и notification polling.
+- [x] `P1-FE-008` Оптимизировать session bootstrap и notification polling. Закрыто 2026-07-22.
   - Факт: global provider вызывает `/me` и на anonymous public page; authenticated header опрашивает notifications каждые 30 секунд даже при скрытой вкладке; часть async handlers может дать unhandled rejection.
   - План: server-known/session hint или lazy auth bootstrap без раскрытия; polling только authenticated+visible, backoff и refresh on open/focus; centralized mutation error handling.
   - Критерий готовности: anonymous first view не вызывает `/me`; hidden tab не poll; offline/500 не создает unhandled promise; request budget E2E соблюден.
+  - Выполнено во frontend-коммите `bacb768`: добавлен неприватный boolean session hint без user data/token; public anonymous route сразу получает guest state без `/auth/me`, а protected route и ранее подтвержденная сессия проверяются через backend как источник истины. Hint централизованно удаляется при logout, `401` и `419`.
+  - Notification interval заменен управляемым scheduler: polling работает только для authenticated user в visible/online вкладке, pending GET дедуплицируется, focus/open/online обновляют feed с freshness guard, ошибки включают exponential backoff от 60 секунд до 5 минут. Принудительный refresh после mutation не запускается параллельно, а ставится в очередь; mutation errors завершаются toast без unhandled rejection.
+  - Request budget E2E фиксирует `0` запросов `/auth/me` и `/notifications` для anonymous first view и ровно по одному начальному запросу для authenticated header. Прошли production audit, filesize, lint/FSD guard, оба typecheck, contracts `9/9`, production build, `35` Vitest-файлов/`135` тестов и `74` Playwright E2E.
 
 - [x] `P1-FE-009` Исправить auth form semantics и доступность.
   - Факт: формы используют `autocomplete="off"`, email местами не имеет корректного input type/autocomplete; это мешает password managers и assistive technology.
