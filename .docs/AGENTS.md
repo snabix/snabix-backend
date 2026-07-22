@@ -74,6 +74,8 @@
 - Новые shared-инструменты складывай в `app/Shared`.
 - Не добавляй случайные helper-функции вне существующей структуры.
 - Если меняешь API, синхронизируй `Scramble`-документацию и тесты.
+- Для API-полей соблюдай `.docs/API_DTO_CONTRACTS.md`: JSON `lowerCamelCase`, semantic enum fields со string values, `...Id`, ISO 8601 `...At`, money в minor units + currency. Не добавляй новые generic `type/status` или numeric enum на API boundary.
+- Legacy aliases разрешены только в помеченном compatibility-слое и обязаны иметь дату удаления; новый frontend-код не должен их отправлять или сохранять в domain types.
 - Если меняешь поведение авторизации, проверь сценарии `sign-in`, `sign-up`, `verify-email`, `logout`, `me`.
 
 ## Админка и виджеты
@@ -93,7 +95,9 @@
 - Пользовательское создание объявления по умолчанию отправляет его на проверку; черновик создаётся только явным `saveAsDraft`.
 - Переходы статусов объявлений должны идти через `ListingStatusTransitionPolicy`.
 - Отправка черновика на проверку выполняется отдельным action endpoint, а не через ручное изменение статуса в update.
-- Следующие большие зоны развития: admin moderation actions, media attachments, filters без полнотекстового поиска.
+- Admin moderation actions реализованы в таблице и на странице просмотра через `ListingModerationActions`; смена статуса должна идти через `ListingModerationService` и отправлять обязательное уведомление владельцу.
+- Media attachments поддерживают upload, reorder, выбор главного изображения и удаление; storage-операции выполняются через `MediaStorageService` с компенсационной очисткой.
+- Следующие большие зоны развития: publication/availability lifecycle, подтвержденные взаимодействия для отзывов и масштабирование поиска после появления измеримых требований.
 
 ## Что проверять перед завершением
 

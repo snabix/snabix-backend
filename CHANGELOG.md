@@ -8,6 +8,8 @@
 ## [Unreleased]
 
 ### Fixed
+- Упрощенная регистрация больше не сохраняет фиктивные имена `User Account`: nullable-имена поддержаны в domain, profile DTO, письмах, JSON-экспорте и Filament, а legacy sentinel очищается миграцией.
+- Duplicate email и duplicate review при гонке между pre-check и insert теперь преобразуются из именованных PostgreSQL unique violations в предсказуемый `422`, а seller rating пересчитывается под row lock.
 - Ссылка восстановления пароля из `.env.example` теперь ведет на существующий frontend route `/reset-password`.
 - Уязвимые Composer-зависимости Filament, Guzzle, PSR-7, phpseclib и Symfony YAML обновлены до исправленных PHP 8.3-совместимых версий; опубликованные Filament assets синхронизированы с package version.
 - Route `DELETE /api/v1/notifications/preferences` больше не перехватывается wildcard-маршрутом удаления одного уведомления.
@@ -17,6 +19,7 @@
 - DTO объявления теперь нормализует legacy `address_snapshot`, чтобы старые или неполные адреса не ломали загрузку личных объявлений и ответ после создания.
 
 ### Added
+- Добавлены PostgreSQL `CHECK` invariants для listing/review/rating данных и общий `Idempotency-Key` contract для sign-up и create review с HMAC fingerprint, `409` при конфликте payload и scheduler retention.
 - Добавлен production runtime из versioned non-root images для backend, frontend и Telegram-бота: standalone frontend, bot readiness, отдельные app/worker/scheduler процессы, controlled migrations и проверяемый rollback без владения PostgreSQL volume.
 - Добавлен воспроизводимый импорт категорий со stable external IDs, source version/checksum, persisted preview manifest, diff, explicit approval, deactivate missing и rollback.
 - Добавлены environment matrix и заполняемый HTTPS staging smoke report для проверки auth/session/CSRF flow без сохранения секретов.

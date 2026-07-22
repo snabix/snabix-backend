@@ -36,6 +36,9 @@ readonly class ListRootCategoriesHandler
     {
         return [
             'id'               => $category->id,
+            'catalogKind'      => $category->catalog_type->apiName(),
+            'catalogKindLabel' => $category->catalog_type->label(),
+            // Deprecated compatibility aliases. Remove after 2026-10-31.
             'catalogType'      => $category->catalog_type->value,
             'catalogTypeLabel' => $category->catalog_type->label(),
             'parentId'         => $category->parent_id,

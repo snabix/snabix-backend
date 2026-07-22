@@ -32,8 +32,8 @@ return new class extends Migration {
             ->each(function (object $user): void {
                 $name      = trim((string) ($user->name ?? ''));
                 $parts     = preg_split('/\s+/u', $name, 2) ?: [];
-                $firstName = $parts[0] ?? 'User';
-                $lastName  = $parts[1] ?? 'Account';
+                $firstName = isset($parts[0]) && $parts[0] !== '' ? $parts[0] : null;
+                $lastName  = isset($parts[1]) && $parts[1] !== '' ? $parts[1] : null;
 
                 DB::table('users')
                     ->where('id', $user->id)

@@ -46,8 +46,8 @@ readonly class UpdateProfileHandler
         }
 
         $emailChanged = $user->updateProfile(
-            new FirstName($data->firstName),
-            new LastName($data->lastName),
+            filled($data->firstName) ? new FirstName($data->firstName) : null,
+            filled($data->lastName) ? new LastName($data->lastName) : null,
             $email,
             filled($data->phoneNumber) ? new PhoneNumber($data->phoneNumber) : null,
             filled($data->description) ? $data->description : null,
@@ -67,8 +67,8 @@ readonly class UpdateProfileHandler
 
         return UpdateProfileOutput::from([
             'id'              => $user->id->value(),
-            'firstName'       => $user->firstName->value(),
-            'lastName'        => $user->lastName->value(),
+            'firstName'       => $user->firstName?->value(),
+            'lastName'        => $user->lastName?->value(),
             'email'           => $user->email->value(),
             'phoneNumber'     => $user->phoneNumber?->value(),
             'description'     => $user->description,

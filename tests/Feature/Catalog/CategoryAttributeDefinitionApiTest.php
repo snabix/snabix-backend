@@ -53,6 +53,9 @@ class CategoryAttributeDefinitionApiTest extends FeatureTestCase
             ->assertJsonPath('data.items.0.placeholder', 'Выберите производителя')
             ->assertJsonPath('data.items.0.helpText', 'Укажите бренд устройства.')
             ->assertJsonPath('data.items.0.groupName', 'Основные')
+            ->assertJsonPath('data.category.catalogKind', 'product')
+            ->assertJsonPath('data.items.0.valueType', 'select')
+            ->assertJsonPath('data.items.0.valueTypeLabel', 'Выбор одного значения')
             ->assertJsonPath('data.items.0.showInCard', true);
     }
 

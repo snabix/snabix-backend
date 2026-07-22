@@ -75,7 +75,7 @@ class ListingForm
                                                 ->orderBy('first_name')
                                                 ->get()
                                                 ->mapWithKeys(fn(EloquentUser $user): array => [
-                                                    $user->id => trim($user->first_name . ' ' . $user->last_name) . ' [' . $user->email . ']',
+                                                    $user->id => $user->admin_label,
                                                 ])
                                                 ->all())
                                             ->searchable()

@@ -1,55 +1,63 @@
 # API DTO Contracts
 
-Дата фиксации: 2026-05-19
+Дата фиксации: 2026-07-19
 
 Этот документ фиксирует сложные response DTO, которые frontend использует как стабильный контракт. Scramble остается основным источником маршрутов и схем API, а здесь дополнительно описаны enum values, label-поля и различие public/private DTO.
 
+## Идемпотентные create-запросы
+
+`POST /api/v1/auth/sign-up` и `POST /api/v1/users/{userId}/reviews` принимают необязательный header `Idempotency-Key`.
+
+- формат: 8-128 латинских букв, цифр или символов `. _ : -`;
+- клиент генерирует новый непрогнозируемый ключ для нового действия;
+- после timeout или потери ответа клиент повторяет запрос с тем же ключом и неизменным payload;
+- одинаковый ключ, actor и payload в течение 24 часов возвращают ранее созданный ресурс без повторной записи;
+- одинаковый ключ с измененным payload возвращает `409` и code `request.idempotency-conflict`;
+- повтор email или review с другим ключом остается бизнес-ошибкой `422`.
+
+Срок гарантированного replay задается backend-параметром `IDEMPOTENCY_RETENTION_HOURS`. Backend хранит только HMAC actor/key/payload fingerprint, а не исходный ключ или пароль.
+
+## Conventions имен полей
+
+| Слой | Правило | Пример |
+|------|---------|--------|
+| PostgreSQL | `snake_case`; внешний ключ заканчивается на `_id` | `user_id`, `published_at` |
+| PHP domain/application | `camelCase`; имя отражает смысл, а не тип хранения | `$listingStatus`, `$priceAmountMinor` |
+| JSON request/response | `lowerCamelCase`; relation/reference заканчивается на `Id` | `categoryId`, `publishedAt` |
+| Public ID | непрозрачная строка UUID/ULID; клиент не извлекает из нее смысл | `"0196f6d4-..."` |
+| Timestamp | `...At`, ISO 8601 с timezone; backend сериализует UTC | `"2026-05-19T10:00:00+00:00"` |
+| Date without time | `YYYY-MM-DD`; suffix `At` не используется | `dateOfBirth: "1994-05-12"` |
+| Money | integer minor units + ISO 4217 currency | `priceAmountMinor: 85000`, `priceCurrency: "RUB"` |
+| Enum | предметное имя поля + стабильное string value | `listingStatus: "pendingReview"` |
+| Boolean | префикс `is`, `has` или `can` | `isNegotiable` |
+
+Общие поля `type` и `status` запрещены для новых resource DTO. Исключение: локальный discriminated union, где `type` является строковым discriminator, например `contentBlocks[].type`. Числовое значение enum допустимо внутри DB/domain, но не является каноническим API-контрактом.
+
+`fullName` означает вычисленное полное имя/название, `description` — пользовательское описание. В JSON нельзя вводить варианты `fullname` или `about`; DB-колонки с историческим именем нормализуются mapper-ом.
+
 ## Enum Values And Labels
 
-Все enum-поля в API отдаются числом, а рядом добавляется человекочитаемое label-поле для UI. Frontend не должен самостоятельно переводить числовые значения, если backend уже вернул `*Label`.
+Frontend использует string value для логики и `*Label` для отображения. Числа в таблице приведены только как внутреннее DB/domain-представление.
 
-### ListingType
+| API field | String values | DB values |
+|-----------|---------------|-----------|
+| `listingKind` | `product`, `service` | `1`, `2` |
+| `listingStatus` | `draft`, `pendingReview`, `published`, `rejected`, `archived` | `1`-`5` |
+| `itemCondition` | `new`, `used`, `notApplicable` | `1`-`3` |
+| `catalogKind` | `product`, `service` | `1`, `2` |
+| `valueType` | `text`, `number`, `boolean`, `select`, `multiSelect`, `date` | `1`-`6` |
+| `publicationStatus` | `draft`, `published`, `archived` | `1`-`3` |
+| `reviewStatus` | `published`, `hidden`, `rejected` | string enum |
 
-| Case | Value | Label |
-|------|-------|-------|
-| PRODUCT | 1 | Товар |
-| SERVICE | 2 | Услуга |
+## Compatibility и deprecation
 
-### ListingStatus
+Переходный период для aliases `type`, `typeLabel`, `status`, `statusLabel`, `condition`, `conditionLabel`, `price`, `currency`, `catalogType`, `catalogTypeLabel`, а также numeric `attributeValues[].type` и `contentBlocks[].typeValue` заканчивается **2026-10-31**. Для review DTO `status`/`statusLabel` заменены на `reviewStatus`/`reviewStatusLabel`.
 
-| Case | Value | Label |
-|------|-------|-------|
-| DRAFT | 1 | Черновик |
-| PENDING_REVIEW | 2 | На проверке |
-| PUBLISHED | 3 | Опубликовано |
-| REJECTED | 4 | Отклонено |
-| ARCHIVED | 5 | В архиве |
-
-### ListingCondition
-
-| Case | Value | Label |
-|------|-------|-------|
-| NEW | 1 | Новый |
-| USED | 2 | Б/у |
-| NOT_APPLICABLE | 3 | Не применяется |
-
-### CategoryCatalogType
-
-| Case | Value | Label |
-|------|-------|-------|
-| PRODUCT | 1 | Товары |
-| SERVICE | 2 | Услуги |
-
-### CategoryAttributeType
-
-| Case | Value | Label |
-|------|-------|-------|
-| TEXT | 1 | Текст |
-| NUMBER | 2 | Число |
-| BOOLEAN | 3 | Да/Нет |
-| SELECT | 4 | Выбор одного значения |
-| MULTISELECT | 5 | Выбор нескольких значений |
-| DATE | 6 | Дата |
+- backend до этой даты принимает старые request-поля и возвращает старые response aliases вместе с каноническими;
+- если canonical и legacy request-поле переданы одновременно, запрос отклоняется как неоднозначный;
+- frontend разворачивается первым: он отправляет canonical fields, но compatibility adapter умеет прочитать legacy-only ответ; backend можно откатить независимо, а откат frontend после backend выполняется координированно;
+- adapter удаляет legacy aliases до передачи данных в entities/screens;
+- удаление aliases раньше даты запрещено; после даты выполняется отдельной задачей с release notes и contract-test update.
 
 ## Private Listing DTO
 
@@ -74,23 +82,23 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
     "userId": "0196f6cf-7f9d-72f4-91df-d35f84efef10",
     "category": {
       "id": 12,
-      "catalogType": 1,
-      "catalogTypeLabel": "Товары",
+      "catalogKind": "product",
+      "catalogKindLabel": "Товары",
       "parentId": 3,
       "name": "Смартфоны",
       "slug": "smartfony"
     },
-    "type": 1,
-    "typeLabel": "Товар",
-    "status": 2,
-    "statusLabel": "На проверке",
-    "condition": 2,
-    "conditionLabel": "Б/у",
+    "listingKind": "product",
+    "listingKindLabel": "Товар",
+    "listingStatus": "pendingReview",
+    "listingStatusLabel": "На проверке",
+    "itemCondition": "used",
+    "itemConditionLabel": "Б/у",
     "title": "iPhone 14 Pro 256 GB",
     "slug": "iphone-14-pro-256-gb",
     "description": "Аккуратное состояние, полный комплект, без ремонта.",
-    "price": 85000,
-    "currency": "RUB",
+    "priceAmountMinor": 85000,
+    "priceCurrency": "RUB",
     "isNegotiable": true,
     "contactName": "Имран",
     "contactPhone": "+79991234567",
@@ -105,8 +113,8 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
         "attributeDefinitionId": 101,
         "name": "Память",
         "slug": "memory",
-        "type": 4,
-        "typeLabel": "Выбор одного значения",
+        "valueType": "select",
+        "valueTypeLabel": "Выбор одного значения",
         "value": "256 GB",
         "displayValue": "256 GB"
       },
@@ -114,8 +122,8 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
         "attributeDefinitionId": 102,
         "name": "Доставка",
         "slug": "delivery",
-        "type": 3,
-        "typeLabel": "Да/Нет",
+        "valueType": "boolean",
+        "valueTypeLabel": "Да/Нет",
         "value": true,
         "displayValue": "Да"
       }
@@ -135,15 +143,15 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
       {
         "id": "0196f6d4-5a72-72a1-97c4-7b9de6a0f8b1",
         "userId": "0196f6cf-7f9d-72f4-91df-d35f84efef10",
-        "status": 1,
-        "statusLabel": "Черновик",
-        "type": 1,
-        "typeLabel": "Товар",
-        "condition": 2,
-        "conditionLabel": "Б/у",
+        "listingStatus": "draft",
+        "listingStatusLabel": "Черновик",
+        "listingKind": "product",
+        "listingKindLabel": "Товар",
+        "itemCondition": "used",
+        "itemConditionLabel": "Б/у",
         "title": "iPhone 14 Pro 256 GB",
-        "price": 85000,
-        "currency": "RUB",
+        "priceAmountMinor": 85000,
+        "priceCurrency": "RUB",
         "isNegotiable": true,
         "contactName": "Имран",
         "contactPhone": "+79991234567",
@@ -172,7 +180,7 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 |-------------------------------|--------------------------------------------|
 | `GET /api/v1/public/listings` | Публичный список опубликованных объявлений |
 
-Поддерживаемые query-фильтры: `categoryId`, `type`, `minPrice`, `maxPrice`, `sort`. Значения `sort`: `newest`, `oldest`, `price_asc`, `price_desc`, `popular`.
+Поддерживаемые query-фильтры: `categoryId`, `listingKind`, `minPriceAmountMinor`, `maxPriceAmountMinor`, `sort`. Значения `sort`: `newest`, `oldest`, `price_asc`, `price_desc`, `popular`.
 
 Поля `userId`, `contactName`, `contactPhone`, `contactEmail`, `rejectionReason`, `media` в public DTO не возвращаются. В `attributeValues` попадают только характеристики с `showInCard = true`.
 
@@ -184,23 +192,23 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
         "id": "0196f6d4-5a72-72a1-97c4-7b9de6a0f8b1",
         "category": {
           "id": 12,
-          "catalogType": 1,
-          "catalogTypeLabel": "Товары",
+          "catalogKind": "product",
+          "catalogKindLabel": "Товары",
           "parentId": 3,
           "name": "Смартфоны",
           "slug": "smartfony"
         },
-        "type": 1,
-        "typeLabel": "Товар",
-        "status": 3,
-        "statusLabel": "Опубликовано",
-        "condition": 2,
-        "conditionLabel": "Б/у",
+        "listingKind": "product",
+        "listingKindLabel": "Товар",
+        "listingStatus": "published",
+        "listingStatusLabel": "Опубликовано",
+        "itemCondition": "used",
+        "itemConditionLabel": "Б/у",
         "title": "iPhone 14 Pro 256 GB",
         "slug": "iphone-14-pro-256-gb",
         "description": "Аккуратное состояние, полный комплект, без ремонта.",
-        "price": 85000,
-        "currency": "RUB",
+        "priceAmountMinor": 85000,
+        "priceCurrency": "RUB",
         "isNegotiable": true,
         "viewsCount": 12,
         "isFeatured": false,
@@ -211,8 +219,8 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
             "attributeDefinitionId": 101,
             "name": "Память",
             "slug": "memory",
-            "type": 4,
-            "typeLabel": "Выбор одного значения",
+            "valueType": "select",
+            "valueTypeLabel": "Выбор одного значения",
             "value": "256 GB",
             "displayValue": "256 GB"
           }
@@ -237,7 +245,7 @@ Private-only поля: `userId`, `contactName`, `contactPhone`, `contactEmail`, 
 |--------------------------------------------------|---------------------------------------------------------|
 | `GET /api/v1/categories/{categoryId}/attributes` | Получение характеристик категории с учетом наследования |
 
-Frontend должен учитывать `placeholder`, `helpText`, `defaultValue`, `groupName`, `showInCard`, `isRequired`, `isFilterable`, `options` и `typeLabel`.
+Frontend должен учитывать `placeholder`, `helpText`, `defaultValue`, `groupName`, `showInCard`, `isRequired`, `isFilterable`, `options` и `valueTypeLabel`.
 
 ```json
 {
@@ -247,8 +255,8 @@ Frontend должен учитывать `placeholder`, `helpText`, `defaultValu
       "categoryId": 12,
       "name": "Память",
       "slug": "memory",
-      "type": 4,
-      "typeLabel": "Выбор одного значения",
+      "valueType": "select",
+      "valueTypeLabel": "Выбор одного значения",
       "unit": null,
       "description": "Объем встроенной памяти устройства.",
       "placeholder": "Выберите объем памяти",

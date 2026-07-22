@@ -19,6 +19,9 @@ class CategoryAttributeDefinitionPayloadMapper
                 ? null
                 : [
                     'id'               => $definition->category->id,
+                    'catalogKind'      => $definition->category->catalog_type->apiName(),
+                    'catalogKindLabel' => $definition->category->catalog_type->label(),
+                    // Deprecated compatibility aliases. Remove after 2026-10-31.
                     'catalogType'      => $definition->category->catalog_type->value,
                     'catalogTypeLabel' => $definition->category->catalog_type->label(),
                     'parentId'         => $definition->category->parent_id,
@@ -29,6 +32,9 @@ class CategoryAttributeDefinitionPayloadMapper
             'categoryId'        => $definition->category_id,
             'name'              => $definition->name,
             'slug'              => $definition->slug,
+            'valueType'         => $definition->type->apiName(),
+            'valueTypeLabel'    => $definition->type->label(),
+            // Deprecated compatibility aliases. Remove after 2026-10-31.
             'type'              => $definition->type->value,
             'typeLabel'         => $definition->type->label(),
             'unit'              => $definition->unit,

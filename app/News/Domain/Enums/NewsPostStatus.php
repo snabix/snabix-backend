@@ -29,6 +29,15 @@ enum NewsPostStatus: int
         };
     }
 
+    public function apiName(): string
+    {
+        return match ($this) {
+            self::DRAFT     => 'draft',
+            self::PUBLISHED => 'published',
+            self::ARCHIVED  => 'archived',
+        };
+    }
+
     public function color(): string
     {
         return match ($this) {

@@ -6,6 +6,7 @@ namespace App\Listing\Http\UpdateListing;
 
 use App\Listing\Domain\Enums\ListingCondition;
 use App\Listing\Domain\Enums\ListingType;
+use App\Listing\Http\Support\ResolvesListingApiFields;
 use App\Shared\Http\Requests\ResolvesAuthenticatedUserId;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -13,6 +14,7 @@ use Illuminate\Validation\Rule;
 class UpdateListingRequest extends FormRequest
 {
     use ResolvesAuthenticatedUserId;
+    use ResolvesListingApiFields;
 
     /**
      * @return array<string, array<int, mixed>>
@@ -21,7 +23,12 @@ class UpdateListingRequest extends FormRequest
     {
         return [
             'categoryId'       => ['required', 'uuid', 'exists:categories,id'],
-            'type'             => ['required', 'integer', Rule::enum(ListingType::class)],
+            'listingKind'      => ['required_without:type', 'string', Rule::in(self::listingKindValues()), 'prohibits:type'],
+            'itemCondition'    => ['nullable', 'string', Rule::in(self::itemConditionValues()), 'prohibits:condition'],
+            'priceAmountMinor' => ['nullable', 'integer', 'min:0', 'prohibits:price'],
+            'priceCurrency'    => ['nullable', 'string', 'size:3', 'prohibits:currency'],
+            // Deprecated compatibility aliases. Remove after 2026-10-31.
+            'type'             => ['required_without:listingKind', 'integer', Rule::enum(ListingType::class), 'prohibits:listingKind'],
             'condition'        => ['nullable', 'integer', Rule::enum(ListingCondition::class)],
             'title'            => ['required', 'string', 'max:255'],
             'description'      => ['required', 'string', 'max:10000'],
@@ -49,12 +56,12 @@ class UpdateListingRequest extends FormRequest
             'userId'          => $this->userId(),
             'listingId'       => $this->listingId(),
             'categoryId'      => $this->string('categoryId')->toString(),
-            'type'            => $this->integer('type'),
-            'condition'       => $this->nullableIntegerInput('condition'),
+            'type'            => $this->listingTypeValue(),
+            'condition'       => $this->nullableListingConditionValue(),
             'title'           => $this->string('title')->toString(),
             'description'     => $this->string('description')->toString(),
-            'price'           => $this->nullableIntegerInput('price'),
-            'currency'        => $this->nullableUppercaseString('currency'),
+            'price'           => $this->nullableMoneyAmount('priceAmountMinor', 'price'),
+            'currency'        => $this->nullableMoneyCurrency('priceCurrency', 'currency'),
             'isNegotiable'    => $this->boolean('isNegotiable', false),
             'contactName'     => $this->nullableStringInput('contactName'),
             'contactPhone'    => $this->nullableStringInput('contactPhone'),
@@ -90,22 +97,8 @@ class UpdateListingRequest extends FormRequest
         return true;
     }
 
-    private function nullableIntegerInput(string $key): ?int
-    {
-        $value = $this->input($key);
-
-        return is_int($value) ? $value : (is_numeric($value) ? (int) $value : null);
-    }
-
     private function nullableStringInput(string $key): ?string
     {
         return $this->filled($key) ? $this->string($key)->toString() : null;
-    }
-
-    private function nullableUppercaseString(string $key): ?string
-    {
-        $value = $this->input($key);
-
-        return is_string($value) && $value !== '' ? mb_strtoupper($value) : null;
     }
 }

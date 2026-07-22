@@ -30,6 +30,9 @@ class ListRootCategoriesApiTest extends FeatureTestCase
                 'data' => [
                     '*' => [
                         'id',
+                        'catalogKind',
+                        'catalogKindLabel',
+                        // Legacy aliases stay available through the documented deprecation window.
                         'catalogType',
                         'catalogTypeLabel',
                         'parentId',
@@ -44,7 +47,8 @@ class ListRootCategoriesApiTest extends FeatureTestCase
                         'children',
                     ],
                 ],
-            ]);
+            ])
+            ->assertJsonPath('data.0.catalogKind', 'product');
     }
 
     public function test_root_categories_are_cached_and_invalidated_after_changes(): void

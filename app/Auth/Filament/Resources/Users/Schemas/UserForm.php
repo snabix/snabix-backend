@@ -29,14 +29,14 @@ class UserForm
                             ->placeholder('Например, Imran')
                             ->prefixIcon(Heroicon::OutlinedUser)
                             ->autofocus()
-                            ->required()
+                            ->helperText('Необязательно. Не подменяется фиктивным значением.')
                             ->maxLength(100),
 
                         TextInput::make('last_name')
                             ->label('Фамилия')
                             ->placeholder('Например, Khan')
                             ->prefixIcon(Heroicon::OutlinedUser)
-                            ->required()
+                            ->helperText('Необязательно. Пользователь сможет заполнить позже.')
                             ->maxLength(100),
 
                         TextInput::make('email')

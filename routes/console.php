@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -36,4 +37,13 @@ Schedule::command(sprintf(
 
 Schedule::command('auth:clear-resets')
     ->dailyAt('04:00')
+    ->withoutOverlapping();
+
+Schedule::call(
+    fn(): int => DB::table('idempotency_keys')
+        ->where('expires_at', '<=', now())
+        ->delete(),
+)
+    ->name('cleanup-expired-idempotency-keys')
+    ->dailyAt('04:10')
     ->withoutOverlapping();

@@ -85,7 +85,7 @@ Snabix уже имеет хорошую основу для модульного
 
 | Файл | Состояние | Что требуется |
 | --- | --- | --- |
-| `.docs/AGENTS.md` | Частично актуален | Правила полезны, но код уведомлений и Review уже нарушает заявленный `Request -> Input -> Handler -> Output -> Response`; убрать устаревшее описание media/moderation как будущих зон. |
+| `.docs/AGENTS.md` | Частично актуален | Статус media/moderation актуализирован `2026-07-22`; код уведомлений и Review по-прежнему имеет обоснованные исключения из заявленного `Request -> Input -> Handler -> Output -> Response`. |
 | `.docs/API_DTO_CONTRACTS.md` | Устарел | Добавить `regionId`, `cityId`, `region`, `city`, `isNegotiable`, актуальные sort; исправить envelope 401/419 с `error` на фактический `code`; включить reviews и export. |
 | `.docs/ARCHITECTURE.md` | Частично актуален | Привести topology, очередь, scheduler, bot и deployment к факту; честно назвать архитектуру pragmatic modular layered, пока Domain зависит от Eloquent/Laravel. |
 | `.docs/FILE_SIZE_GUIDELINES.md` | Политика актуальна, baseline устарел | Обновить список крупных файлов и требовать ID этого аудита для исключений. |
@@ -258,12 +258,16 @@ Snabix уже имеет хорошую основу для модульного
 
 ## P1 - Backend и данные
 
-- [ ] `P1-BE-001` Усилить DB invariants и обработку конкурентных записей.
+- [x] `P1-BE-001` Усилить DB invariants и обработку конкурентных записей.
   - Факт: rating/listing enums, currency, price/rating ranges не полностью закреплены CHECK constraints. Duplicate email и duplicate review проверяются до insert, что оставляет race до unique violation.
   - Риск: невалидные состояния из CLI/admin/race; unique violation превращается в 500 вместо 409/422.
   - Где смотреть: users/listings/reviews migrations, signup и review services.
   - План: DB CHECK/enum-compatible constraints, catch named unique violations, idempotency keys для create actions, concurrency tests.
   - Критерий готовности: invalid direct insert отклоняется DB; параллельные signup/review возвращают предсказуемый API response без 500.
+  - Выполнено `2026-07-18`: добавлены именованные PostgreSQL CHECK для listings, reviews и seller rating aggregate; race по `users_email_unique` и `user_reviews_reviewer_id_listing_id_unique` преобразуется в `422` после rollback.
+  - Idempotency: sign-up и create review принимают `Idempotency-Key`, хранят HMAC actor/key/request fingerprint, повторяют ранее созданный resource и возвращают `409 request.idempotency-conflict` при измененном payload.
+  - Concurrency: seller aggregate пересчитывается под `FOR UPDATE` lock; feature-тесты внедряют конкурирующую запись строго после pre-check и подтверждают отсутствие `500`.
+  - Evidence: `database/migrations/2026_07_18_000000_harden_marketplace_write_invariants.php`, `tests/Feature/Database/MarketplaceWriteInvariantTest.php`, `tests/Feature/Auth/SignUpTest.php`, `tests/Feature/Review/UserReviewWriteSafetyTest.php`, `.docs/API_DTO_CONTRACTS.md`.
 
 - [ ] `P1-BE-002` Расширить lifecycle объявления для реального marketplace.
   - Факт: statuses ограничены draft/pending/published/rejected/archived; нет reserved/sold/completed/paused/expired. Owner может редактировать published listing без обязательной повторной модерации; delete hard-удаляет историю.
@@ -299,11 +303,14 @@ Snabix уже имеет хорошую основу для модульного
   - План: revoke other sessions and remember tokens по policy; фильтровать expired; использовать поддерживаемый UA parser; geo-IP только с consent, лицензией БД и явной точностью; уведомление о новом входе считать обязательным security event.
   - Критерий готовности: tests на session fixation/revocation/expiry, письмо и UI одинаково отображают нормализованные device/browser/time/IP/location.
 
-- [ ] `P1-BE-008` Убрать фиктивные персональные имена из регистрации.
+- [x] `P1-BE-008` Убрать фиктивные персональные имена из регистрации.
   - Факт: упрощенная регистрация сохраняет sentinel `User`/`Account`, потому что domain/DB требуют non-null first/last name.
   - Риск: выдуманные данные попадают в письма, аудит, экспорт и публичное представление как реальные персональные данные.
   - План: сделать имена nullable до заполнения профиля либо ввести отдельный `display_name`/profile completeness; не подменять отсутствие значением.
   - Критерий готовности: новый пользователь без имени корректно отображается во всех DTO/mail/admin; миграция и tests не создают fake values.
+  - Выполнено `2026-07-18`: first/last name стали nullable в domain, repository и profile API; регистрация больше не сохраняет sentinel, а migration очищает существующую точную пару `User`/`Account`.
+  - Presentation policy: приватные письма и Filament используют реальное имя либо email аккаунта; публичный review DTO сохраняет nullable-поля без раскрытия email, frontend показывает нейтральное `Пользователь`.
+  - Tests: signup/profile/update/reset/export/review/Filament и migration regression покрывают пользователя без имени; backend `task check` — `184` tests / `960` assertions, frontend — `113` unit / `38` E2E.
 
 - [ ] `P1-BE-009` Ввести verification/abuse policy для marketplace actions.
   - Факт: email verification не обязательна для создания объявления/отзыва; public catalog/location/news/reviews и часть authenticated mutations не имеют специализированных rate limits.
@@ -346,37 +353,54 @@ Snabix уже имеет хорошую основу для модульного
 
 ## P1 - Frontend
 
-- [ ] `P1-FE-001` Перенести публичную витрину на server-first rendering.
+- [x] `P1-FE-001` Перенести публичную витрину на server-first rendering.
   - Факт: home/listing details получают основное content через client `useEffect`; сервер отдает skeleton, затем hydration запускает API.
   - Риск: слабые SEO/link previews, задержка LCP, пустой initial HTML и лишний waterfall.
   - План: public list/detail/category data загружать в Server Components через server API client и cache/revalidate; client hydrates filters/favorite state; metadata строить из public DTO.
   - Критерий готовности: HTML без JS содержит title/price/content; generated metadata/OG работают; LCP/TTFB/API budget соблюден; auth favorite state не раскрывается сервером чужому пользователю.
+  - Выполнено `2026-07-18`, frontend-реализация: `f4e0b23`. Главная, категория и detail загружают публичные DTO в Server Components; listings/detail кешируются на 60 секунд, категории на 1 час. Фильтры, пагинация и favorites остаются client islands без повторного hydration-запроса списка.
+  - Privacy boundary: server API client всегда использует `credentials: omit`, не принимает browser cookies/Authorization и валидирует ответы Zod. E2E с искусственной session cookie подтверждает, что сервер не переносит чужое `isFavorite` в HTML.
+  - SEO: category/listing `generateMetadata` строит title, description, Open Graph и Twitter image из публичного DTO; настоящий API `404` преобразуется в `notFound`, outage получает отдельное безопасное состояние.
+  - Performance evidence: локальный production mobile baseline на deterministic API — TTFB `125 ms`, LCP `184 ms`, `1` browser API request; SSR E2E отдельно фиксирует `0` browser-запросов `/public/listings` после hydration. Route-specific home chunk после direct imports — `18 548 bytes gzip`.
+  - Tests: `115` Vitest tests, production build и `43` Playwright E2E прошли; отдельный no-JS сценарий проверяет title/price/category в initial HTML. Production audit не содержит high/critical.
 
 - [ ] `P1-FE-002` Реализовать стабильный публичный профиль продавца.
   - Факт: seller page является placeholder; для public listing нет stable seller ID, поэтому frontend строит slug из имени, что допускает collision и rename break.
   - План: backend public seller DTO с immutable public ID или unique slug, privacy fields allowlist, listings/reviews pagination; route `/sellers/{publicIdOrSlug}`.
   - Критерий готовности: два одинаковых имени не конфликтуют; rename сохраняет redirect; contact/privacy policy и share links покрыты E2E.
 
-- [ ] `P1-FE-003` Исправить hydration strategy вместо глобального подавления предупреждений.
+- [x] `P1-FE-003` Исправить hydration strategy вместо глобального подавления предупреждений.
   - Факт: `suppressHydrationWarning` стоит на `<html>` и `<body>` и скрывает расхождения всего дерева.
   - План: определить источник theme mismatch, применить suppression только к атрибуту theme root либо server cookie/init script; добавить hydration regression test.
   - Критерий готовности: global suppression удален, console E2E не содержит hydration/script warnings в light/dark/system modes.
+  - Выполнено `2026-07-19`, frontend-реализация: `3500d1c`. До React hydration `beforeInteractive` bootstrap в корневом `<head>` читает сохраненный режим, учитывает системную цветовую схему и синхронно применяет `class`, `data-theme`, `data-theme-mode` и `color-scheme`.
+  - Глобальное подавление удалено с `<body>`; одноступенчатый `suppressHydrationWarning` оставлен только на `<html>`, атрибуты которого намеренно меняет bootstrap. Остальное React-дерево снова сообщает о реальных расхождениях.
+  - Theme state нормализован до `light`/`dark`/`system`; старые `manual`/`auto` preferences мигрируются без потери выбора, а `system` реагирует на изменение `prefers-color-scheme` во время сессии.
+  - Regression: Playwright проверяет light, dark и system, включая live system change, и отклоняет hydration/script warnings из console/page errors. Прошли `115` Vitest tests, lint, оба typecheck, production build и `46` Playwright E2E; production audit не содержит high/critical.
 
 - [ ] `P1-FE-004` Усилить CSP и media origin policy.
   - Факт: production `script-src` содержит `'unsafe-inline'`; img/media разрешают весь `https:` несмотря на более узкие `remotePatterns` Next.
   - План: nonce/hash strategy с учетом актуальной документации Next 16; разрешить только фактические CDN/API origins; добавить `report-to` после настройки endpoint.
   - Критерий готовности: production smoke без CSP violations, inline injection не исполняется, unit tests проверяют allowlist и отсутствие broad wildcard.
 
-- [ ] `P1-FE-005` Восстановить Feature-Sliced boundaries.
+- [x] `P1-FE-005` Восстановить Feature-Sliced boundaries.
   - Факт: `src/shared/ui/header` импортирует entities/features, а shared Axios импортирует auth feature events. Это направленные зависимости снизу вверх.
   - План: перенести header в `widgets/header`; auth session events в shared-level contract или app provider; добавить ESLint restricted imports/FSD boundary plugin после оценки совместимости.
   - Критерий готовности: автоматическое правило запрещает shared -> entities/features/screens/widgets; существующие нарушения устранены без circular imports.
+  - Выполнено 2026-07-22: header перенесен в `src/widgets/header` и экспортируется через public API; внутренние импорты виджета сделаны относительными без обратной зависимости на barrel. Контракт `401/419` перенесен из auth feature в `src/shared/api/auth-session-events.ts`, поэтому Axios больше не зависит от верхнего слоя. Zod-схема категорий отвязана от entity types локальным wire/contract type.
+  - Guard: все TypeScript-файлы `src/shared` защищены native ESLint `no-restricted-imports` от импортов `app/entities/features/screens/widgets`; межслойные contract tests вынесены в `tests/contracts`. Выбор native rule не добавляет новую зависимость и покрывает alias/relative imports.
+  - Проверено: frontend `lint` + client-boundary budget `52/53`, оба typecheck, `119` Vitest tests, file-size guard, production build и `72/72` Playwright E2E; старые import paths отсутствуют, измененный граф не содержит обратных импортов/cycles.
 
-- [ ] `P1-FE-006` Сократить лишние Client Component boundaries и неправильный suffix `Action`.
+- [x] `P1-FE-006` Сократить лишние Client Component boundaries и неправильный suffix `Action`.
   - Факт: найдено 68 файлов с `"use client"` и сотни props вида `onRetryAction`, `onChangeAction`, хотя это обычные callbacks, а не Next Server Actions.
   - Риск: увеличенный client graph, путаница архитектурного смысла и шумные API компонентов.
   - План: client boundary только у state/effect/browser providers; leaf presentation остается server-compatible; обычные callbacks называются `onRetry`, `onChange`, `onOpenChange`; `Action` сохраняется только для реальных server actions, если они появятся.
   - Критерий готовности: зафиксирован baseline уменьшения client modules/JS; lint/build/tests green; naming rule отражен в AGENTS.
+  - Выполнено `2026-07-19`, frontend-реализация: `7f07ae3`. Проверенный before-edit baseline составлял `66` явных client entry points и `460` употреблений `on*Action`; после рефакторинга осталось `53` boundaries (`-19,7%`) и `0` неправильно названных callbacks.
+  - Статическая лента категорий главной вынесена из client graph, а filters/favorites/pagination оставлены отдельным client island. Route-specific JS главной уменьшился с `64 904` до `61 084` raw bytes (`-5,9%`) и с `18 548` до `17 807` gzip bytes (`-4,0%`) на Node `22.23.1`/Next `16.2.10`.
+  - `npm run architecture:client` входит в lint, контролирует budget `53` и запрещает `on*Action`; ESLint и `AGENTS.md` закрепляют обычные callback names и резервируют `Action` для настоящих Server Actions.
+  - shadcn review зафиксирован в `$PROJECT_ROOT/snabix-frontend/docs/CLIENT_COMPONENTS_AND_SHADCN.md`: внедрены server-compatible `Field` и `Spinner`, массовая Radix-to-Base UI миграция отклонена без отдельного ADR/измерений; `Input Group`, `Native Select`, `Item`, `Button Group` и Carousel классифицированы по целесообразности.
+  - Прошли filesize, lint/architecture guard, оба typecheck, `115` Vitest tests, production build на Node `22.23.1` и `46` Playwright E2E. No-JS SSR regression подтверждает server-rendered категории; production audit не содержит high/critical.
 
 - [ ] `P1-FE-007` Ввести единую server-state strategy.
   - Факт: category/location используют дублирующиеся Zustand TTL caches; screens повторяют `useEffect/isMounted/loading/error/pagination`; retry иногда делает `window.location.reload()`.
@@ -406,10 +430,11 @@ Snabix уже имеет хорошую основу для модульного
   - План: различать 404/401/5xx/network/schema; use server fetch/revalidate tags; показывать retryable service error.
   - Критерий готовности: contract tests на 404 и 500; cache invalidation documented; outage не индексируется как настоящий 404.
 
-- [ ] `P1-FE-012` Автоматизировать backend/frontend contract drift.
+- [x] `P1-FE-012` Автоматизировать backend/frontend contract drift.
   - Факт: Scramble и Zod существуют отдельно; документация DTO уже расходится с кодом.
   - План: экспорт OpenAPI artifact backend, generate/validate selected API schemas или consumer-driven contract snapshots; не заменять domain adapters сырыми generated types.
   - Критерий готовности: несовместимое удаление/rename поля ломает CI обоих контрактов; public/private listing privacy assertions обязательны.
+  - Выполнено 2026-07-22: backend CI экспортирует полный Scramble OpenAPI artifact и валидирует выбранные listing operations; versioned `contracts/listings.v1.json` проверяется реальными provider HTTP feature-тестами и frontend Zod consumer-тестом. Public contract запрещает owner/contact/moderation/full-media поля, а frontend adapters сохранены как отдельная domain boundary. Полные backend checks и frontend lint/typecheck/unit/build/E2E (`72/72`) проходят.
 
 - [ ] `P1-FE-013` Расширить E2E и accessibility matrix.
   - Факт: 31 E2E проходит только в Desktop Chromium и в основном на API mocks.
@@ -462,6 +487,7 @@ Snabix уже имеет хорошую основу для модульного
   - Существующий бюджет: staging TTFB <= 500 ms, mobile LCP <= 2.5 s, public first-load JS <= 250 KB gzip, API requests <= 4, backend list query count <= 12.
   - План: Lighthouse/Playwright trace и bundle analyzer artifact; backend query-count/performance test на fixture scale; trend не только single hard threshold.
   - Критерий готовности: CI/release report сохраняет метрики и блокирует необъясненное превышение; budget пересматривается осознанно.
+  - Прогресс `2026-07-18`: frontend получил воспроизводимую команду `performance:public` и release checklist для HTTPS staging. Локальный production baseline выявил `380 888 bytes` first-load JS против бюджета `256 000`; основная часть принадлежит глобальному client layout (`Providers`, session/header и framework), а не route-specific витрине. Пункт остается открытым до уменьшения global bundle, CI artifact/trend и блокирующего staging gate.
 
 - [ ] `P1-OPS-003` Ввести observability без доступа приложения к Docker socket.
   - Факт: Filament widget проверяет DB/Redis/cache/storage/migrations/env/resources и TCP RabbitMQ, но не знает uptime/restarts, worker heartbeat, queue lag, scheduler, mail, frontend или bot.
@@ -501,15 +527,17 @@ Snabix уже имеет хорошую основу для модульного
   - План: если отзывы только продавцу - `seller_id`/`subject_user_id`; `CreateUserReviewHandler`, `ReviewEligibilityPolicy`, `SellerRatingProjector`. Не переименовывать колонку без API migration plan.
   - Критерий готовности: ubiquitous language закреплен ADR/API docs; mapper/DB/API используют однозначные термины.
 
-- [ ] `P2-NAME-003` Нормализовать frontend callback naming.
+- [x] `P2-NAME-003` Нормализовать frontend callback naming.
   - Факт: suffix `Action` используется для обычных React callbacks почти во всех UI-слоях.
   - План: `onOpenChange`, `onRetry`, `onSubmit`, `onFavoriteToggle`; зарезервировать Server Action naming для функций с соответствующей семантикой.
   - Критерий готовности: новые компоненты не добавляют fake Action props; mechanical migration идет по feature и не смешивается с behavior changes.
+  - Выполнено `2026-07-22`: механическая миграция по frontend feature/UI-слоям заменила `460` обычных callback names `on*Action` на React naming без изменения поведения. ESLint и `npm run architecture:client` запрещают регрессию, `Action` зарезервирован в `AGENTS.md` и architecture docs для настоящих Server Actions.
 
-- [ ] `P2-NAME-004` Зафиксировать naming полей между DB/API/frontend.
+- [x] `P2-NAME-004` Зафиксировать naming полей между DB/API/frontend.
   - Факт: DB использует snake_case, API camelCase, но встречаются semantic variants `fullname/fullName`, `about/description`, generic `type/status` и numeric enum values.
   - План: schema conventions: `...Id`, timestamp ISO 8601, money minor units/currency, public stable IDs, enum strings на API boundary; compatibility adapters для миграций.
   - Критерий готовности: conventions в API docs; contract tests не допускают случайные variants; rename имеет deprecation window.
+  - Выполнено `2026-07-19`: API закрепил semantic string fields `listingKind`, `listingStatus`, `itemCondition`, `catalogKind`, `valueType`, `publicationStatus`, `reviewStatus` и money pair `priceAmountMinor`/`priceCurrency`; frontend нормализует wire DTO в canonical domain types. Numeric/generic aliases изолированы в compatibility-слое до `2026-10-31`, а contract/feature/E2E tests проверяют новый формат и rollback-совместимость.
 
 - [ ] `P2-CODE-001` Декомпозировать крупные backend production-файлы по обязанностям.
   - Текущий baseline: `CleanupStorageCommand.php` 357, `NewsPostForm.php` 349, `ListingAttributeValueSynchronizer.php` 331, `CategoryAttributeDefinitionNormalizer.php` 325, `SystemHealthChecksWidget.php` 324.
@@ -521,14 +549,18 @@ Snabix уже имеет хорошую основу для модульного
   - План: отделять data/model, semantic sections и reusable UI; не создавать десятки одноразовых wrappers.
   - Критерий готовности: изменяемый legacy-файл не растет; extracted unit имеет собственную ответственность/test.
 
-- [ ] `P2-CODE-003` Удалить dead/stale frontend code и зависимости.
+- [x] `P2-CODE-003` Удалить dead/stale frontend code и зависимости.
   - Факт: `shared/lib/access-token.ts` не используется и противоречит Sanctum cookie flow; `mock-data.ts` содержит фальшивые метрики; `fallback-posts.ts` является тестовой fixture в production tree; `@fiddle-digital/string-tune` и `embla-carousel-react` не имеют найденного runtime usage, Framer Motion используется точечно.
   - План: подтвердить `rg`/bundle usage, удалить dead modules/deps; fixture переместить в test; простую theme animation заменить CSS только если bundle benefit измерим.
   - Критерий готовности: dependency graph/build green, bundle report фиксирует эффект, docs/legal copy не ссылается на access token localStorage.
+  - Выполнено `2026-07-20`: удалены access-token helper, фальшивые метрики, static fallback posts и неиспользуемые String Tune/Embla зависимости; blog fixture перенесена в test tree. Единственная Framer Motion анимация заменена CSS transitions с reduced-motion, после чего общий layout JS уменьшился с `221 463 B` до `180 352 B` gzip (`-18,6%`). Evidence: frontend `docs/DEAD_CODE_AND_BUNDLE_AUDIT.md` и `npm run bundle:report`.
 
-- [ ] `P2-CODE-004` Удалить дубли и architectural leftovers backend.
+- [x] `P2-CODE-004` Удалить дубли и architectural leftovers backend.
   - Факт: найден дублирующий/мертвый `EloquentListingPolicy.php` рядом с фактическим `ListingPolicy.php`; generic scaffold descriptions в `composer.json`; некоторые docs обещают уже реализованные как future.
   - Критерий готовности: usage проверен, dead class удален, package metadata описывает Snabix, autoload/static checks проходят.
+  - Выполнено `2026-07-22`: через registration/reference audit подтверждено, что `EloquentListing` использует расширенный `ListingPolicy`, а scaffold `EloquentListingPolicy` не зарегистрирован и не импортируется; мертвый класс удален. Composer package переименован в `snabix/backend`, description/keywords описывают региональный marketplace, lock content hash синхронизирован без изменения locked dependencies.
+  - Documentation drift: `.docs/AGENTS.md` теперь фиксирует уже работающие moderation actions, обязательное уведомление владельца и media lifecycle; будущими оставлены только действительно не реализованные publication/availability, interaction eligibility и доказанное масштабирование поиска.
+  - Проверено: `composer validate --strict`, optimized autoload с `--strict-psr --strict-ambiguous`, отсутствие старого class name через `rg`, PHP CS Fixer dry-run, PHPStan `663/663`, Scramble analysis и `185` тестов (`993` assertions).
 
 - [ ] `P2-CODE-005` Исправить ReferenceDataCache atomicity и invalidation ownership.
   - Факт: version key меняется через get+set, что теряет concurrent increments; model-level invalidation вызывает много bump при batch import.
@@ -537,10 +569,14 @@ Snabix уже имеет хорошую основу для модульного
 
 ## P2 - UX, качество и эксплуатационные улучшения
 
-- [ ] `P2-UX-001` Провести системный responsive/accessibility review marketplace UI.
+- [x] `P2-UX-001` Провести системный responsive/accessibility review marketplace UI.
   - Факт: есть крупные/nested card surfaces, неоднородные radii, отрицательный letter spacing и декоративные radial/orb classes; автоматической visual matrix нет.
   - План: токены typography/spacing/radius/focus, mobile 360/390, tablet, desktop; screenshots основных маршрутов; contrast/touch targets/overflow.
   - Критерий готовности: approved visual baseline, no overlap/overflow, WCAG AA для ключевых flows, изменения не превращают operational UI в landing page.
+  - Выполнено 2026-07-22: в frontend добавлены единые токены радиусов, spacing и focus ring; public marketplace, header, каталог, listing cards/media и footer переведены на более компактные operational surfaces без декоративных radial/orb backgrounds и отрицательного tracking.
+  - Исправлена accessibility-ошибка закрытого drawer фильтров: скрытая форма больше не остается в tab order и accessibility tree, открытое состояние имеет modal dialog semantics.
+  - Добавлен документированный visual baseline и Playwright-матрица для `/`, `/?categoryId=1`, `/listings/listing-1`: light/dark, 360/390/768/1440 px, screenshots, WCAG A/AA axe, overflow и touch-target checks.
+  - Проверено: responsive matrix 24/24, полный E2E 72/72 (2 workers), lint, обычный и full typecheck, 119 Vitest tests, filesize guard и production build проходят.
 
 - [ ] `P2-UX-002` Разделить реализованные и будущие настройки пользователя.
   - Факт: account deactivation/delete UI не подключен; notification preferences перечисляют события без producers; seller profile placeholder доступен как route.

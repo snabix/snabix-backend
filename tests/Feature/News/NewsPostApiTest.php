@@ -29,6 +29,8 @@ class NewsPostApiTest extends FeatureTestCase
             ->getJson('/api/v1/news')
             ->assertOk()
             ->assertJsonPath('data.items.0.title', 'Опубликованная новость')
+            ->assertJsonPath('data.items.0.publicationStatus', 'published')
+            ->assertJsonPath('data.items.0.publicationStatusLabel', 'Опубликовано')
             ->assertJsonMissingPath('data.items.0.contentBlocks')
             ->assertJsonMissing(['slug' => 'draft-news']);
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Filament;
 
+use App\Auth\Filament\Resources\Users\UserResource;
 use App\Auth\Infrastructure\Models\EloquentAdmin;
 use App\Auth\Infrastructure\Models\EloquentUser;
 use App\Catalog\Filament\Resources\Categories\CategoryResource;
@@ -35,11 +36,22 @@ class AdminPanelSmokeTest extends FeatureTestCase
             'user_id'     => EloquentUser::factory()->create()->id,
         ]);
         $media    = $this->createMedia($admin);
+        $user     = EloquentUser::factory()
+            ->withoutName()
+            ->create(['email' => 'unnamed-filament@example.com']);
 
         $this->actingAs($admin, 'admin');
 
         $this->get('/admin')
             ->assertOk();
+
+        $this->get(UserResource::getUrl('index'))
+            ->assertOk()
+            ->assertSee('unnamed-filament@example.com');
+        $this->get(UserResource::getUrl('view', ['record' => $user]))
+            ->assertOk()
+            ->assertSee('Не указано')
+            ->assertSee('unnamed-filament@example.com');
 
         $this->get(CategoryResource::getUrl('index'))
             ->assertOk();

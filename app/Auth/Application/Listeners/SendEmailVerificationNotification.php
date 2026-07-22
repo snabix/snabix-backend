@@ -32,7 +32,7 @@ readonly class SendEmailVerificationNotification
         SendEmailVerificationJob::dispatch(
             userId: $user->id->value(),
             email: $user->email->value(),
-            name: $user->fullName(),
+            name: $user->accountLabel(),
             verificationCode: $code,
             expiresInMinutes: $this->emailVerificationCodeService->expiresInMinutes(),
         );

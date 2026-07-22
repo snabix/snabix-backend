@@ -12,12 +12,24 @@ class ApiDtoContractsDocumentationTest extends TestCase
     {
         $contents = $this->contractsDocumentation();
 
-        $this->assertStringContainsString('| PRODUCT | 1 | Товар |', $contents);
-        $this->assertStringContainsString('| SERVICE | 2 | Услуга |', $contents);
-        $this->assertStringContainsString('| PENDING_REVIEW | 2 | На проверке |', $contents);
-        $this->assertStringContainsString('| PUBLISHED | 3 | Опубликовано |', $contents);
-        $this->assertStringContainsString('| NOT_APPLICABLE | 3 | Не применяется |', $contents);
-        $this->assertStringContainsString('| MULTISELECT | 5 | Выбор нескольких значений |', $contents);
+        $this->assertStringContainsString('| `listingKind` | `product`, `service` | `1`, `2` |', $contents);
+        $this->assertStringContainsString('`pendingReview`', $contents);
+        $this->assertStringContainsString('`notApplicable`', $contents);
+        $this->assertStringContainsString('`multiSelect`', $contents);
+        $this->assertStringContainsString('`publicationStatus`', $contents);
+        $this->assertStringContainsString('`reviewStatus`', $contents);
+    }
+
+    public function test_api_dto_contracts_document_field_naming_and_deprecation_policy(): void
+    {
+        $contents = $this->contractsDocumentation();
+
+        $this->assertStringContainsString('## Conventions имен полей', $contents);
+        $this->assertStringContainsString('`priceAmountMinor: 85000`, `priceCurrency: "RUB"`', $contents);
+        $this->assertStringContainsString('`...At`, ISO 8601 с timezone', $contents);
+        $this->assertStringContainsString('Общие поля `type` и `status` запрещены для новых resource DTO.', $contents);
+        $this->assertStringContainsString('заканчивается **2026-10-31**', $contents);
+        $this->assertStringContainsString('frontend разворачивается первым', $contents);
     }
 
     public function test_api_dto_contracts_document_private_and_public_listing_boundaries(): void
@@ -36,11 +48,11 @@ class ApiDtoContractsDocumentationTest extends TestCase
 
         $this->assertStringContainsString('"items": [', $contents);
         $this->assertStringContainsString('"meta": {', $contents);
-        $this->assertStringContainsString('"catalogTypeLabel": "Товары"', $contents);
-        $this->assertStringContainsString('"typeLabel": "Товар"', $contents);
-        $this->assertStringContainsString('"statusLabel": "Опубликовано"', $contents);
-        $this->assertStringContainsString('"conditionLabel": "Б/у"', $contents);
-        $this->assertStringContainsString('"typeLabel": "Выбор одного значения"', $contents);
+        $this->assertStringContainsString('"catalogKind": "product"', $contents);
+        $this->assertStringContainsString('"listingKind": "product"', $contents);
+        $this->assertStringContainsString('"listingStatus": "published"', $contents);
+        $this->assertStringContainsString('"itemCondition": "used"', $contents);
+        $this->assertStringContainsString('"valueType": "select"', $contents);
         $this->assertStringContainsString('"showInCard": true', $contents);
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Auth\Infrastructure\Exceptions\NotFoundException;
 use App\Bot\Infrastructure\Middleware\EnsureBotServiceToken;
 use App\Development\CLI\BootstrapDemoDataCommand;
+use App\Shared\Domain\Exceptions\IdempotencyConflictException;
 use App\Shared\Infrastructure\Middleware\LogRequestActivity;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -54,6 +55,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 'code'           => 'auth.csrf-token-mismatch',
                 'sessionExpired' => true,
             ], 419);
+        });
+
+        $exceptions->render(function (IdempotencyConflictException $exception, Request $request): ?JsonResponse {
+            if (! $request->expectsJson() && ! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'code'    => 'request.idempotency-conflict',
+            ], 409);
         });
 
         $exceptions->render(function (NotFoundException $exception, Request $request): JsonResponse | string {
